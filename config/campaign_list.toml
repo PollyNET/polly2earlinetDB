@@ -1,0 +1,12 @@
+# This file contains the list of all the supported campaigns
+# Each field should have the tag of 'starttime', 'endtime', 'location', 'country' and 'system'
+#
+# History
+#   2019-09-11. First edition by Zhenping
+
+[Dushanbe_campaign_info]
+location = 'Dushanbe'
+country = 'Tajikistan'
+starttime = "2019-07-01 00:00:00"
+endtime = "2019-09-01 00:00:00"
+system = 'PollyXT-TJK' 
