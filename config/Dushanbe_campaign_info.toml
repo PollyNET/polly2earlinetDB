@@ -38,7 +38,6 @@ comment = "Central Asian dust measurements"
 references = "http://polly.rsd.tropos.de/"
 
 __file_format_version = "1.0"
-NETCDF_FORMAT = "NETCDF4_CLASSIC"
 Conventions = "CF-1.7"
 hoi_system_ID = -1
 hoi_configuration_ID = -1

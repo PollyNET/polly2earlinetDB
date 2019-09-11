@@ -1,4 +1,6 @@
-# This configuration contains the conversion key for labview settings to EARLINET style settings
+# This configuration contains the conversion key for labview settings to 
+# EARLINET style settings
+#
 # History
 #   2019-09-10 First edition by Zhenping
 
@@ -8,8 +10,23 @@ ek_retrieving_method = [0, 1]   # EARLINET key
 
 # meteorological data source
 ## labview style
-## 0=GDAS; 1=upper air; 2=Polarstern; 3=local TROPOS (RS92); 4=KIT@hope (Graph); 5=old TROPOS (RS80); 6=Meteor; 7=Hysplit (GDAS TROPOS); 8=standard atmosphere; 9=arm netcdf; 10=vaisala rs41
+## 0=GDAS; 1=upper air; 2=Polarstern; 3=local TROPOS (RS92); 
+## 4=KIT@hope (Graph); 5=old TROPOS (RS80); 6=Meteor; 7=Hysplit (GDAS TROPOS); 
+## 8=standard atmosphere; 9=arm netcdf; 10=vaisala rs41
 lk_meteor_source = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
 ## EARLINET
-## 0: US_standard_atmosphere; 1: radiosonding; 2: ecmwf; 3: icon-iglo-12-23; 4: gdas
+## 0: US_standard_atmosphere; 1: radiosonding; 
+## 2: ecmwf; 3: icon-iglo-12-23; 4: gdas
 ek_meteor_source = [4, 1, 1, 1, 1, 1, 1, 4, 0, 1, 1]
+
+# raman backscatter algorithm
+## labview style
+## labview output the information with specifying the 
+## flag_use_particle_ext_for_raman_bsc
+## yes: using the particle extinction for backscatter retrievals
+## no: assuming the particle extinction to be 0
+lk_raman_backscatter_algorithm = ['yes', 'no']
+## EAELINET
+## 0: Ansmann
+## 1: via_backscatter_ratio
+ek_raman_backscatter_algorithm = [0, 1]
