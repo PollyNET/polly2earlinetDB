@@ -10,12 +10,30 @@ At June 24, 2019, the new EARLINET database was released and new data format for
 
 ## Download
 
-## Installation
+You can download the code by using git
 
-### Test
+```bash
+git clone https://github.com/ZPYin/polly_2_earlinet_convertor.git
+```
+
+or 
+
+click the download [link](https://github.com/ZPYin/polly_2_earlinet_convertor/archive/master.zip)
+
+## Installation
 
 ## Usage
 
 ## Acknowledgement
 
+Thanks to **Iannis Binietoglou** with the repository of [`SCC access`](https://bitbucket.org/iannis_b/scc-access/src/default/) and **Ina Mattis** with the repository of [`inqbus.lidar`](https://github.com/Inqbus/inqbus.lidar). 
+
 ## License
+
+MIT License
+
+Feel free to distribute it!!! :beer::beer::beer:
+
+## Contact
+
+Zhenping Yin <zhenping@tropos.de>
