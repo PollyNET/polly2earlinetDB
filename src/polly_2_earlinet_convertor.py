@@ -5,6 +5,7 @@ import glob
 import numpy as np
 import datetime
 import re
+import argparse
 from netCDF4 import Dataset
 from scipy.interpolate import interp1d
 
@@ -71,7 +72,7 @@ class polly_earlinet_convertor(object):
     """
 
     def __init__(self, pollyType, location, fileType='labview',
-                 category=2, *, output_dir='', camp_info_file=''):
+                 category=2, *, output_dir='', camp_info_file='', force=False):
         '''
         Initialize the class variables
         '''
@@ -82,6 +83,7 @@ class polly_earlinet_convertor(object):
         self.category = category
         self.projectDir = os.path.dirname(os.path.realpath(__file__))
         self.outputDir = output_dir
+        self.force = force
 
         # setup the campaign config file
         self.camp_info_file = os.path.join(self.projectDir,
@@ -201,14 +203,14 @@ class polly_earlinet_convertor(object):
         read the data from the polly data file (labview or picasso style)
         '''
         if self.fileType.lower() == 'labview':
-            pollyData = self.__read_labview_results(filename)
+            dims, data, global_attr = self.__read_labview_results(filename)
         elif self.fileType.lower() == 'picasso':
-            pollyData = self.__read_picasso_results(filename)
+            dims, data, global_attr = self.__read_picasso_results(filename)
         else:
             logger.error('Wrong input of fileType: {fileType}'.format(
                 fileType=self.fileType))
 
-        return pollyData
+        return dims, data, global_attr
 
     def search_data_files(self, filename, filepath=None):
         '''
@@ -811,6 +813,8 @@ class polly_earlinet_convertor(object):
         Examples can be found in 'include'
         '''
 
+        force = self.force
+
         # write to b355
         # Up till now, I didn't find naming conventions for the nc files.
         # according to the emails, the filename can be handled by the webpage
@@ -881,7 +885,7 @@ class polly_earlinet_convertor(object):
         global_attri_b355 = global_attri
         logger.info('Writing data to {file}'.format(file=file_b355))
         self.__write_2_earlinet_nc(file_b355, var_b355, dim_b355,
-                                   global_attri_b355)
+                                   global_attri_b355, force)
 
         # write to e355
         # Up till now, I didn't find naming conventions for the nc files.
@@ -961,7 +965,7 @@ class polly_earlinet_convertor(object):
         global_attri_e355 = global_attri
         logger.info('Writing data to {file}'.format(file=file_e355))
         self.__write_2_earlinet_nc(file_e355, var_e355, dim_e355,
-                                   global_attri_e355)
+                                   global_attri_e355, force)
 
         # write to b532
         # Up till now, I didn't find naming conventions for the nc files.
@@ -1041,7 +1045,7 @@ class polly_earlinet_convertor(object):
         global_attri_b532 = global_attri
         logger.info('Writing data to {file}'.format(file=file_b532))
         self.__write_2_earlinet_nc(file_b532, var_b532, dim_b532,
-                                   global_attri_b532)
+                                   global_attri_b532, force)
 
         # write to e532
         # Up till now, I didn't find naming conventions for the nc files.
@@ -1121,7 +1125,7 @@ class polly_earlinet_convertor(object):
         global_attri_e532 = global_attri
         logger.info('Writing data to {file}'.format(file=file_e532))
         self.__write_2_earlinet_nc(file_e532, var_e532, dim_e532,
-                                   global_attri_e532)
+                                   global_attri_e532, force)
 
         # write to b1064
         # Up till now, I didn't find naming conventions for the nc files.
@@ -1193,13 +1197,25 @@ class polly_earlinet_convertor(object):
         global_attri_b1064 = global_attri
         logger.info('Writing data to {file}'.format(file=file_b1064))
         self.__write_2_earlinet_nc(file_b1064, var_b1064, dim_b1064,
-                                   global_attri_b1064)
+                                   global_attri_b1064, force)
 
     def __write_2_earlinet_nc(self, filename, variables, dimensions,
-                              global_attri):
+                              global_attri, force):
         '''
         write to EARLINET nc file. Example can be found in 'include'
         '''
+
+        # whether overwrite the file if it exists
+        if (os.path.exists(filename)) and \
+           (os.path.isfile(filename)) and force:
+            logger.warning('{file} exists. Jump over!'.format(file=filename))
+            return
+
+        elif (os.path.exists(filename)) and \
+             (os.path.isfile(filename)) and force:
+            logger.warning('{file} exists. Overwrite it!'.
+                           format(file=filename))
+
         dataset = Dataset(filename, 'w', format=NETCDF_FORMAT)
 
         # create dimensions
@@ -1235,8 +1251,143 @@ class polly_earlinet_convertor(object):
 
         dataset.close()
 
-        # Command line interface
-        # convert_polly_2_earlinet -p pollyxt_lacros -l dushanbe -t labview
-        # -c 2 -f xxx.txt -d output_dir [-c xxx.toml --force true]
-        # convert_polly_2_earlinet --list_campaign
-        #   convert_polly_2_earlinet -h | --help
+
+def show_list(flagShowCampaign=False, flagShowInstrument=False):
+    '''
+    print the campaign and instrument list
+    '''
+
+    # initialize the instance
+    p2eConvertor = polly_earlinet_convertor()
+
+    # print the campaign list
+    if flagShowCampaign:
+        for indx, location in enumerate(p2eConvertor.location_list):
+            logger.info('{indx}: {location}'.
+                        format(indx=indx, location=location))
+
+    # print the instrument list
+    if flagShowInstrument:
+        for indx, instrument in enumerate(p2eConvertor.instrument_list):
+            logger.info('{indx}: {instrument}'.
+                        format(indx=indx, instrument=instrument))
+
+
+def setup_show_list(parser):
+    '''
+    setup the optional arguments for show_list function
+    '''
+
+    parser.add_argument("--campaign",
+                        help="show the supported campaign list",
+                        dest='flagShowCampaign',
+                        action='store_False')
+    parser.add_argument("--instrument",
+                        help="show the supported instrument list",
+                        dest='flagShowInstrument',
+                        action='store_False')
+
+    args = parser.argparse()
+
+    show_list(args.flagShowCampaign, args.flagShowInstrument)
+
+
+def p2e_go(polly_type, location, file_type, category, filename, output_dir,
+           camp_info, force):
+    '''
+    convert the polly files according to the input information
+    '''
+
+    p2e_convertor = polly_earlinet_convertor(polly_type, location,
+                                             fileType=file_type,
+                                             category=category,
+                                             output_dir=output_dir,
+                                             camp_info_file=camp_info,
+                                             force=force)
+
+    # search files
+    filePath = os.path.dirname(filename)
+    file = os.path.basename(filename)
+    fileLists = p2e_convertor.search_data_files(file, filepath=filePath)
+
+    # convert all the files
+    for task in fileLists:
+        dims, data, global_attrs = p2e_convertor.read_data_file(task)
+        p2e_convertor.write_to_earlinet_nc(data, dims, global_attrs)
+
+
+def main():
+
+    # Define the command line arguments.
+    description = 'convert the polly profiles from labview program to ' + \
+                  'EARLINET format'
+    parser = argparse.ArgumentParser(prog='p2e_go',
+                                     description=description)
+    subparsers = parser.add_subparsers()
+
+    list_parser = subparsers.add_parser("list", help="list supported ' + \
+                                                'campaign and instruments.")
+
+    setup_show_list(list_parser)
+
+    # Setup the arguments
+    parser.add_argument("-p", "--polly_type",
+                        help="setup the instrument type",
+                        dest='polly_type',
+                        defaults='pollyxt_tjk',
+                        nargs=1)
+    parser.add_argument("-l", "--location",
+                        help="setup the campaign location",
+                        dest='location',
+                        defaults='dushanbe',
+                        nargs=1)
+    helpMsg = "setup the type of the profile (labview | picasso)"
+    parser.add_argument("-t", "--file_type",
+                        help=helpMsg,
+                        dest='file_type',
+                        defaults='labview',
+                        nargs=1)
+    helpMsg = "setup the category of the profile\n" + \
+              "flag_masks: 1, 2, 4, 8, 16, 32, 64, 128, 256, 512\n" + \
+              "flag_meanings: cirrus climatol dicycles etna forfires " + \
+              "photosmog rurban sahadust stratos satellite_overpasses"
+    parser.add_argument("-c", "--category",
+                        help=helpMsg,
+                        dest='category',
+                        defaults='2',
+                        type=int,
+                        nargs=1)
+    parser.add_argument("-f", "--filename",
+                        help='setup the filename of the polly profile',
+                        dest='filename',
+                        defaults='',
+                        nargs=1)
+    parser.add_argument("-d", "--output_dir",
+                        help='setup the directory for the converted files',
+                        dest='output_dir',
+                        defaults='',
+                        nargs=1)
+    helpMsg = 'setup the campaign info file [*.toml].\n' + \
+              'If not set, the program will search the config folder for ' + \
+              'a suitable one.'
+    parser.add_argument("--camp_info",
+                        help=helpMsg,
+                        dest='camp_info',
+                        defaults='',
+                        nargs=1)
+    parser.add_argument("--force",
+                        help='whether to overwrite the nc files if they exists',
+                        dest='force',
+                        action='store_True')
+
+    args = parser.parse_args()
+
+    # run the command
+    p2e_go(args.polly_type, args.location, args.file_type,
+           args.category, args.filename, args.output_dir,
+           args.camp_info, args.force)
+
+
+# When running through terminal
+if __name__ == '__main__':
+    main()
