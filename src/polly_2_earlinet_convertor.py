@@ -46,6 +46,7 @@ ch.setFormatter(formatterCh)
 logger.addHandler(fh)
 logger.addHandler(ch)
 
+
 class polly_earlinet_convertor(object):
     """
     Description
@@ -291,8 +292,8 @@ class polly_earlinet_convertor(object):
         # # jump over Klett profiles
         # if labviewInfo['retrieving_method'] == 1:
         #     logger.warning(
-        #         'File was retrieved with Klett method.\n{file}\nJump over!!!'.
-        #         format(file=filename))
+        #     'File was retrieved with Klett method.\n{file}\nJump over!!!'.
+        #     format(file=filename))
         #     return None, None, None
 
         # search the campaign info file
@@ -1380,19 +1381,16 @@ def main():
     parser.add_argument("-p", "--polly_type",
                         help="setup the instrument type",
                         dest='polly_type',
-                        default='pollyxt_tjk',
-                        nargs=1)
+                        default='pollyxt_tjk')
     parser.add_argument("-l", "--location",
                         help="setup the campaign location",
                         dest='location',
-                        default='dushanbe',
-                        nargs=1)
+                        default='dushanbe')
     helpMsg = "setup the type of the profile (labview | picasso)"
     parser.add_argument("-t", "--file_type",
                         help=helpMsg,
                         dest='file_type',
-                        default='labview',
-                        nargs=1)
+                        default='labview')
     helpMsg = "setup the category of the profile\n" + \
               "flag_masks: 1, 2, 4, 8, 16, 32, 64, 128, 256, 512\n" + \
               "flag_meanings: cirrus climatol dicycles etna forfires " + \
@@ -1401,28 +1399,25 @@ def main():
                         help=helpMsg,
                         dest='category',
                         default='2',
-                        type=int,
-                        nargs=1)
+                        type=int)
     parser.add_argument("-f", "--filename",
                         help='setup the filename of the polly profile',
                         dest='filename',
-                        default='',
-                        nargs=1)
+                        default='')
     parser.add_argument("-d", "--output_dir",
                         help='setup the directory for the converted files',
                         dest='output_dir',
-                        default='',
-                        nargs=1)
+                        default='')
     helpMsg = 'setup the campaign info file [*.toml].\n' + \
               'If not set, the program will search the config folder for ' + \
               'a suitable one.'
     parser.add_argument("--camp_info",
                         help=helpMsg,
                         dest='camp_info',
-                        default='',
-                        nargs=1)
+                        default='')
     parser.add_argument("--force",
-                        help='whether to overwrite the nc files if they exists',
+                        help='whether to overwrite the nc files ' +
+                             'if they exists',
                         dest='force',
                         action='store_true')
 
@@ -1440,26 +1435,20 @@ def main():
                              help="show the supported instrument list",
                              dest='flagShowInstrument',
                              action='store_true')
+    # if no input arguments
+    if len(sys.argv) == 1:
+        parser.print_help(sys.stderr)
+        sys.exit(1)
 
     args = parser.parse_args()
 
     if args.list:
         show_list(args.flagShowCampaign, args.flagShowInstrument)
     else:
-
-        # convert list to string
-        polly_type = ''.join(args.polly_type)
-        location = ''.join(args.location)
-        file_type = ''.join(args.file_type)
-        filename = ''.join(args.filename)
-        output_dir = ''.join(args.output_dir)
-        camp_info = ''.join(args.camp_info)
-        category = args.category[0]
-
         # run the command
-        p2e_go(polly_type, location, file_type,
-               category, filename, output_dir,
-               camp_info, args.force)
+        p2e_go(args.polly_type, args.location, args.file_type,
+               args.category, args.filename, args.output_dir,
+               args.camp_info, args.force)
 
 
 # When running through terminal

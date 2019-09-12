@@ -37,7 +37,7 @@ setup(name='polly_2_earlinet_convertor',
         'config': ['*.toml'],
         # And include any *.msg files found in the 'hello' package, too:
         'include': ['*'],
-    },
+                    },
 
       version=find_version("src", "__init__.py"),
       description='Package for converting the polly profiles' +
@@ -45,7 +45,8 @@ setup(name='polly_2_earlinet_convertor',
                   'files through command line.',
       long_description=long_description,
       url='https://github.com/ZPYin/polly_2_earlinet_convertor',
-      download_url='https://github.com/ZPYin/polly_2_earlinet_convertor/archive/master.zip',
+      download_url='https://github.com/ZPYin/polly_2_earlinet_convertor' +
+                   '/archive/master.zip',
       author='Zhenping Yin',
       author_email='zhenping@tropos.de',
       license='MIT',
