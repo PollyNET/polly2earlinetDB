@@ -2,16 +2,16 @@
 # Those configuration will be used as the global attributes in the netCDF file for EARLINET.
 #
 # History:
-#   2019-09-09 First edition by Zhenping
+#   2019-09-12 First edition by Zhenping
 
 institution = "Leibniz-Institut für Troposphärenforschung e.V."
 
-PI = "Dietrich Althausen"
+PI = "Patric Seifert"
 PI_affliliation = "Leibniz-Institut für Troposphärenforschung e.V."
 PI_affiliation_acronym = "TROPOS"
 PI_address = "Permoserstraße 15, 04103 Leipzig, Germany"
 PI_phone = ""
-PI_email = "dietrich@tropos.de"
+PI_email = "seifert@tropos.de"
 
 Data_Originator = "Holger Baars"
 Data_Originator_affliliation = "Leibniz-Institut für Troposphärenforschung e.V."
@@ -28,11 +28,11 @@ processor_name = ""
 processor_version = ""
 
 title = "Ground based LIDAR measurements"
-station_ID = "DUS"
+station_ID = "XXX"
 station_latitude = 30   # negative for southern hemisphere
 station_longitude = 100   # negative for west
 station_altitude = 870   # [m]
-station_starttime = "2019-07-07 00:00:00"
+station_starttime = "2018-12-01 00:00:00"
 station_endtime = "2099-07-07 00:00:00"
 comment = "Central Asian dust measurements"
 references = "http://polly.rsd.tropos.de/"

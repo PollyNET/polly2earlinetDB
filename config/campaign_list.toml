@@ -5,8 +5,15 @@
 #   2019-09-11. First edition by Zhenping
 
 [Dushanbe_campaign_info]
-location = 'Dushanbe'
-country = 'Tajikistan'
+location = "Dushanbe"
+country = "Tajikistan"
 starttime = "2019-07-01 00:00:00"
 endtime = "2019-09-01 00:00:00"
-system = 'PollyXT-TJK' 
+system = "PollyXT_TJK" 
+
+[Punta_Arenas_campaign_info]
+location = "Punta_Arenas"
+country = "Chile"
+starttime = "2018-12-01 00:00:00"
+endtime = "2019-11-01 00:00:00"
+system = "PollyXT_LACROS"

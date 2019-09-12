@@ -1,4 +1,5 @@
 import os
+import sys
 import toml
 import logging
 import glob
@@ -9,16 +10,18 @@ import argparse
 from netCDF4 import Dataset
 from scipy.interpolate import interp1d
 
-LOG_MODE = 'INFO'
+LOG_MODE = 'DEBUG'
 LOGFILE = 'log'
 CONVERT_KEY_FILE = 'labview_key_2_earlinet_key_spec.toml'
 METADATA_FILE = 'metadata.toml'
 CAMPAIGN_LIST_FILE = 'campaign_list.toml'
 NETCDF_FORMAT = "NETCDF4"
+PROJECTDIR = os.path.dirname(
+    os.path.dirname(os.path.realpath(__file__))
+)
 
 # initialize the logger
-projectDir = os.path.dirname(os.path.realpath(__file__))
-logFile = os.path.join(projectDir, 'log', LOGFILE)
+logFile = os.path.join(PROJECTDIR, LOGFILE)
 logModeDict = {
     'INFO': logging.INFO,
     'WARNING': logging.WARNING,
@@ -30,18 +33,18 @@ logger.setLevel(logModeDict[LOG_MODE])
 
 fh = logging.FileHandler(logFile)
 fh.setLevel(logModeDict[LOG_MODE])
-ch = logging.StreamHandler()
+ch = logging.StreamHandler(sys.stdout)
 ch.setLevel(logModeDict[LOG_MODE])
 
 formatterFh = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - ' +
                                 '%(funcName)s - %(lineno)d - %(message)s')
 formatterCh = logging.Formatter(
-    '%(name)s - %(levelname)s - %(funcName)s - %(lineno)d - %(message)s')
+    '%(message)s')
 fh.setFormatter(formatterFh)
 ch.setFormatter(formatterCh)
 
 logger.addHandler(fh)
-
+logger.addHandler(ch)
 
 class polly_earlinet_convertor(object):
     """
@@ -71,7 +74,7 @@ class polly_earlinet_convertor(object):
     2019-09-09. First edition by Zhenping
     """
 
-    def __init__(self, pollyType, location, fileType='labview',
+    def __init__(self, pollyType='', location='', fileType='labview',
                  category=2, *, output_dir='', camp_info_file='', force=False):
         '''
         Initialize the class variables
@@ -81,7 +84,7 @@ class polly_earlinet_convertor(object):
         self.location = location
         self.fileType = fileType
         self.category = category
-        self.projectDir = os.path.dirname(os.path.realpath(__file__))
+        self.projectDir = PROJECTDIR
         self.outputDir = output_dir
         self.force = force
 
@@ -89,15 +92,6 @@ class polly_earlinet_convertor(object):
         self.camp_info_file = os.path.join(self.projectDir,
                                            'config',
                                            camp_info_file)
-
-        # determine whether the output directory exists or not
-        if not os.path.exists(self.outputDir):
-            logger.warning('Output directory for saving the results does' +
-                           'not exist.\n{path}'.format(path=self.outputDir))
-            # prompt up the request for creating the output directory
-            res = input("Create the folder forcefully? (yes|no): ")
-            if res.lower() == 'yes':
-                os.mkdir(self.outputDir)
 
         # load conversion key
         self.conversion_key = self.load_convert_key_config()
@@ -118,7 +112,7 @@ class polly_earlinet_convertor(object):
         # get location list
         location_list = []
         for camp_label in self.campaign_dict:
-            location_list.append(self.campaign_dict[camp_label][location])
+            location_list.append(self.campaign_dict[camp_label]['location'])
         self.location_list = list(set(location_list))
 
     def load_metadata(self, filename):
@@ -130,7 +124,8 @@ class polly_earlinet_convertor(object):
                          format(filename))
             raise FileNotFoundError
 
-        metaData = toml.loads(filename)
+        with open(filename, 'r') as fh:
+            metaData = toml.loads(fh.read())
 
         return metaData
 
@@ -149,7 +144,8 @@ class polly_earlinet_convertor(object):
                 file=camp_list_file))
             raise FileNotFoundError
 
-        camp_dict = toml.loads(camp_list_file)
+        with open(camp_list_file, 'r') as fh:
+            camp_dict = toml.loads(fh.read())
 
         # convert the timestamp to datetime object
         for camp_label in camp_dict:
@@ -165,7 +161,9 @@ class polly_earlinet_convertor(object):
         load the convert key for mapping the labview configurations to
         EARLINET standard configurations.
         '''
-        convert_key_filepath = os.path.join(self.projectDir, CONVERT_KEY_FILE)
+        convert_key_filepath = os.path.join(self.projectDir,
+                                            'config',
+                                            CONVERT_KEY_FILE)
 
         if (not os.path.exists(convert_key_filepath)) or \
            (not os.path.isfile(convert_key_filepath)):
@@ -175,7 +173,8 @@ class polly_earlinet_convertor(object):
 
         # load conversion key
         try:
-            conversion_key = toml.loads(convert_key_filepath)
+            with open(convert_key_filepath, 'r') as fh:
+                conversion_key = toml.loads(fh.read())
         except Exception as e:
             logger.error('Failure in reading CONVERT_KEY_FILE\n{file}'.format(
                 file=convert_key_filepath))
@@ -194,7 +193,8 @@ class polly_earlinet_convertor(object):
                          format(file=camp_info_file))
             raise FileNotFoundError
 
-        camp_info = toml.loads(camp_info_file)
+        with open(camp_info_file, 'r') as fh:
+            camp_info = toml.loads(fh.read())
 
         return camp_info
 
@@ -222,7 +222,8 @@ class polly_earlinet_convertor(object):
         # search the files
         logger.info('Start to search polly data files...')
         fileList = glob.glob(os.path.join(filepath, filename))
-        logger.info('number of files: {nFiles:%d}'.format(nFiles=self.nFiles))
+        logger.info('number of files: {nFiles:d}'.
+                    format(nFiles=len(fileList)))
 
         return fileList
 
@@ -237,18 +238,18 @@ class polly_earlinet_convertor(object):
 
         if (not (pollyType.lower() in instrument_list)) or \
            (not (location.lower() in location_list)):
-            return None
+            return ''
 
         # search campaign info file
         campaign_dict = self.campaign_dict
         campaign_file_list = []
         for item in self.campaign_dict:
-            flagLocation = [self.campaign_dict[item]['location'].lower() ==
-                            location.lower()]
-            flagSystem = [self.campaign_dict[item]['system'].lower() ==
-                          pollyType.lower()]
-            flagTime = [(starttime < self.campaign_dict[item]['starttime']) and
-                        (starttime >= self.campaign_dict[item]['endtime'])]
+            flagLocation = self.campaign_dict[item]['location'].lower() == \
+                           location.lower()
+            flagSystem = self.campaign_dict[item]['system'].lower() == \
+                pollyType.lower()
+            flagTime = (starttime > self.campaign_dict[item]['starttime']) and\
+                       (starttime <= self.campaign_dict[item]['endtime'])
             if flagLocation and flagSystem and flagTime:
                 campaign_file_list.append(os.path.join(self.projectDir,
                                                        'config',
@@ -260,6 +261,7 @@ class polly_earlinet_convertor(object):
 
         if not campaign_file_list:
             logger.warning('No campaign info file was found.')
+            return ''
 
         return campaign_file_list[0]
 
@@ -272,7 +274,8 @@ class polly_earlinet_convertor(object):
         return None
         '''
         if (not os.path.exists(filename)) or (not os.path.isfile(filename)):
-            logger.warning('Input filename does not exist! \nFinish!')
+            logger.warning('{file} does not exist!\nFinish!'.
+                           format(file=filename))
             return None, None, None
 
         logger.info('Start reading {filename}'.format(filename=filename))
@@ -281,12 +284,16 @@ class polly_earlinet_convertor(object):
         infoFilename = filename[0:-4] + '-info.txt'
         labviewInfo = self.__read_labview_info(infoFilename)
 
-        # jump over Klett profiles
-        if labviewInfo['retrieving_method'] == 1:
-            logger.warning(
-                'File was retrieved with Klett method.\n{file}\nJump over!!!'.
-                format(file=filename))
+        if not labviewInfo:
+            # if failed in retrieving the labview info
             return None, None, None
+
+        # # jump over Klett profiles
+        # if labviewInfo['retrieving_method'] == 1:
+        #     logger.warning(
+        #         'File was retrieved with Klett method.\n{file}\nJump over!!!'.
+        #         format(file=filename))
+        #     return None, None, None
 
         # search the campaign info file
         if (not os.path.exists(self.camp_info_file)) or \
@@ -302,13 +309,14 @@ class polly_earlinet_convertor(object):
 
             if (not os.path.exists(self.camp_info_file)) or \
                (not os.path.isfile(self.camp_info_file)):
-                logger.error('Failed in searching the campaign info file. ' +
-                             'Your file is not supported by the ' +
-                             'campaign list.')
-                raise FileNotFoundError
+                logger.warning('Failed in searching the campaign info file. ' +
+                               'Your file is not supported by the ' +
+                               'campaign list.')
+                return None, None, None
 
         # load the campaign info
-        camp_info = toml.loads(self.camp_info_file)
+        with open(self.camp_info_file, 'r') as fh:
+            camp_info = toml.loads(fh.read())
         self.camp_info = camp_info
 
         # read labview data file
@@ -320,134 +328,144 @@ class polly_earlinet_convertor(object):
 
         # convert the data matrix into dict with unit conversion
         labviewDataDict = {
-            'height': labviewDataCut[0.:] * 1e3,
-            'bsc_355': labviewDataCut[1, :] * 1e-6,
-            'bsc_std_355': labviewDataCut[2, :] * 1e-6,
-            'bsc_532': labviewDataCut[3, :] * 1e-6,
-            'bsc_std_532': labviewDataCut[4, :] * 1e-6,
-            'bsc_1064': labviewDataCut[5, :] * 1e-6,
-            'bsc_std_1064': labviewDataCut[6, :] * 1e-6,
-            'ext_355': labviewDataCut[7, :] * 1e-6,
-            'ext_std_355': labviewDataCut[8, :] * 1e-6,
-            'ext_532': labviewDataCut[9, :] * 1e-6,
-            'ext_std_532': labviewDataCut[10, :] * 1e-6,
-            'lr_355': labviewDataCut[11, :],
-            'lr_std_355': labviewDataCut[12, :],
-            'lr_532': labviewDataCut[13, :],
-            'lr_std_532': labviewDataCut[14, :],
-            'EAE_355_532': labviewDataCut[15, :],
-            'EAE_std_355_532': labviewDataCut[16, :],
-            'BAE_355_532': labviewDataCut[17, :],
-            'BAE_std_355_532': labviewDataCut[18, :],
-            'BAE_532_1064': labviewDataCut[19, :],
-            'BAE_std_532_1064': labviewDataCut[20, :],
-            'height_vdr_532': labviewDataCut[21, :],
-            'vdr_532': labviewDataCut[22, :],
-            'vdr_std_532': labviewDataCut[23, :],
-            'height_pdr_532': labviewDataCut[24, :],
-            'pdr_532': labviewDataCut[25, :],
-            'pdr_std_532': labviewDataCut[26, :],
-            'height_sounding': labviewDataCut[27, :],
-            'temperature': labviewDataCut[28, :],
-            'pressure': labviewDataCut[29, :],
-            'height_vdr_355': labviewDataCut[30, :],
-            'vdr_355': labviewDataCut[31, :],
-            'vdr_std_355': labviewDataCut[32, :],
-            'height_pdr_355': labviewDataCut[33, :],
-            'pdr_355': labviewDataCut[34, :],
-            'pdr_std_355': labviewDataCut[35, :],
+            'height': labviewDataCut[:, 0] * 1e3,
+            'bsc_355': labviewDataCut[:, 1] * 1e-6,
+            'bsc_std_355': labviewDataCut[:, 2] * 1e-6,
+            'bsc_532': labviewDataCut[:, 3] * 1e-6,
+            'bsc_std_532': labviewDataCut[:, 4] * 1e-6,
+            'bsc_1064': labviewDataCut[:, 5] * 1e-6,
+            'bsc_std_1064': labviewDataCut[:, 6] * 1e-6,
+            'ext_355': labviewDataCut[:, 7] * 1e-6,
+            'ext_std_355': labviewDataCut[:, 8] * 1e-6,
+            'ext_532': labviewDataCut[:, 9] * 1e-6,
+            'ext_std_532': labviewDataCut[:, 10] * 1e-6,
+            'lr_355': labviewDataCut[:, 11],
+            'lr_std_355': labviewDataCut[:, 12],
+            'lr_532': labviewDataCut[:, 13],
+            'lr_std_532': labviewDataCut[:, 14],
+            'EAE_355_532': labviewDataCut[:, 15],
+            'EAE_std_355_532': labviewDataCut[:, 16],
+            'BAE_355_532': labviewDataCut[:, 17],
+            'BAE_std_355_532': labviewDataCut[:, 18],
+            'BAE_532_1064': labviewDataCut[:, 19],
+            'BAE_std_532_1064': labviewDataCut[:, 20],
+            'height_vdr_532': labviewDataCut[:, 21],
+            'vdr_532': labviewDataCut[:, 22],
+            'vdr_std_532': labviewDataCut[:, 23],
+            'height_pdr_532': labviewDataCut[:, 24],
+            'pdr_532': labviewDataCut[:, 25],
+            'pdr_std_532': labviewDataCut[:, 26],
+            'height_sounding': labviewDataCut[:, 27],
+            'temperature': labviewDataCut[:, 28],
+            'pressure': labviewDataCut[:, 29],
+            'height_vdr_355': labviewDataCut[:, 30],
+            'vdr_355': labviewDataCut[:, 31],
+            'vdr_std_355': labviewDataCut[:, 32],
+            'height_pdr_355': labviewDataCut[:, 33],
+            'pdr_355': labviewDataCut[:, 34],
+            'pdr_std_355': labviewDataCut[:, 35],
             # the unit in labview file is wrong
-            'bsc_mol_355': labviewDataCut[66, :] * 1e-3,
-            'bsc_mol_532': labviewDataCut[67, :] * 1e-3,
-            'bsc_mol_1064': labviewDataCut[68, :] * 1e-3
+            'bsc_mol_355': labviewDataCut[:, 66] * 1e-3,
+            'bsc_mol_532': labviewDataCut[:, 67] * 1e-3,
+            'bsc_mol_1064': labviewDataCut[:, 68] * 1e-3
         }
 
         # interpolate the data into the same grid
         fh_vdr_532 = interp1d(
-            labviewDataCut['height_vdr_532'],
-            labviewDataCut['vdr_532'],
-            kind='linear')
+            labviewDataDict['height_vdr_532'],
+            labviewDataDict['vdr_532'],
+            kind='linear',
+            fill_value='extrapolate')
         fh_vdr_std_532 = interp1d(
-            labviewDataCut['height_vdr_532'],
-            labviewDataCut['vdr_std_532'],
-            kind='linear')
+            labviewDataDict['height_vdr_532'],
+            labviewDataDict['vdr_std_532'],
+            kind='linear',
+            fill_value='extrapolate')
         fh_pdr_532 = interp1d(
-            labviewDataCut['height_pdr_532'],
-            labviewDataCut['pdr_532'],
-            kind='linear')
+            labviewDataDict['height_pdr_532'],
+            labviewDataDict['pdr_532'],
+            kind='linear',
+            fill_value='extrapolate')
         fh_pdr_std_532 = interp1d(
-            labviewDataCut['height_pdr_std_532'],
-            labviewDataCut['pdr_std_532'],
-            kind='linear')
+            labviewDataDict['height_pdr_532'],
+            labviewDataDict['pdr_std_532'],
+            kind='linear',
+            fill_value='extrapolate')
         fh_vdr_355 = interp1d(
-            labviewDataCut['height_vdr_355'],
-            labviewDataCut['vdr_355'],
-            kind='linear')
+            labviewDataDict['height_vdr_355'],
+            labviewDataDict['vdr_355'],
+            kind='linear',
+            fill_value='extrapolate')
         fh_vdr_std_355 = interp1d(
-            labviewDataCut['height_vdr_355'],
-            labviewDataCut['vdr_std_355'],
-            kind='linear')
+            labviewDataDict['height_vdr_355'],
+            labviewDataDict['vdr_std_355'],
+            kind='linear',
+            fill_value='extrapolate')
         fh_pdr_355 = interp1d(
-            labviewDataCut['height_pdr_355'],
-            labviewDataCut['pdr_355'],
-            kind='linear')
+            labviewDataDict['height_pdr_355'],
+            labviewDataDict['pdr_355'],
+            kind='linear',
+            fill_value='extrapolate')
         fh_pdr_std_355 = interp1d(
-            labviewDataCut['height_pdr_std_355'],
-            labviewDataCut['pdr_std_355'],
-            kind='linear')
+            labviewDataDict['height_pdr_355'],
+            labviewDataDict['pdr_std_355'],
+            kind='linear',
+            fill_value='extrapolate')
 
-        labviewDataCut['vdr_532'] = fh_vdr_532(labviewDataCut['height'])
-        labviewDataCut['vdr_std_532'] = fh_vdr_std_532(
-            labviewDataCut['height'])
-        labviewDataCut['pdr_532'] = fh_pdr_532(labviewDataCut['height'])
-        labviewDataCut['pdr_std_532'] = fh_pdr_std_532(
-            labviewDataCut['height'])
-        labviewDataCut['vdr_355'] = fh_vdr_355(labviewDataCut['height'])
-        labviewDataCut['vdr_std_355'] = fh_vdr_std_355(
-            labviewDataCut['height'])
-        labviewDataCut['pdr_355'] = fh_pdr_355(labviewDataCut['height'])
-        labviewDataCut['pdr_std_355'] = fh_pdr_std_355(
-            labviewDataCut['height'])
+        labviewDataDict['vdr_532'] = fh_vdr_532(labviewDataDict['height'])
+        labviewDataDict['vdr_std_532'] = fh_vdr_std_532(
+            labviewDataDict['height'])
+        labviewDataDict['pdr_532'] = fh_pdr_532(labviewDataDict['height'])
+        labviewDataDict['pdr_std_532'] = fh_pdr_std_532(
+            labviewDataDict['height'])
+        labviewDataDict['vdr_355'] = fh_vdr_355(labviewDataDict['height'])
+        labviewDataDict['vdr_std_355'] = fh_vdr_std_355(
+            labviewDataDict['height'])
+        labviewDataDict['pdr_355'] = fh_pdr_355(labviewDataDict['height'])
+        labviewDataDict['pdr_std_355'] = fh_pdr_std_355(
+            labviewDataDict['height'])
 
         # calculate the backscatter-ratio at the reference height
-        refMask355 = (labviewDataCut['height'] >=
+        refMask355 = (labviewDataDict['height'] >=
                       labviewInfo['backscatter_calibration_range_355'][0]) & \
-                     (labviewDataCut['height'] <=
+                     (labviewDataDict['height'] <=
                       labviewInfo['backscatter_calibration_range_355'][1])
-        refBscMol355 = np.nanmean(labviewDataCut['bsc_mol_355'][refMask355])
+        refBscMol355 = np.nanmean(labviewDataDict['bsc_mol_355'][refMask355])
         refBscRatio355 = labviewInfo['backscatter_calibration_value_355'] / \
             refBscMol355 + 1
-        refMask532 = (labviewDataCut['height'] >=
+        refMask532 = (labviewDataDict['height'] >=
                       labviewInfo['backscatter_calibration_range_532'][0]) & \
-                     (labviewDataCut['height'] <=
+                     (labviewDataDict['height'] <=
                       labviewInfo['backscatter_calibration_range_532'][1])
-        refBscMol532 = np.nanmean(labviewDataCut['bsc_mol_532'][refMask532])
+        refBscMol532 = np.nanmean(labviewDataDict['bsc_mol_532'][refMask532])
         refBscRatio532 = labviewInfo['backscatter_calibration_value_532'] / \
             refBscMol532 + 1
-        refMask1064 = (labviewDataCut['height'] >=
+        refMask1064 = (labviewDataDict['height'] >=
                        labviewInfo['backscatter_calibration_range_1064'][0]) &\
-                      (labviewDataCut['height'] <=
+                      (labviewDataDict['height'] <=
                        labviewInfo['backscatter_calibration_range_1064'][1])
-        refBscMol1064 = np.nanmean(labviewDataCut['bsc_mol_1064'][refMask355])
+        refBscMol1064 = np.nanmean(
+            labviewDataDict['bsc_mol_1064'][refMask1064])
         refBscRatio1064 = labviewInfo['backscatter_calibration_value_1064'] / \
             refBscMol1064 + 1
 
         # convert the labview data into the data container
         dimensions = {
-            'altitude': len(labviewDataCut['height']),
+            'altitude': len(labviewDataDict['height']),
             'time': 1,
             'wavelength': 1,
             'nv': 2   # number of values (2 for reference height)
         }
 
         data = {
-            'altitude': labviewDataCut['height'],
+            'altitude': labviewDataDict['height'],
             'time': labviewInfo['starttime'].timestamp(),
             'time_bounds': np.array([tObj.timestamp()
                                      for tObj in labviewInfo['time_bounds']]),
-            'vertical_resolution': labviewInfo['dz'] * np.ones(
-                             labviewDataCut['height'].shape, dtype=np.double),
-            'cloud_mask': -127 * np.ones(labviewDataCut['height'].shape,
+            'vertical_resolution': labviewInfo['vertical_resolution'] *
+            np.ones(labviewDataDict['height'].shape,
+                    dtype=np.double),
+            'cloud_mask': -127 * np.ones(labviewDataDict['height'].shape,
                                          dtype=np.byte),
             'cirrus_contamination': 0,   # 0: not_available;
                                          # 1: no_cirrus;
@@ -485,16 +503,16 @@ class polly_earlinet_convertor(object):
                 [0, 20000],
             'backscatter_calibration_search_range_1064':
                 [0, 20000],
-            'ext_355': labviewDataCut['ext_355'],
-            'ext_std_355': labviewDataCut['ext_std_355'],
-            'ext_532': labviewDataCut['ext_532'],
-            'ext_std_532': labviewDataCut['ext_std_532'],
-            'bsc_355': labviewDataCut['bsc_355'],
-            'bsc_std_355': labviewDataCut['bsc_std_355'],
-            'bsc_532': labviewDataCut['bsc_532'],
-            'bsc_std_532': labviewDataCut['bsc_std_532'],
-            'bsc_1064': labviewDataCut['bsc_1064'],
-            'bsc_std_1064': labviewDataCut['bsc_std_1064'],
+            'ext_355': labviewDataDict['ext_355'],
+            'ext_std_355': labviewDataDict['ext_std_355'],
+            'ext_532': labviewDataDict['ext_532'],
+            'ext_std_532': labviewDataDict['ext_std_532'],
+            'bsc_355': labviewDataDict['bsc_355'],
+            'bsc_std_355': labviewDataDict['bsc_std_355'],
+            'bsc_532': labviewDataDict['bsc_532'],
+            'bsc_std_532': labviewDataDict['bsc_std_532'],
+            'bsc_1064': labviewDataDict['bsc_1064'],
+            'bsc_std_1064': labviewDataDict['bsc_std_1064'],
             'vdr_355': labviewDataDict['vdr_355'],
             'vdr_std_355': labviewDataDict['vdr_std_355'],
             'vdr_532': labviewDataDict['vdr_532'],
@@ -511,7 +529,7 @@ class polly_earlinet_convertor(object):
             'longitude': camp_info['station_longitude'],
             'shots': labviewInfo['shots'],
             'station_altitude': camp_info['station_altitude'],
-            'zenith_angle': labviewInfo['zeinth_angle'],
+            'zenith_angle': labviewInfo['zenith_angle'],
             }
 
         global_attrs = camp_info
@@ -523,12 +541,18 @@ class polly_earlinet_convertor(object):
         read the labview retrieving data
         '''
         dataMatrix = np.loadtxt(filename, skiprows=1, dtype=float)
+        return dataMatrix
 
     def __read_labview_info(self, filename):
         '''
         read the labview info file, which contains the retrieving information
         '''
+
         labviewInfo = self.labview_info_parser(filename)
+
+        if not labviewInfo:
+            # if failed in retrieving the info
+            return None
 
         # convert the datetime
         labviewInfo['starttime'] = datetime.datetime.strptime(
@@ -537,15 +561,15 @@ class polly_earlinet_convertor(object):
             labviewInfo['endtime'], '%y%m%d %H%M')
 
         # concatenate reference height
-        labviewInfo['reference_height_355'] = np.concatenate(
-            (labviewInfo['reference_height_bottom_355'],
-             labviewInfo['reference_height_top_355']), axis=0)
-        labviewInfo['reference_height_532'] = np.concatenate(
-            (labviewInfo['reference_height_bottom_532'],
-             labviewInfo['reference_height_top_532']), axis=0)
-        labviewInfo['reference_height_1064'] = np.concatenate(
-            (labviewInfo['reference_height_bottom_1064'],
-             labviewInfo['reference_height_top_1064']), axis=0)
+        labviewInfo['reference_height_355'] = np.array(
+            [labviewInfo['reference_height_bottom_355'],
+             labviewInfo['reference_height_top_355']])
+        labviewInfo['reference_height_532'] = np.array(
+            [labviewInfo['reference_height_bottom_532'],
+             labviewInfo['reference_height_top_532']])
+        labviewInfo['reference_height_1064'] = np.array(
+            [labviewInfo['reference_height_bottom_1064'],
+             labviewInfo['reference_height_top_1064']])
 
         # convert the retrieving method
         retMethodDict = dict(zip(
@@ -568,6 +592,9 @@ class polly_earlinet_convertor(object):
             soundingSearchList[labviewInfo['sounding_type']]
 
         data = {
+                'starttime': labviewInfo['starttime'],
+                'endtime': labviewInfo['endtime'],
+                'sounding_type': labviewInfo['sounding_type'],
                 'atmospheric_molecular_calculation_source':
                 labviewInfo['sounding_type'],   # 0: US_standard_atmosphere;
                                                 # 1: radiosonding;
@@ -622,9 +649,9 @@ class polly_earlinet_convertor(object):
         '''
 
         if (not os.path.exists(filename)) or (not os.path.isfile(filename)):
-            logger.error('Labview info file does not exist.\n{infoFile}'.
-                         format(infoFile=filename))
-            raise ValueError
+            logger.warning('Labview info file does not exist.\n{infoFile}'.
+                           format(infoFile=filename))
+            return None
 
         # decoder structure
         # key:  regex, conversion function fill value
@@ -637,7 +664,7 @@ class polly_earlinet_convertor(object):
                 ),
             'endtime':
                 (
-                    r'(?<=bis \(UTC\))\d+.\d+',
+                    r'(?<=bis \(UTC\): )\d+.\d+',
                     str,
                     '000000 0000'
                 ),
@@ -656,7 +683,7 @@ class polly_earlinet_convertor(object):
             'reference_value_355':
                 (
                     r'(?<=refwert355 \(km\^-1 sr\^-1\): )\d+\.\d+[eE]-?\d+',
-                    str,
+                    float,
                     0
                 ),
             'reference_height_bottom_532':
@@ -674,7 +701,7 @@ class polly_earlinet_convertor(object):
             'reference_value_532':
                 (
                     r'(?<=refwert532 \(km\^-1 sr\^-1\): )\d+\.\d+[eE]-?\d+',
-                    str,
+                    float,
                     0
                 ),
             'reference_height_bottom_1064':
@@ -692,7 +719,7 @@ class polly_earlinet_convertor(object):
             'reference_value_1064':
                 (
                     r'(?<=refwert1064 \(km\^-1 sr\^-1\): )\d+\.\d+[eE]-?\d+',
-                    str,
+                    float,
                     0
                 ),
             'smooth_ext_355':
@@ -771,7 +798,7 @@ class polly_earlinet_convertor(object):
                 (
                     r'(?<=Range resolution: )\d+\.?\d+',
                     float,
-                    0
+                    30
                 ),
             'software_version':
                 (
@@ -796,10 +823,12 @@ class polly_earlinet_convertor(object):
         with open(filename, 'r') as fh:
             content = fh.read()
 
-        l = content.decode('ascii').strip()
         for key, regex in decoders.items():
-            val = find_in_string(key, regex, l)
+            val = find_in_string(key, regex, content)
             data.update({key: val})
+
+        # souding_type is still a float number, convert it to integer
+        data['sounding_type'] = int(data['sounding_type'])
 
         return data
 
@@ -815,6 +844,18 @@ class polly_earlinet_convertor(object):
 
         force = self.force
 
+        if (not variables) or (not dimensions) or (not global_attri):
+            return
+
+        # determine whether the output directory exists or not
+        if not os.path.exists(self.outputDir):
+            logger.warning('Output directory for saving the results does' +
+                           'not exist.\n{path}'.format(path=self.outputDir))
+            # prompt up the request for creating the output directory
+            res = input("Create the folder forcefully? (yes|no): ")
+            if res.lower() == 'yes':
+                os.mkdir(self.outputDir)
+
         # write to b355
         # Up till now, I didn't find naming conventions for the nc files.
         # according to the emails, the filename can be handled by the webpage
@@ -824,7 +865,9 @@ class polly_earlinet_convertor(object):
         file_b355 = os.path.join(
             self.outputDir,
             '{date}_{station_ID}_{instrument}_b355.nc'.
-            format(date=datetime.datetime.strftime('%Y%m%d_%H%M'),
+            format(date=datetime.datetime.
+                   utcfromtimestamp(variables['time']).
+                   strftime('%Y%m%d_%H%M'),
                    station_ID=self.camp_info['station_ID'].lower(),
                    instrument=self.pollyType.lower()))
         var_b355 = {
@@ -896,7 +939,9 @@ class polly_earlinet_convertor(object):
         file_e355 = os.path.join(
             self.outputDir,
             '{date}_{station_ID}_{instrument}_e355.nc'.
-            format(date=datetime.datetime.strftime('%Y%m%d_%H%M'),
+            format(date=datetime.datetime.
+                   utcfromtimestamp(variables['time']).
+                   strftime('%Y%m%d_%H%M'),
                    station_ID=self.camp_info['station_ID'].lower(),
                    instrument=self.pollyType.lower()))
         var_e355 = {
@@ -933,7 +978,7 @@ class polly_earlinet_convertor(object):
             'error_retrieval_method':
                 variables['error_retrieval_method'],
             'extinction':
-                variables['extinction'],
+                variables['ext_355'],
             'extinction_assumed_wavelength_dependence':
                 variables['extinction_assumed_wavelength_dependence'],
             'extinction_evaluation_algorithm':
@@ -976,7 +1021,9 @@ class polly_earlinet_convertor(object):
         file_b532 = os.path.join(
             self.outputDir,
             '{date}_{station_ID}_{instrument}_b532.nc'.
-            format(date=datetime.datetime.strftime('%Y%m%d_%H%M'),
+            format(date=datetime.datetime.
+                   utcfromtimestamp(variables['time']).
+                   strftime('%Y%m%d_%H%M'),
                    station_ID=self.camp_info['station_ID'].lower(),
                    instrument=self.pollyType.lower()))
         var_b532 = {
@@ -1056,7 +1103,9 @@ class polly_earlinet_convertor(object):
         file_e532 = os.path.join(
             self.outputDir,
             '{date}_{station_ID}_{instrument}_e532.nc'.
-            format(date=datetime.datetime.strftime('%Y%m%d_%H%M'),
+            format(date=datetime.datetime.
+                   utcfromtimestamp(variables['time']).
+                   strftime('%Y%m%d_%H%M'),
                    station_ID=self.camp_info['station_ID'].lower(),
                    instrument=self.pollyType.lower()))
         var_e532 = {
@@ -1093,7 +1142,7 @@ class polly_earlinet_convertor(object):
             'error_retrieval_method':
                 variables['error_retrieval_method'],
             'extinction':
-                variables['extinction'],
+                variables['ext_532'],
             'extinction_assumed_wavelength_dependence':
                 variables['extinction_assumed_wavelength_dependence'],
             'extinction_evaluation_algorithm':
@@ -1136,7 +1185,9 @@ class polly_earlinet_convertor(object):
         file_b1064 = os.path.join(
             self.outputDir,
             '{date}_{station_ID}_{instrument}_b1064.nc'.
-            format(date=datetime.datetime.strftime('%Y%m%d_%H%M'),
+            format(date=datetime.datetime.
+                   utcfromtimestamp(variables['time']).
+                   strftime('%Y%m%d_%H%M'),
                    station_ID=self.camp_info['station_ID'].lower(),
                    instrument=self.pollyType.lower()))
         var_b1064 = {
@@ -1207,7 +1258,7 @@ class polly_earlinet_convertor(object):
 
         # whether overwrite the file if it exists
         if (os.path.exists(filename)) and \
-           (os.path.isfile(filename)) and force:
+           (os.path.isfile(filename)) and (not force):
             logger.warning('{file} exists. Jump over!'.format(file=filename))
             return
 
@@ -1216,13 +1267,17 @@ class polly_earlinet_convertor(object):
             logger.warning('{file} exists. Overwrite it!'.
                            format(file=filename))
 
-        dataset = Dataset(filename, 'w', format=NETCDF_FORMAT)
+        if not variables:
+            # no available data
+            return
+
+        dataset = Dataset(filename, 'w', format=NETCDF_FORMAT, zlib=True)
 
         # create dimensions
         for dim_key in self.metadata['dimensions']:
             dataset.createDimension(dim_key, dimensions[dim_key])
 
-        # create variables
+        # create and write variables, write variable attributes
         npTypeDict = {
             'byte': np.byte,
             'int': np.intc,
@@ -1230,20 +1285,36 @@ class polly_earlinet_convertor(object):
             'double': np.double
         }
         for var_key in variables:
-            dataset.createVariable(var_key,
-                                   npTypeDict[self.metadata[var_key]['dtype']],
-                                   set(self.metadata[var_key]['dims']))
+            # create variable
+            if ('_FillValue' in self.metadata[var_key]):
+                # with fill_values
+                dataset.createVariable(
+                    var_key,
+                    npTypeDict[self.metadata[var_key]['dtype']],
+                    tuple(self.metadata[var_key]['dims']),
+                    fill_value=self.metadata[var_key]['_FillValue']
+                )
+            else:
+                # without fill_values
+                dataset.createVariable(
+                    var_key,
+                    npTypeDict[self.metadata[var_key]['dtype']],
+                    tuple(self.metadata[var_key]['dims'])
+                    )
 
-        # write variables
-        for var_key in variables:
+            # write variables
             dataset.variables[var_key][:] = variables[var_key]
 
-        # create variable attributes
-        for var_key in variables:
+            # write attributes
             for var_attr in self.metadata[var_key]:
-                setattr(dataset.variables[var_key],
+                if (not var_attr == 'dtype') and \
+                   (not var_attr == 'dims') and \
+                   (not var_attr == '_FillValue'):
+                    setattr(
+                        dataset.variables[var_key],
                         var_attr,
-                        self.metadata[var_key][var_attr])
+                        self.metadata[var_key][var_attr]
+                        )
 
         # create global attributes
         for attr_key in self.camp_info:
@@ -1264,32 +1335,13 @@ def show_list(flagShowCampaign=False, flagShowInstrument=False):
     if flagShowCampaign:
         for indx, location in enumerate(p2eConvertor.location_list):
             logger.info('{indx}: {location}'.
-                        format(indx=indx, location=location))
+                        format(indx=indx + 1, location=location))
 
     # print the instrument list
     if flagShowInstrument:
         for indx, instrument in enumerate(p2eConvertor.instrument_list):
             logger.info('{indx}: {instrument}'.
-                        format(indx=indx, instrument=instrument))
-
-
-def setup_show_list(parser):
-    '''
-    setup the optional arguments for show_list function
-    '''
-
-    parser.add_argument("--campaign",
-                        help="show the supported campaign list",
-                        dest='flagShowCampaign',
-                        action='store_False')
-    parser.add_argument("--instrument",
-                        help="show the supported instrument list",
-                        dest='flagShowInstrument',
-                        action='store_False')
-
-    args = parser.argparse()
-
-    show_list(args.flagShowCampaign, args.flagShowInstrument)
+                        format(indx=indx + 1, instrument=instrument))
 
 
 def p2e_go(polly_type, location, file_type, category, filename, output_dir,
@@ -1323,29 +1375,23 @@ def main():
                   'EARLINET format'
     parser = argparse.ArgumentParser(prog='p2e_go',
                                      description=description)
-    subparsers = parser.add_subparsers()
-
-    list_parser = subparsers.add_parser("list", help="list supported ' + \
-                                                'campaign and instruments.")
-
-    setup_show_list(list_parser)
 
     # Setup the arguments
     parser.add_argument("-p", "--polly_type",
                         help="setup the instrument type",
                         dest='polly_type',
-                        defaults='pollyxt_tjk',
+                        default='pollyxt_tjk',
                         nargs=1)
     parser.add_argument("-l", "--location",
                         help="setup the campaign location",
                         dest='location',
-                        defaults='dushanbe',
+                        default='dushanbe',
                         nargs=1)
     helpMsg = "setup the type of the profile (labview | picasso)"
     parser.add_argument("-t", "--file_type",
                         help=helpMsg,
                         dest='file_type',
-                        defaults='labview',
+                        default='labview',
                         nargs=1)
     helpMsg = "setup the category of the profile\n" + \
               "flag_masks: 1, 2, 4, 8, 16, 32, 64, 128, 256, 512\n" + \
@@ -1354,18 +1400,18 @@ def main():
     parser.add_argument("-c", "--category",
                         help=helpMsg,
                         dest='category',
-                        defaults='2',
+                        default='2',
                         type=int,
                         nargs=1)
     parser.add_argument("-f", "--filename",
                         help='setup the filename of the polly profile',
                         dest='filename',
-                        defaults='',
+                        default='',
                         nargs=1)
     parser.add_argument("-d", "--output_dir",
                         help='setup the directory for the converted files',
                         dest='output_dir',
-                        defaults='',
+                        default='',
                         nargs=1)
     helpMsg = 'setup the campaign info file [*.toml].\n' + \
               'If not set, the program will search the config folder for ' + \
@@ -1373,19 +1419,47 @@ def main():
     parser.add_argument("--camp_info",
                         help=helpMsg,
                         dest='camp_info',
-                        defaults='',
+                        default='',
                         nargs=1)
     parser.add_argument("--force",
                         help='whether to overwrite the nc files if they exists',
                         dest='force',
-                        action='store_True')
+                        action='store_true')
+
+    # sub argument
+    helpMsg = "list supported campaign and instruments."
+    subparsers = parser.add_subparsers(dest='list', help=helpMsg)
+
+    list_parser = subparsers.add_parser("list")
+
+    list_parser.add_argument("--campaign",
+                             help="show the supported campaign list",
+                             dest='flagShowCampaign',
+                             action='store_true')
+    list_parser.add_argument("--instrument",
+                             help="show the supported instrument list",
+                             dest='flagShowInstrument',
+                             action='store_true')
 
     args = parser.parse_args()
 
-    # run the command
-    p2e_go(args.polly_type, args.location, args.file_type,
-           args.category, args.filename, args.output_dir,
-           args.camp_info, args.force)
+    if args.list:
+        show_list(args.flagShowCampaign, args.flagShowInstrument)
+    else:
+
+        # convert list to string
+        polly_type = ''.join(args.polly_type)
+        location = ''.join(args.location)
+        file_type = ''.join(args.file_type)
+        filename = ''.join(args.filename)
+        output_dir = ''.join(args.output_dir)
+        camp_info = ''.join(args.camp_info)
+        category = args.category[0]
+
+        # run the command
+        p2e_go(polly_type, location, file_type,
+               category, filename, output_dir,
+               camp_info, args.force)
 
 
 # When running through terminal
