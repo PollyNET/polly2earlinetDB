@@ -32,7 +32,8 @@ Thanks to **Iannis Binietoglou** with the repository of [`SCC access`](https://b
 
 MIT License
 
-Feel free to distribute it!!! :beer::beer::beer:
+~~Feel free to distribute it!!! :beer::beer::beer:~~
+Under development, be patient!
 
 ## Contact
 
