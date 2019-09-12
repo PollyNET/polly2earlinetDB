@@ -1,0 +1,43 @@
+# Configurations for the PollyNET campaign
+# Those configuration will be used as the global attributes in the netCDF file for EARLINET.
+#
+# History:
+#   2019-09-12 First edition by Zhenping
+
+institution = "Leibniz-Institut für Troposphärenforschung e.V."
+
+PI = "Dietrich Althausen"
+PI_affliliation = "Leibniz-Institut für Troposphärenforschung e.V."
+PI_affiliation_acronym = "TROPOS"
+PI_address = "Permoserstraße 15, 04103 Leipzig, Germany"
+PI_phone = ""
+PI_email = "dietrich@tropos.de"
+
+Data_Originator = "Holger Baars"
+Data_Originator_affliliation = "Leibniz-Institut für Troposphärenforschung e.V."
+Data_Originator_affiliation_acronym = "TROPOS"
+Data_Originator_address = "Permoserstraße 15, 04103 Leipzig, Germany"
+Data_Originator_phone = ""
+Data_Originator_email = "baars@tropos.de"
+
+data_processing_institution = "Leibniz-Institut für Troposphärenforschung e.V."
+
+scc_version = ""
+scc_version_description = ""
+processor_name = ""
+processor_version = ""
+
+title = "Ground based LIDAR measurements"
+station_ID = "LEI"
+station_latitude = 51   # negative for southern hemisphere
+station_longitude = 12   # negative for west
+station_altitude = 125   # [m]
+station_starttime = "2015-03-12 00:00:00"
+station_endtime = "2099-01-01 00:00:00"
+comment = "Leipzig, Germany"
+references = "http://polly.rsd.tropos.de/"
+
+__file_format_version = "1.0"
+Conventions = "CF-1.7"
+hoi_system_ID = -1
+hoi_configuration_ID = -1

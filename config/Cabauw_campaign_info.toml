@@ -6,12 +6,12 @@
 
 institution = "Leibniz-Institut für Troposphärenforschung e.V."
 
-PI = "Patric Seifert"
+PI = "Dietrich Althausen"
 PI_affliliation = "Leibniz-Institut für Troposphärenforschung e.V."
 PI_affiliation_acronym = "TROPOS"
 PI_address = "Permoserstraße 15, 04103 Leipzig, Germany"
 PI_phone = ""
-PI_email = "seifert@tropos.de"
+PI_email = "dietrich@tropos.de"
 
 Data_Originator = "Holger Baars"
 Data_Originator_affliliation = "Leibniz-Institut für Troposphärenforschung e.V."
@@ -28,13 +28,13 @@ processor_name = ""
 processor_version = ""
 
 title = "Ground based LIDAR measurements"
-station_ID = "XXX"
-station_latitude = 30   # negative for southern hemisphere
-station_longitude = 100   # negative for west
-station_altitude = 870   # [m]
-station_starttime = "2018-12-01 00:00:00"
-station_endtime = "2099-07-07 00:00:00"
-comment = "Central Asian dust measurements"
+station_ID = "CBW"
+station_latitude = 52   # negative for southern hemisphere
+station_longitude = 5   # negative for west
+station_altitude = -1   # [m]
+station_starttime = "2014-09-30 00:00:00"
+station_endtime = "2014-11-19 00:00:00"
+comment = "CESAR observatory"
 references = "http://polly.rsd.tropos.de/"
 
 __file_format_version = "1.0"

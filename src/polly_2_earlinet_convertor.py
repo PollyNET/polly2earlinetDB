@@ -54,21 +54,14 @@ class polly_earlinet_convertor(object):
     convert the polly data into EARLINET format
     Exemplified file can be found under the folder of "include/".
 
-    Parameters
-    ----------
-    filename: string
+    Method
+    ------
+    read_data_file: read polly results into data container of 'variables',
+                    'dimensions' and 'global_attr'
 
-    fileType: string
-        'labview' or 'picasso'
+    search_data_files: search the polly data files through wildcards
 
-    configFile: string
-
-    Keywords
-    --------
-    logFile: string
-
-    logMode: string
-        'INFO', 'WARNING', 'ERROR' or 'DEBUG'
+    write_to_earlinet_nc: write data container into EARLINET nc files
 
     History
     -------
@@ -76,10 +69,31 @@ class polly_earlinet_convertor(object):
     """
 
     def __init__(self, pollyType='', location='', fileType='labview',
-                 category=2, *, output_dir='', camp_info_file='', force=False):
+                 category=2, output_dir='', *, camp_info_file='', force=False):
         '''
         Initialize the class variables
+
+        parameters
+        ----------
+        pollyType: str
+            polly type. e.g., pollyxt_tropos
+        location: str
+            location of the campaign.
+        fileType: str
+            polly file type. (labview | picasso)
+        category: int
+            category of the results.
+        output_dir: str
+            directory for saving the converted files
+
+        Keywords
+        --------
+        camp_info_file: str
+            campaign info file to provide the global attributes.
+        force: boolean
+            flag to control whether to overwirte the netCDF files.
         '''
+
         # initialize the class variables
         self.pollyType = pollyType
         self.location = location

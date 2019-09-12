@@ -4,16 +4,135 @@
 # History
 #   2019-09-11. First edition by Zhenping
 
-[Dushanbe_campaign_info]
+[Dushanbe_campaign_info_2]
 location = "Dushanbe"
 country = "Tajikistan"
-starttime = "2019-07-01 00:00:00"
-endtime = "2019-09-01 00:00:00"
+starttime = "2019-06-15 00:00:00"
+endtime = "2029-01-01 00:00:00"
 system = "PollyXT_TJK" 
 
-[Punta_Arenas_campaign_info]
-location = "Punta_Arenas"
-country = "Chile"
-starttime = "2018-12-01 00:00:00"
-endtime = "2019-11-01 00:00:00"
+[Dushanbe_campaign_info_1]
+location = "Dushanbe"
+country = "Tajikistan"
+starttime = "2015-03-17 00:00:00"
+endtime = "2016-09-30 00:00:00"
+system = "PollyXT_TROPOS" 
+
+[Cabauw_campaign_info]
+location = "Cabauw"
+country = "Netherlands"
+starttime = "2014-09-30 00:00:00"
+endtime = "2014-11-19 00:00:00"
+system = "arielle" 
+
+[Evora_campaign_info]
+location = "Evora"
+country = "Portugal"
+starttime = "2009-05-01 00:00:00"
+endtime = "2029-01-01 00:00:00"
+system = "PollyXT_CGE"
+
+[Kuopio_campaign_info]
+location = "Kuopio"
+country = "Finland"
+starttime = "2012-10-12 00:00:00"
+endtime = "2029-01-01 00:00:00"
+system = "PollyXT_FMI"
+
+[Leipzig_campaign_info_1]
+location = "Leipzig"
+country = "Germany"
+starttime = "2015-01-01 00:00:00"
+endtime = "2029-01-01 00:00:00"
+system = "arielle"
+
+[Leipzig_campaign_info_2]
+location = "Leipzig"
+country = "Germany"
+starttime = "2005-01-01 00:00:00"
+endtime = "2029-01-01 00:00:00"
 system = "PollyXT_LACROS"
+
+[Leipzig_campaign_info_3]
+location = "Leipzig"
+country = "Germany"
+starttime = "2005-01-01 00:00:00"
+endtime = "2029-01-01 00:00:00"
+system = "PollyXT_FMI"
+
+[Leipzig_campaign_info_4]
+location = "Leipzig"
+country = "Germany"
+starttime = "2005-01-01 00:00:00"
+endtime = "2029-01-01 00:00:00"
+system = "Polly_1st"
+
+[Leipzig_campaign_info_5]
+location = "Leipzig"
+country = "Germany"
+starttime = "2005-01-01 00:00:00"
+endtime = "2029-01-01 00:00:00"
+system = "PollyXT_TROPOS"
+
+[Leipzig_campaign_info_6]
+location = "Leipzig"
+country = "Germany"
+starttime = "2005-01-01 00:00:00"
+endtime = "2029-01-01 00:00:00"
+system = "PollyXT_NOA"
+
+[Leipzig_campaign_info_7]
+location = "Leipzig"
+country = "Germany"
+starttime = "2005-01-01 00:00:00"
+endtime = "2029-01-01 00:00:00"
+system = "PollyXT_DWD"
+
+[Leipzig_campaign_info_8]
+location = "Leipzig"
+country = "Germany"
+starttime = "2005-01-01 00:00:00"
+endtime = "2029-01-01 00:00:00"
+system = "Polly_1v2"
+
+[Limassol_campaign_info_1]
+location = "Limassol"
+country = "Cyprus"
+starttime = "2014-01-01 00:00:00"
+endtime = "2029-01-01 00:00:00"
+system = "PollyXT_LACROS"
+
+[HPB_campaign_info]
+location = "Hohenpeissenberg"
+country = "Germany"
+starttime = "2014-01-01 00:00:00"
+endtime = "2029-01-01 00:00:00"
+system = "PollyXT_DWD"
+
+[Warsaw_campaign_info]
+location = "Warsaw"
+country = "Poland"
+starttime = "2014-01-01 00:00:00"
+endtime = "2029-01-01 00:00:00"
+system = "PollyXT_UW"
+
+[Melpitz_campaign_info]
+location = "Melpitz"
+country = "Germany"
+starttime = "2013-01-01 00:00:00"
+endtime = "2029-01-01 00:00:00"
+system = "arielle"
+
+[Antikythera_campaign_info]
+location = "Antikythera"
+country = "Greece"
+starttime = "2018-06-01 00:00:00"
+endtime = "2029-01-01 00:00:00"
+system = "PollyXT_NOA"
+
+[Finokalia_campaign_info]
+location = "Finokalia"
+country = "Greece"
+starttime = "2014-01-01 00:00:00"
+endtime = "2029-01-01 00:00:00"
+system = "PollyXT_NOA"

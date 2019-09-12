@@ -42,7 +42,7 @@ conda create -n polly_earlinet
 **activate the virtual environment**
 ```bash
 activate polly_earlinet # windows
-source activate polly_earlinet # linux
+conda activate polly_earlinet # linux
 ```
 
 **install python3.5**
