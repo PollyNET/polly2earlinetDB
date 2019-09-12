@@ -1,0 +1,106 @@
+2019-09-13 01:00:15,026 - __main__ - INFO - show_list - 1369 - 1: Finokalia
+2019-09-13 01:00:15,028 - __main__ - INFO - show_list - 1369 - 2: Hohenpeissenberg
+2019-09-13 01:00:15,029 - __main__ - INFO - show_list - 1369 - 3: Dushanbe
+2019-09-13 01:00:15,031 - __main__ - INFO - show_list - 1369 - 4: Melpitz
+2019-09-13 01:00:15,032 - __main__ - INFO - show_list - 1369 - 5: Evora
+2019-09-13 01:00:15,033 - __main__ - INFO - show_list - 1369 - 6: Leipzig
+2019-09-13 01:00:15,035 - __main__ - INFO - show_list - 1369 - 7: Antikythera
+2019-09-13 01:00:15,036 - __main__ - INFO - show_list - 1369 - 8: Cabauw
+2019-09-13 01:00:15,037 - __main__ - INFO - show_list - 1369 - 9: Warsaw
+2019-09-13 01:00:15,039 - __main__ - INFO - show_list - 1369 - 10: Limassol
+2019-09-13 01:00:15,041 - __main__ - INFO - show_list - 1369 - 11: Kuopio
+2019-09-13 01:02:40,786 - __main__ - INFO - show_list - 1363 - {indx}: {starttime}-{endtime} Evora PollyXT_CGE
+2019-09-13 01:02:40,789 - __main__ - INFO - show_list - 1363 - {indx}: {starttime}-{endtime} Dushanbe PollyXT_TROPOS
+2019-09-13 01:02:40,790 - __main__ - INFO - show_list - 1363 - {indx}: {starttime}-{endtime} Leipzig PollyXT_LACROS
+2019-09-13 01:02:40,791 - __main__ - INFO - show_list - 1363 - {indx}: {starttime}-{endtime} Warsaw PollyXT_UW
+2019-09-13 01:02:40,792 - __main__ - INFO - show_list - 1363 - {indx}: {starttime}-{endtime} Cabauw arielle
+2019-09-13 01:02:40,794 - __main__ - INFO - show_list - 1363 - {indx}: {starttime}-{endtime} Leipzig Polly_1st
+2019-09-13 01:02:40,795 - __main__ - INFO - show_list - 1363 - {indx}: {starttime}-{endtime} Antikythera PollyXT_NOA
+2019-09-13 01:02:40,796 - __main__ - INFO - show_list - 1363 - {indx}: {starttime}-{endtime} Melpitz arielle
+2019-09-13 01:02:40,798 - __main__ - INFO - show_list - 1363 - {indx}: {starttime}-{endtime} Leipzig Polly_1v2
+2019-09-13 01:02:40,800 - __main__ - INFO - show_list - 1363 - {indx}: {starttime}-{endtime} Kuopio PollyXT_FMI
+2019-09-13 01:02:40,801 - __main__ - INFO - show_list - 1363 - {indx}: {starttime}-{endtime} Leipzig PollyXT_TROPOS
+2019-09-13 01:02:40,802 - __main__ - INFO - show_list - 1363 - {indx}: {starttime}-{endtime} Finokalia PollyXT_NOA
+2019-09-13 01:02:40,804 - __main__ - INFO - show_list - 1363 - {indx}: {starttime}-{endtime} Dushanbe PollyXT_TJK
+2019-09-13 01:02:40,806 - __main__ - INFO - show_list - 1363 - {indx}: {starttime}-{endtime} Leipzig PollyXT_NOA
+2019-09-13 01:02:40,807 - __main__ - INFO - show_list - 1363 - {indx}: {starttime}-{endtime} Hohenpeissenberg PollyXT_DWD
+2019-09-13 01:02:40,808 - __main__ - INFO - show_list - 1363 - {indx}: {starttime}-{endtime} Leipzig PollyXT_DWD
+2019-09-13 01:02:40,811 - __main__ - INFO - show_list - 1363 - {indx}: {starttime}-{endtime} Leipzig PollyXT_FMI
+2019-09-13 01:02:40,812 - __main__ - INFO - show_list - 1363 - {indx}: {starttime}-{endtime} Leipzig arielle
+2019-09-13 01:02:40,814 - __main__ - INFO - show_list - 1363 - {indx}: {starttime}-{endtime} Limassol PollyXT_LACROS
+2019-09-13 01:04:30,798 - __main__ - INFO - show_list - 1363 - {indx}: {starttime}-{endtime} Cabauw arielle
+2019-09-13 01:04:35,434 - __main__ - INFO - show_list - 1363 - {indx}: {starttime}-{endtime} Evora PollyXT_CGE
+2019-09-13 01:04:35,434 - __main__ - INFO - show_list - 1363 - {indx}: {starttime}-{endtime} Finokalia PollyXT_NOA
+2019-09-13 01:04:35,435 - __main__ - INFO - show_list - 1363 - {indx}: {starttime}-{endtime} Limassol PollyXT_LACROS
+2019-09-13 01:04:35,436 - __main__ - INFO - show_list - 1363 - {indx}: {starttime}-{endtime} Leipzig Polly_1st
+2019-09-13 01:04:35,438 - __main__ - INFO - show_list - 1363 - {indx}: {starttime}-{endtime} Leipzig PollyXT_FMI
+2019-09-13 01:04:35,439 - __main__ - INFO - show_list - 1363 - {indx}: {starttime}-{endtime} Leipzig PollyXT_LACROS
+2019-09-13 01:04:35,441 - __main__ - INFO - show_list - 1363 - {indx}: {starttime}-{endtime} Leipzig arielle
+2019-09-13 01:04:35,443 - __main__ - INFO - show_list - 1363 - {indx}: {starttime}-{endtime} Antikythera PollyXT_NOA
+2019-09-13 01:04:35,444 - __main__ - INFO - show_list - 1363 - {indx}: {starttime}-{endtime} Leipzig PollyXT_DWD
+2019-09-13 01:04:35,448 - __main__ - INFO - show_list - 1363 - {indx}: {starttime}-{endtime} Leipzig Polly_1v2
+2019-09-13 01:04:35,448 - __main__ - INFO - show_list - 1363 - {indx}: {starttime}-{endtime} Kuopio PollyXT_FMI
+2019-09-13 01:04:35,450 - __main__ - INFO - show_list - 1363 - {indx}: {starttime}-{endtime} Hohenpeissenberg PollyXT_DWD
+2019-09-13 01:04:35,451 - __main__ - INFO - show_list - 1363 - {indx}: {starttime}-{endtime} Dushanbe PollyXT_TROPOS
+2019-09-13 01:04:35,453 - __main__ - INFO - show_list - 1363 - {indx}: {starttime}-{endtime} Dushanbe PollyXT_TJK
+2019-09-13 01:04:35,454 - __main__ - INFO - show_list - 1363 - {indx}: {starttime}-{endtime} Leipzig PollyXT_NOA
+2019-09-13 01:04:35,456 - __main__ - INFO - show_list - 1363 - {indx}: {starttime}-{endtime} Warsaw PollyXT_UW
+2019-09-13 01:04:35,457 - __main__ - INFO - show_list - 1363 - {indx}: {starttime}-{endtime} Leipzig PollyXT_TROPOS
+2019-09-13 01:04:35,458 - __main__ - INFO - show_list - 1363 - {indx}: {starttime}-{endtime} Melpitz arielle
+2019-09-13 01:04:51,061 - __main__ - INFO - show_list - 1361 - {indx}: {starttime}-{endtime} Warsaw PollyXT_UW
+2019-09-13 01:04:51,064 - __main__ - INFO - show_list - 1361 - {indx}: {starttime}-{endtime} Leipzig PollyXT_FMI
+2019-09-13 01:04:51,066 - __main__ - INFO - show_list - 1361 - {indx}: {starttime}-{endtime} Leipzig PollyXT_NOA
+2019-09-13 01:04:51,067 - __main__ - INFO - show_list - 1361 - {indx}: {starttime}-{endtime} Leipzig PollyXT_DWD
+2019-09-13 01:04:51,069 - __main__ - INFO - show_list - 1361 - {indx}: {starttime}-{endtime} Melpitz arielle
+2019-09-13 01:04:51,071 - __main__ - INFO - show_list - 1361 - {indx}: {starttime}-{endtime} Antikythera PollyXT_NOA
+2019-09-13 01:04:51,072 - __main__ - INFO - show_list - 1361 - {indx}: {starttime}-{endtime} Dushanbe PollyXT_TROPOS
+2019-09-13 01:04:51,073 - __main__ - INFO - show_list - 1361 - {indx}: {starttime}-{endtime} Limassol PollyXT_LACROS
+2019-09-13 01:04:51,074 - __main__ - INFO - show_list - 1361 - {indx}: {starttime}-{endtime} Leipzig arielle
+2019-09-13 01:04:51,075 - __main__ - INFO - show_list - 1361 - {indx}: {starttime}-{endtime} Hohenpeissenberg PollyXT_DWD
+2019-09-13 01:04:51,077 - __main__ - INFO - show_list - 1361 - {indx}: {starttime}-{endtime} Cabauw arielle
+2019-09-13 01:04:51,078 - __main__ - INFO - show_list - 1361 - {indx}: {starttime}-{endtime} Evora PollyXT_CGE
+2019-09-13 01:04:51,080 - __main__ - INFO - show_list - 1361 - {indx}: {starttime}-{endtime} Leipzig Polly_1v2
+2019-09-13 01:04:51,081 - __main__ - INFO - show_list - 1361 - {indx}: {starttime}-{endtime} Dushanbe PollyXT_TJK
+2019-09-13 01:04:51,083 - __main__ - INFO - show_list - 1361 - {indx}: {starttime}-{endtime} Kuopio PollyXT_FMI
+2019-09-13 01:04:51,086 - __main__ - INFO - show_list - 1361 - {indx}: {starttime}-{endtime} Leipzig PollyXT_TROPOS
+2019-09-13 01:04:51,087 - __main__ - INFO - show_list - 1361 - {indx}: {starttime}-{endtime} Finokalia PollyXT_NOA
+2019-09-13 01:04:51,088 - __main__ - INFO - show_list - 1361 - {indx}: {starttime}-{endtime} Leipzig PollyXT_LACROS
+2019-09-13 01:04:51,090 - __main__ - INFO - show_list - 1361 - {indx}: {starttime}-{endtime} Leipzig Polly_1st
+2019-09-13 01:05:24,521 - __main__ - INFO - show_list - 1360 - 1: 2009-05-01-2029-01-01 Evora PollyXT_CGE
+2019-09-13 01:05:24,523 - __main__ - INFO - show_list - 1360 - 2: 2014-09-30-2014-11-19 Cabauw arielle
+2019-09-13 01:05:24,524 - __main__ - INFO - show_list - 1360 - 3: 2013-01-01-2029-01-01 Melpitz arielle
+2019-09-13 01:05:24,525 - __main__ - INFO - show_list - 1360 - 4: 2005-01-01-2029-01-01 Leipzig PollyXT_TROPOS
+2019-09-13 01:05:24,527 - __main__ - INFO - show_list - 1360 - 5: 2005-01-01-2029-01-01 Leipzig PollyXT_NOA
+2019-09-13 01:05:24,528 - __main__ - INFO - show_list - 1360 - 6: 2014-01-01-2029-01-01 Limassol PollyXT_LACROS
+2019-09-13 01:05:24,530 - __main__ - INFO - show_list - 1360 - 7: 2012-10-12-2029-01-01 Kuopio PollyXT_FMI
+2019-09-13 01:05:24,531 - __main__ - INFO - show_list - 1360 - 8: 2014-01-01-2029-01-01 Hohenpeissenberg PollyXT_DWD
+2019-09-13 01:05:24,532 - __main__ - INFO - show_list - 1360 - 9: 2005-01-01-2029-01-01 Leipzig PollyXT_LACROS
+2019-09-13 01:05:24,534 - __main__ - INFO - show_list - 1360 - 10: 2015-01-01-2029-01-01 Leipzig arielle
+2019-09-13 01:05:24,535 - __main__ - INFO - show_list - 1360 - 11: 2014-01-01-2029-01-01 Finokalia PollyXT_NOA
+2019-09-13 01:05:24,537 - __main__ - INFO - show_list - 1360 - 12: 2019-06-15-2029-01-01 Dushanbe PollyXT_TJK
+2019-09-13 01:05:24,539 - __main__ - INFO - show_list - 1360 - 13: 2005-01-01-2029-01-01 Leipzig Polly_1v2
+2019-09-13 01:05:24,539 - __main__ - INFO - show_list - 1360 - 14: 2005-01-01-2029-01-01 Leipzig PollyXT_FMI
+2019-09-13 01:05:24,542 - __main__ - INFO - show_list - 1360 - 15: 2014-01-01-2029-01-01 Warsaw PollyXT_UW
+2019-09-13 01:05:24,543 - __main__ - INFO - show_list - 1360 - 16: 2005-01-01-2029-01-01 Leipzig Polly_1st
+2019-09-13 01:05:24,544 - __main__ - INFO - show_list - 1360 - 17: 2005-01-01-2029-01-01 Leipzig PollyXT_DWD
+2019-09-13 01:05:24,546 - __main__ - INFO - show_list - 1360 - 18: 2018-06-01-2029-01-01 Antikythera PollyXT_NOA
+2019-09-13 01:05:24,547 - __main__ - INFO - show_list - 1360 - 19: 2015-03-17-2016-09-30 Dushanbe PollyXT_TROPOS
+2019-09-13 01:06:59,048 - __main__ - INFO - show_list - 1364 - 1: 2015-01-01-2029-01-01 Leipzig arielle
+2019-09-13 01:06:59,050 - __main__ - INFO - show_list - 1364 - 2: 2012-10-12-2029-01-01 Kuopio PollyXT_FMI
+2019-09-13 01:06:59,051 - __main__ - INFO - show_list - 1364 - 3: 2014-01-01-2029-01-01 Warsaw PollyXT_UW
+2019-09-13 01:06:59,053 - __main__ - INFO - show_list - 1364 - 4: 2015-03-17-2016-09-30 Dushanbe PollyXT_TROPOS
+2019-09-13 01:06:59,054 - __main__ - INFO - show_list - 1364 - 5: 2019-06-15-2029-01-01 Dushanbe PollyXT_TJK
+2019-09-13 01:06:59,055 - __main__ - INFO - show_list - 1364 - 6: 2013-01-01-2029-01-01 Melpitz arielle
+2019-09-13 01:06:59,056 - __main__ - INFO - show_list - 1364 - 7: 2014-01-01-2029-01-01 Limassol PollyXT_LACROS
+2019-09-13 01:06:59,057 - __main__ - INFO - show_list - 1364 - 8: 2018-06-01-2029-01-01 Antikythera PollyXT_NOA
+2019-09-13 01:06:59,058 - __main__ - INFO - show_list - 1364 - 9: 2014-01-01-2029-01-01 Finokalia PollyXT_NOA
+2019-09-13 01:06:59,060 - __main__ - INFO - show_list - 1364 - 10: 2005-01-01-2029-01-01 Leipzig PollyXT_LACROS
+2019-09-13 01:06:59,061 - __main__ - INFO - show_list - 1364 - 11: 2005-01-01-2029-01-01 Leipzig PollyXT_TROPOS
+2019-09-13 01:06:59,062 - __main__ - INFO - show_list - 1364 - 12: 2005-01-01-2029-01-01 Leipzig Polly_1st
+2019-09-13 01:06:59,064 - __main__ - INFO - show_list - 1364 - 13: 2014-09-30-2014-11-19 Cabauw arielle
+2019-09-13 01:06:59,065 - __main__ - INFO - show_list - 1364 - 14: 2009-05-01-2029-01-01 Evora PollyXT_CGE
+2019-09-13 01:06:59,067 - __main__ - INFO - show_list - 1364 - 15: 2005-01-01-2029-01-01 Leipzig PollyXT_DWD
+2019-09-13 01:06:59,069 - __main__ - INFO - show_list - 1364 - 16: 2005-01-01-2029-01-01 Leipzig Polly_1v2
+2019-09-13 01:06:59,070 - __main__ - INFO - show_list - 1364 - 17: 2005-01-01-2029-01-01 Leipzig PollyXT_FMI
+2019-09-13 01:06:59,071 - __main__ - INFO - show_list - 1364 - 18: 2005-01-01-2029-01-01 Leipzig PollyXT_NOA
+2019-09-13 01:06:59,072 - __main__ - INFO - show_list - 1364 - 19: 2014-01-01-2029-01-01 Hohenpeissenberg PollyXT_DWD

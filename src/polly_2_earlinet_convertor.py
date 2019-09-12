@@ -1338,13 +1338,31 @@ class polly_earlinet_convertor(object):
         dataset.close()
 
 
-def show_list(flagShowCampaign=False, flagShowInstrument=False):
+def show_list(flagShowCampaign=False,
+              flagShowInstrument=False,
+              flagShowAll=False):
     '''
     print the campaign and instrument list
     '''
 
     # initialize the instance
     p2eConvertor = polly_earlinet_convertor()
+    camp_dict = p2eConvertor.campaign_dict
+
+    # print the full list
+    if flagShowAll:
+        for indx, camp_info_key in enumerate(camp_dict):
+            logger.info(
+                '{indx}: {starttime}-{endtime} {location} {instrument}'.
+                format(
+                    indx=indx + 1,
+                    starttime=camp_dict[camp_info_key]['starttime'].
+                    strftime('%Y-%m-%d'),
+                    endtime=camp_dict[camp_info_key]['endtime'].
+                    strftime('%Y-%m-%d'),
+                    location=camp_dict[camp_info_key]['location'],
+                    instrument=camp_dict[camp_info_key]['system']
+                        ))
 
     # print the campaign list
     if flagShowCampaign:
@@ -1449,6 +1467,10 @@ def main():
                              help="show the supported instrument list",
                              dest='flagShowInstrument',
                              action='store_true')
+    list_parser.add_argument("--all",
+                             help="show the full campaign list",
+                             dest='flagShowAll',
+                             action='store_true')
     # if no input arguments
     if len(sys.argv) == 1:
         parser.print_help(sys.stderr)
@@ -1457,7 +1479,11 @@ def main():
     args = parser.parse_args()
 
     if args.list:
-        show_list(args.flagShowCampaign, args.flagShowInstrument)
+        show_list(
+                  args.flagShowCampaign,
+                  args.flagShowInstrument,
+                  args.flagShowAll
+                  )
     else:
         # run the command
         p2e_go(args.polly_type, args.location, args.file_type,
