@@ -4,4 +4,4 @@ log/
 polly_2_earlinet_convertor.egg-info/
 build/
 dist/
-data/
+data/*.nc

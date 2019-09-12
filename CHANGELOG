@@ -1,0 +1,6 @@
+# CHANGELOG
+
+## v0.1.0
+
+- enable the conversion of polly labivew files to EARLINET nc files
+- enalbe auto-search the configuration file for the labivew file

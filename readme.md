@@ -68,7 +68,37 @@ python setup.py install
 After the steps mentioned above, the command line tool p2e_go (polly_to_earlinet convertor) should be ready in your system **PATH**. You can see the instructions of the command with using `p2e_go -h`
 
 ```bash
+usage: p2e_go [-h] [-p POLLY_TYPE] [-l LOCATION] [-t FILE_TYPE] [-c CATEGORY]
+              [-f FILENAME] [-d OUTPUT_DIR] [--camp_info CAMP_INFO] [--force]
+              {list} ...
 
+convert the polly profiles from labview program to EARLINET format
+
+positional arguments:
+  {list}                list supported campaign and instruments.
+
+optional arguments:
+  -h, --help            show this help message and exit
+  -p POLLY_TYPE, --polly_type POLLY_TYPE
+                        setup the instrument type
+  -l LOCATION, --location LOCATION
+                        setup the campaign location
+  -t FILE_TYPE, --file_type FILE_TYPE
+                        setup the type of the profile (labview | picasso)
+  -c CATEGORY, --category CATEGORY
+                        setup the category of the profile flag_masks: 1, 2, 4,
+                        8, 16, 32, 64, 128, 256, 512 flag_meanings: cirrus
+                        climatol dicycles etna forfires photosmog rurban
+                        sahadust stratos satellite_overpasses
+  -f FILENAME, --filename FILENAME
+                        setup the filename of the polly profile
+  -d OUTPUT_DIR, --output_dir OUTPUT_DIR
+                        setup the directory for the converted files
+  --camp_info CAMP_INFO
+                        setup the campaign info file [*.toml]. If not set, the
+                        program will search the config folder for a suitable
+                        one.
+  --force               whether to overwrite the nc files if they exists
 ```
 
 **Display the supported polly types**
@@ -86,7 +116,13 @@ p2e_go list --campaign
 **Convert one file**
 
 ```bash
-p2e_go 
+p2e_go -p pollyxt_lacros -l punta_arenas -f labview -c 2 -f /User/zhenping/desktop/file1.txt -d /Users/zhenping/Destkop/test --force
+```
+
+**convert files with using wildcards**
+
+```bash
+p2e_go -p pollyxt_lacros -l punta_arenas -f labview -c 2 -f /User/zhenping/desktop/file*.txt -d /Users/zhenping/Destkop/test --force
 ```
 
 ## Acknowledgement
