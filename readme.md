@@ -125,6 +125,58 @@ p2e_go -p pollyxt_lacros -l punta_arenas -f labview -c 2 -f /User/zhenping/deskt
 p2e_go -p pollyxt_lacros -l punta_arenas -f labview -c 2 -f /User/zhenping/desktop/file*.txt -d /Users/zhenping/Destkop/test --force
 ```
 
+## Q&A
+
+### How to add a new campaign in the configs?
+
+A: Firstly, you should know some details of the configurations used for the convertor. If you open the `config` folder, you will find bunch of `toml` files used for the projects. But only two kinds associated with the campaign info, as below
+
+```text
+# campaign list
+campaign_list.toml
+
+# configurations for single campaign
+{location}_campaign_info{tag}.toml
+```
+
+Therefore, to do that, you need firstly write down the fundamental information of the campaign, like below
+
+```text
+# for one instrument available along the measurement history
+[Dushanbe_campaign_info]
+location = "Dushanbe"
+country = "Tajikistan"
+starttime = "2019-06-15 00:00:00"
+endtime = "2029-01-01 00:00:00"
+system = "PollyXT_TJK" 
+
+# for multiple instruments
+[Dushanbe_campaign_info_2]
+location = "Dushanbe"
+country = "Tajikistan"
+starttime = "2019-06-15 00:00:00"
+endtime = "2029-01-01 00:00:00"
+system = "PollyXT_TJK" 
+
+[Dushanbe_campaign_info_1]
+location = "Dushanbe"
+country = "Tajikistan"
+starttime = "2015-03-17 00:00:00"
+endtime = "2016-09-30 00:00:00"
+system = "PollyXT_TROPOS" 
+```
+After the entry point was setup in the campaign list file, you need to create the campaign metadata file with the same keyword in the campaign list, e.g., `Dushanbe_campaign_info_1.toml` and `Dushanbe_campaign_info_2.toml`. To simplify this, you can copy and manipulate items in other campaign list file. 
+
+Note: If you used the python setuptools and using the executable command, you need to recompile it. Because the configuration files also needs to be updated for the script. To do like, you can follow the instructions below,
+
+```bash
+# delete the previous executable scripts
+pip uninstall polly_2_earlinet_convertor
+
+# reinstall it with using new configuration files
+python setup.py install
+```
+
 ## Acknowledgement
 
 Thanks to **Iannis Binietoglou** with the repository of [`SCC access`](https://bitbucket.org/iannis_b/scc-access/src/default/) and **Ina Mattis** with the repository of [`inqbus.lidar`](https://github.com/Inqbus/inqbus.lidar). 

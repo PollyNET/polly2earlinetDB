@@ -1,0 +1,99 @@
+Messung von (UTC):190723 2100
+bis (UTC): 190724 0058
+cut off first: 0
+use overlap: nein
+ovlp355: D:\overlap\xt_ari\pollyXT_arielle_20141004-0250-0440-55sr-355.o34
+ovlp532: D:\overlap\xt_ari\pollyXT_arielle_20141004-0250-0440-55sr-532.o34
+refheigt355(m) from : 10001
+refheight355 (m) to: 11502
+refwert355 (km^-1 sr^-1): 1.000000E-5
+refheigt532(m) from : 10001
+refheight532 (m) to: 11502
+refwert532 (km^-1 sr^-1): 1.000000E-5
+refheigt1064(m) from : 10001
+refheight1064 (m) to: 11502
+refwert1064 (km^-1 sr^-1): 1.000000E-6
+smoothingalpha355: 49
+smootingbeta355: 49
+smoothingalpha532: 49
+smootingbeta532: 49
+smoothingalpha1064: 49
+smootingbeta1064: 49
+dz: 7.471460
+Radiosonde used: yes
+\\lidardaten\GDAS1-Profiles\leipzig\2019\07\leipzig_20190724_00_51.3_12.4.gdas1
+Depol correction:yes
+Iterations Vol. depol: 1
+Iterations 532 corr depol:-1
+lower depol ref height:7.00
+upper depol ref height:10.000000
+DepolMethod: +-45°-calibration
+Depol at 355
+Dsen: 500.00
+D355: 0.69
+D532: 1.09
+V*: 0.060800
+mol depol (filter dep.): 0.01100
+
+Method:Raman
+D:\pollyXT-data\le\2019_07_24_Wed_ARI_00_00_05.nc
+Lidar type: 11
+Backgroundheight (m): 20000.000000
+First Height (m): 3.75
+Vertical Range (bins): 2048.00
+Angström for Raman Extinction: 0.90
+Upper Air Sonde: no
+Sounding Type: 7.000000
+D355 D355s V*355 dmol355 D532 D532s V*532 dmol532 D1064 D1064s V*1064 dmol1064 
+0.690000	500.000000	0.060800	0.011000	1.090000	500.000000	0.041500	0.011400	0.000000	0.000000	0.000000	0.000000
+Correction_first_channel correcton_second_channel correction_iteration_sec_channel smooth_before_par_depol Ref_height_for_all 
+0	0	-1	0	1
+refheigt532NF (km) from : 2.000000
+refheight 532 NF (km) to: 2.500000
+refwert532NF5 (km^-1 sr^-1): 1.350000E-4
+First bin manually: yes
+Manual first bin:251
+Death time correction: yes
+Smooth before backscatter: yes
+Smooth before depol: no
+More files: yes
+2 files: yes
+Paths: 1 and 2 and more files
+D:\pollyXT-data\le\2019_07_23_Tue_ARI_18_00_02.nc
+D:\pollyXT-data\le\2019_07_24_Wed_ARI_00_00_05.nc
+D:\projects_done\pollystaub\data
+Lidar constants (per m) 355 532 1064 532NF:
+2.468535E+13	2.278499E+13	8.280892E+13	3.015135E+12
+Use particle ext for raman Bsc: yes
+change default first height: yes
+Manual first height (m): 3.750000
+Altitude of location manually: yes
+Manual altitude (m): 125.000000
+refheigt3552NF (km) from : 2.000000
+refheight 355 NF (km) to: 2.500000
+refwert355NF (km^-1 sr^-1): 9.450000E-5
+channel_ID:
+355 355s 387 407 532 532s 532hsr 607 1064 1064s 532NF 607NF 355NF 387NF
+0	1	2	3	4	5	-1	6	7	-1	8	9	10	11
+First bin: First bin NF: 
+251	251
+Range resolution: 7.500000
+First height NF (m): 3.750000
+Range-dependent vertical smoothing: no
+Polynomal fit coefficients for range-dependent smoothing (ax^2 +bx +c ): 
+29.000000	0.005000	20.000000
+Software version: Verlauf8v1g_light_i.vi
+Exclude depol calibration times: yes
+Depol cal angle: 19.980000
+Dead time manually: yes
+Manual dead times: 355t,  355s or 532 pp, 387, 407, 532t, 532s, 607 ,1064, 532nf, 607nf, 355nf, 387nf, HSRL or RR at 532 nm, 1064s  
+3.000000	3.000000	3.000000	3.000000	3.000000	3.000000	3.000000	3.000000	3.000000	3.000000	3.000000	3.000000	3.000000	3.000000
+Interpolation height for extinction (m): FF NF
+800.000000	600.000000
+Horizontal smoothing(bins): 1
+Effective resolution: no
+ßbarthres km^-1 sr^-1: 1.000000E-4
+NF-top limit (km) (extinction): 4.000000
+Merging of NR and FR: 
+1.000000	1.500000	1.800000
+
