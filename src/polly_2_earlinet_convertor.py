@@ -835,7 +835,7 @@ class polly_earlinet_convertor(object):
         data = {}
 
         # read the labview info file
-        with open(filename, 'r') as fh:
+        with open(filename, 'r', encoding='cp1252') as fh:
             content = fh.read()
 
         for key, regex in decoders.items():

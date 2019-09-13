@@ -95,6 +95,13 @@ starttime = "2005-01-01 00:00:00"
 endtime = "2029-01-01 00:00:00"
 system = "Polly_1v2"
 
+[Leipzig_campaign_info_9]
+location = "Leipzig"
+country = "Germany"
+starttime = "2005-01-01 00:00:00"
+endtime = "2029-01-01 00:00:00"
+system = "PollyXT_TJK"
+
 [Limassol_campaign_info_1]
 location = "Limassol"
 country = "Cyprus"
