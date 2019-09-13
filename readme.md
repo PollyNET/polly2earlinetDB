@@ -8,7 +8,7 @@ At June 24, 2019, the new EARLINET database was released and new data format for
 
 - python 3.5
 - [`Anaconda`](https://www.anaconda.com/distribution/)
-- Windows 10, Ubuntu
+- Windows 10 or Ubuntu
 
 ## Download
 
@@ -43,7 +43,7 @@ conda create -n polly_earlinet
 **activate the virtual environment**
 ```bash
 activate polly_earlinet # windows
-conda activate polly_earlinet # linux
+source activate polly_earlinet # linux
 ```
 
 **install python3.5**
@@ -66,7 +66,7 @@ python setup.py install
 
 ## Usage
 
-After the steps mentioned above, the command line tool p2e_go (polly_to_earlinet convertor) should be ready in your system **PATH**. You can see the instructions of the command with using `p2e_go -h`
+After the steps mentioned above, the command line tool **p2e_go** (polly_to_earlinet convertor) should be ready in your system **PATH**. You can see the instructions of the command with using `p2e_go -h`
 
 ```bash
 usage: p2e_go [-h] [-p POLLY_TYPE] [-l LOCATION] [-t FILE_TYPE] [-c CATEGORY]
