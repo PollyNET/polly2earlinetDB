@@ -1,0 +1,2 @@
+- Support the conversion of products from Picasso
+- Be compatible with results analyzed with old version labview program. They have different format for info files. Therefore, separated functions would be required to do the job.

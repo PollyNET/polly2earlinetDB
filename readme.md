@@ -8,6 +8,7 @@ At June 24, 2019, the new EARLINET database was released and new data format for
 
 - python 3.5
 - [`Anaconda`](https://www.anaconda.com/distribution/)
+- Windows 10, Ubuntu
 
 ## Download
 
