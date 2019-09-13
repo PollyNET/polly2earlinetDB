@@ -111,6 +111,7 @@ p2e_go list --instrument
 
 ```bash
 p2e_go list --campaign
+p2e_go list --all   # show all campaigns together with the systems
 ```
 
 **Convert one file**
