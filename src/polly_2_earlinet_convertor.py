@@ -139,7 +139,7 @@ class polly_earlinet_convertor(object):
                          format(filename))
             raise FileNotFoundError
 
-        with open(filename, 'r') as fh:
+        with open(filename, 'r', encoding='utf-8') as fh:
             metaData = toml.loads(fh.read())
 
         return metaData
@@ -159,7 +159,7 @@ class polly_earlinet_convertor(object):
                 file=camp_list_file))
             raise FileNotFoundError
 
-        with open(camp_list_file, 'r') as fh:
+        with open(camp_list_file, 'r', encoding='utf-8') as fh:
             camp_dict = toml.loads(fh.read())
 
         # convert the timestamp to datetime object
@@ -188,7 +188,7 @@ class polly_earlinet_convertor(object):
 
         # load conversion key
         try:
-            with open(convert_key_filepath, 'r') as fh:
+            with open(convert_key_filepath, 'r', encoding='utf-8') as fh:
                 conversion_key = toml.loads(fh.read())
         except Exception as e:
             logger.error('Failure in reading CONVERT_KEY_FILE\n{file}'.format(
@@ -208,7 +208,7 @@ class polly_earlinet_convertor(object):
                          format(file=camp_info_file))
             raise FileNotFoundError
 
-        with open(camp_info_file, 'r') as fh:
+        with open(camp_info_file, 'r', encoding='uft-8') as fh:
             camp_info = toml.loads(fh.read())
 
         return camp_info
@@ -330,7 +330,7 @@ class polly_earlinet_convertor(object):
                 return None, None, None
 
         # load the campaign info
-        with open(self.camp_info_file, 'r') as fh:
+        with open(self.camp_info_file, 'r', encoding='utf-8') as fh:
             camp_info = toml.loads(fh.read())
         self.camp_info = camp_info
 
@@ -555,7 +555,8 @@ class polly_earlinet_convertor(object):
         '''
         read the labview retrieving data
         '''
-        dataMatrix = np.loadtxt(filename, skiprows=1, dtype=float)
+        dataMatrix = np.loadtxt(filename, skiprows=1, dtype=float,
+                                encoding='cp1252')
         return dataMatrix
 
     def __read_labview_info(self, filename):

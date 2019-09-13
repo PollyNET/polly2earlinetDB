@@ -4,14 +4,14 @@
 # History:
 #   2019-09-12 First edition by Zhenping
 
-institution = "Leibniz-Institut für Troposphärenforschung e.V."
+institution = "Institute for Earth Sciences(ICT-Instituto de Ciencias da Terra)"
 
-PI = "Dietrich Althausen"
-PI_affliliation = "Leibniz-Institut für Troposphärenforschung e.V."
-PI_affiliation_acronym = "TROPOS"
-PI_address = "Permoserstraße 15, 04103 Leipzig, Germany"
+PI = "Daniele Bortoli"
+PI_affliliation = "Institute for Earth Sciences(ICT-Instituto de Ciencias da Terra)"
+PI_affiliation_acronym = "ICT"
+PI_address = "Largo dos Colegiais 2, 7000 Évora"
 PI_phone = ""
-PI_email = "dietrich@tropos.de"
+PI_email = "db@uevora.pt"
 
 Data_Originator = "Holger Baars"
 Data_Originator_affliliation = "Leibniz-Institut für Troposphärenforschung e.V."
@@ -29,9 +29,9 @@ processor_version = ""
 
 title = "Ground based LIDAR measurements"
 station_ID = "EVO"
-station_latitude = 39   # negative for southern hemisphere
-station_longitude = -8   # negative for west
-station_altitude = 290   # [m]
+station_latitude = 38.57   # negative for southern hemisphere
+station_longitude = -7.91   # negative for west
+station_altitude = 293   # [m]
 station_starttime = "2009-05-01 00:00:00"
 station_endtime = "2099-01-01 00:00:00"
 comment = "Evora, Portugal"

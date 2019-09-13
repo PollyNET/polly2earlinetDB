@@ -4,14 +4,14 @@
 # History:
 #   2019-09-12 First edition by Zhenping
 
-institution = "Leibniz-Institut für Troposphärenforschung e.V."
+institution = "National Observatory of Athens - NOA"
 
-PI = "Dietrich Althausen"
-PI_affliliation = "Leibniz-Institut für Troposphärenforschung e.V."
-PI_affiliation_acronym = "TROPOS"
-PI_address = "Permoserstraße 15, 04103 Leipzig, Germany"
-PI_phone = ""
-PI_email = "dietrich@tropos.de"
+PI = "Vassilis Amiridis"
+PI_affliliation = "National Observatory of Athens"
+PI_affiliation_acronym = "NOA"
+PI_address = "Vas. Pavlou & I. Metaxa, 15236 Penteli, Greece"
+PI_phone = "2108109116"
+PI_email = "vamoir@noa.gr"
 
 Data_Originator = "Holger Baars"
 Data_Originator_affliliation = "Leibniz-Institut für Troposphärenforschung e.V."
@@ -29,8 +29,8 @@ processor_version = ""
 
 title = "Ground based LIDAR measurements"
 station_ID = "AKY"
-station_latitude = 23.31   # negative for southern hemisphere
-station_longitude = 35.86   # negative for west
+station_latitude = 35.86   # negative for southern hemisphere
+station_longitude = 23.81   # negative for west
 station_altitude = 193   # [m]
 station_starttime = "2018-06-01 00:00:00"
 station_endtime = "2099-01-01 00:00:00"

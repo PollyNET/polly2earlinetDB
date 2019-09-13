@@ -4,14 +4,14 @@
 # History:
 #   2019-09-12 First edition by Zhenping
 
-institution = "Leibniz-Institut für Troposphärenforschung e.V."
+institution = "Finnish Meteorological Institute"
 
-PI = "Dietrich Althausen"
-PI_affliliation = "Leibniz-Institut für Troposphärenforschung e.V."
-PI_affiliation_acronym = "TROPOS"
-PI_address = "Permoserstraße 15, 04103 Leipzig, Germany"
+PI = "Mika Komppula"
+PI_affliliation = "Finnish Meteorological Institute"
+PI_affiliation_acronym = "FMI"
+PI_address = "Erik Palménin aukio 1, FI-00560 HELSINKI"
 PI_phone = ""
-PI_email = "dietrich@tropos.de"
+PI_email = "mika.komppula@fmi.fi"
 
 Data_Originator = "Holger Baars"
 Data_Originator_affliliation = "Leibniz-Institut für Troposphärenforschung e.V."
@@ -29,9 +29,9 @@ processor_version = ""
 
 title = "Ground based LIDAR measurements"
 station_ID = "KUO"
-station_latitude = 63   # negative for southern hemisphere
-station_longitude = 28   # negative for west
-station_altitude = 195   # [m]
+station_latitude = 62.73   # negative for southern hemisphere
+station_longitude = 27.55   # negative for west
+station_altitude = 190   # [m]
 station_starttime = "2012-10-12 00:00:00"
 station_endtime = "2099-01-01 00:00:00"
 comment = "Kuopio, Finland"

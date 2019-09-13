@@ -6,12 +6,12 @@
 
 institution = "Leibniz-Institut für Troposphärenforschung e.V."
 
-PI = "Dietrich Althausen"
+PI = "Ulla Wandinger"
 PI_affliliation = "Leibniz-Institut für Troposphärenforschung e.V."
 PI_affiliation_acronym = "TROPOS"
 PI_address = "Permoserstraße 15, 04103 Leipzig, Germany"
-PI_phone = ""
-PI_email = "dietrich@tropos.de"
+PI_phone = "+49 341 2717-7082"
+PI_email = "ulla@tropos.de"
 
 Data_Originator = "Holger Baars"
 Data_Originator_affliliation = "Leibniz-Institut für Troposphärenforschung e.V."
@@ -29,9 +29,9 @@ processor_version = ""
 
 title = "Ground based LIDAR measurements"
 station_ID = "MEL"
-station_latitude = 52   # negative for southern hemisphere
-station_longitude = 13   # negative for west
-station_altitude = 83   # [m]
+station_latitude = 51.53   # negative for southern hemisphere
+station_longitude = 12.93   # negative for west
+station_altitude = 84   # [m]
 station_starttime = "2013-09-01 00:00:00"
 station_endtime = "2099-01-01 00:00:00"
 comment = "Melpitz, Germany"

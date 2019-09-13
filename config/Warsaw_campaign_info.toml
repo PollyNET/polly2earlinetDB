@@ -4,14 +4,14 @@
 # History:
 #   2019-09-12 First edition by Zhenping
 
-institution = "Leibniz-Institut für Troposphärenforschung e.V."
+institution = "Institute of Geophysics, Polish Academy of Sciences"
 
-PI = "Dietrich Althausen"
-PI_affliliation = "Leibniz-Institut für Troposphärenforschung e.V."
-PI_affiliation_acronym = "TROPOS"
-PI_address = "Permoserstraße 15, 04103 Leipzig, Germany"
+PI = "Aleksander Pietruczuk"
+PI_affliliation = "Institute of Geophysics, Polish Academy of Sciences"
+PI_affiliation_acronym = "IG PAS"
+PI_address = "64 Księcia Janusza Str., 01-452 Warszawa, Poland"
 PI_phone = ""
-PI_email = "dietrich@tropos.de"
+PI_email = "iwona.stachlewska@igf.fuw.edu.pl"
 
 Data_Originator = "Holger Baars"
 Data_Originator_affliliation = "Leibniz-Institut für Troposphärenforschung e.V."
@@ -29,12 +29,12 @@ processor_version = ""
 
 title = "Ground based LIDAR measurements"
 station_ID = "WAW"
-station_latitude = 52   # negative for southern hemisphere
-station_longitude = 21   # negative for west
-station_altitude = 100   # [m]
+station_latitude = 52.21   # negative for southern hemisphere
+station_longitude = 20.98   # negative for west
+station_altitude = 112   # [m]
 station_starttime = "2013-06-27 00:00:00"
-station_endtime = "2016-09-30 00:00:00"
-comment = "Central Asian dust measurements"
+station_endtime = "2029-01-01 00:00:00"
+comment = "University of Warsaw, Faculty of Physics"
 references = "http://polly.rsd.tropos.de/"
 
 __file_format_version = "1.0"

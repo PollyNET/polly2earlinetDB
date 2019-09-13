@@ -4,14 +4,14 @@
 # History:
 #   2019-09-12 First edition by Zhenping
 
-institution = "Leibniz-Institut für Troposphärenforschung e.V."
+institution = "Cyprus University of Technology"
 
-PI = "Johannes Bühl"
-PI_affliliation = "Leibniz-Institut für Troposphärenforschung e.V."
-PI_affiliation_acronym = "TROPOS"
-PI_address = "Permoserstraße 15, 04103 Leipzig, Germany"
+PI = "Diofantos Hadjimitsis"
+PI_affliliation = "Cyprus University of Technology"
+PI_affiliation_acronym = "CUT"
+PI_address = "30 Arch. Kyprianos Str., 3036 Limassol"
 PI_phone = ""
-PI_email = "buehl@tropos.de"
+PI_email = "d.hadjimitsis@cut.ac.cy"
 
 Data_Originator = "Holger Baars"
 Data_Originator_affliliation = "Leibniz-Institut für Troposphärenforschung e.V."
@@ -29,9 +29,9 @@ processor_version = ""
 
 title = "Ground based LIDAR measurements"
 station_ID = "LIM"
-station_latitude = 35   # negative for southern hemisphere
-station_longitude = 33   # negative for west
-station_altitude = 1   # [m]
+station_latitude = 34.67   # negative for southern hemisphere
+station_longitude = 33.04   # negative for west
+station_altitude = 10   # [m]
 station_starttime = "2016-10-17 00:00:00"
 station_endtime = "2018-04-01 00:00:00"
 comment = "CyCARE"

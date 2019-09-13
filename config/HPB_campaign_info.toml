@@ -4,7 +4,7 @@
 # History:
 #   2019-09-12 First edition by Zhenping
 
-institution = "Leibniz-Institut für Troposphärenforschung e.V."
+institution = "DWD Meteorological Observatory Hohenpeissenberg"
 
 PI = "Ina Mattis"
 PI_affliliation = "Deutscher Wetterdienst Observatorium Hohenpeißenberg"
@@ -29,9 +29,9 @@ processor_version = ""
 
 title = "Ground based LIDAR measurements"
 station_ID = "HPB"
-station_latitude = 48   # negative for southern hemisphere
-station_longitude = 11   # negative for west
-station_altitude = 953   # [m]
+station_latitude = 47.80   # negative for southern hemisphere
+station_longitude = 11.01   # negative for west
+station_altitude = 974   # [m]
 station_starttime = "2015-09-12 00:00:00"
 station_endtime = "2099-01-01 00:00:00"
 comment = "Hohenpeissenberg, Germany"
