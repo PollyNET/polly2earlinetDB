@@ -277,6 +277,9 @@ class polly_earlinet_convertor(object):
         if not campaign_file_list:
             logger.warning('No campaign info file was found.')
             return ''
+        else:
+            logger.info('{file} will be loaded for campaign configs.'.
+                        format(file=campaign_file_list[0]))
 
         return campaign_file_list[0]
 
@@ -364,19 +367,19 @@ class polly_earlinet_convertor(object):
             'BAE_std_355_532': labviewDataCut[:, 18],
             'BAE_532_1064': labviewDataCut[:, 19],
             'BAE_std_532_1064': labviewDataCut[:, 20],
-            'height_vdr_532': labviewDataCut[:, 21],
+            'height_vdr_532': labviewDataCut[:, 21] * 1e3,
             'vdr_532': labviewDataCut[:, 22],
             'vdr_std_532': labviewDataCut[:, 23],
-            'height_pdr_532': labviewDataCut[:, 24],
+            'height_pdr_532': labviewDataCut[:, 24] * 1e3,
             'pdr_532': labviewDataCut[:, 25],
             'pdr_std_532': labviewDataCut[:, 26],
-            'height_sounding': labviewDataCut[:, 27],
+            'height_sounding': labviewDataCut[:, 27] * 1e3,
             'temperature': labviewDataCut[:, 28],
             'pressure': labviewDataCut[:, 29],
-            'height_vdr_355': labviewDataCut[:, 30],
+            'height_vdr_355': labviewDataCut[:, 30] * 1e3,
             'vdr_355': labviewDataCut[:, 31],
             'vdr_std_355': labviewDataCut[:, 32],
-            'height_pdr_355': labviewDataCut[:, 33],
+            'height_pdr_355': labviewDataCut[:, 33] * 1e3,
             'pdr_355': labviewDataCut[:, 34],
             'pdr_std_355': labviewDataCut[:, 35],
             # the unit in labview file is wrong
@@ -915,12 +918,18 @@ class polly_earlinet_convertor(object):
                 1,
             'error_backscatter':
                 variables['bsc_std_355'],
+            'error_particledepolarization':
+                variables['pdr_std_355'],
             'error_retrieval_method':
                 variables['error_retrieval_method'],
+            'error_volumedepolarization':
+                variables['vdr_std_355'],
             'latitude':
                 variables['latitude'],
             'longitude':
                 variables['longitude'],
+            'particledepolarization':
+                variables['pdr_355'],
             'raman_backscatter_algorithm':
                 variables['raman_backscatter_algorithm'],
             'shots':
@@ -935,6 +944,8 @@ class polly_earlinet_convertor(object):
                 variables['user_defined_category'],
             'vertical_resolution':
                 variables['vertical_resolution'],
+            'volumedepolarization':
+                variables['vdr_355'],
             'wavelength':
                 355,
             'zenith_angle':
@@ -1335,6 +1346,27 @@ class polly_earlinet_convertor(object):
         # create global attributes
         for attr_key in self.camp_info:
             setattr(dataset, attr_key, self.camp_info[attr_key])
+
+        # write system, measurement_start_datetime and
+        # measurement_stop_datetime to global attributes
+        camp_info_file_base = os.path.basename(self.camp_info_file)
+        camp_info_filename = os.path.splitext(camp_info_file_base)[0]
+        system_label = self.campaign_dict[camp_info_filename]['system']
+        starttime = self.campaign_dict[camp_info_filename]['starttime']
+        endtime = self.campaign_dict[camp_info_filename]['endtime']
+        setattr(dataset, 'system', system_label)
+        setattr(dataset, 'measurement_start_datetime',
+                starttime.strftime('%Y-%m-%dT%H:%M:%SZ'))
+        setattr(dataset, 'measurement_stop_datetime',
+                endtime.strftime('%Y-%m-%dT%H:%M:%SZ'))
+
+        # write location to global attributes
+        city = system_label = \
+            self.campaign_dict[camp_info_filename]['location']
+        country = system_label = \
+            self.campaign_dict[camp_info_filename]['country']
+        loc_string = "{city}, {country}".format(city=city, country=country)
+        setattr(dataset, 'location', loc_string)
 
         dataset.close()
 

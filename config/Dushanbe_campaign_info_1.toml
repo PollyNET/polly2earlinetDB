@@ -27,17 +27,18 @@ scc_version_description = ""
 processor_name = ""
 processor_version = ""
 
-title = "Ground based LIDAR measurements"
-station_ID = "DUS"
+title = "Profiles of aerosol optical properties"
+source = "Ground based LIDAR measurements"
+station_ID = "dus"
 station_latitude = 38.56   # negative for southern hemisphere
 station_longitude = 68.86   # negative for west
 station_altitude = 864   # [m]
 station_starttime = "2015-03-17 00:00:00"
 station_endtime = "2016-09-30 00:00:00"
 comment = "Central Asian dust measurements"
-references = "http://polly.rsd.tropos.de/"
+references = "Project website at http://www.earlinet.org"
 
-__file_format_version = "1.0"
+__file_format_version = "2.0"
 Conventions = "CF-1.7"
 hoi_system_ID = -1
 hoi_configuration_ID = -1

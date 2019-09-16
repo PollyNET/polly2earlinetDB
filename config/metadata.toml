@@ -33,7 +33,7 @@ dimensions = ['altitude', 'time', 'wavelength', 'nv']
     dtype = 'double'
     
 [vertical_resolution]
-    _FillValue = -9999
+    _FillValue = 9.969209968386869E36
     long_name = "effective vertical resolution according to Pappalardo et al., appl. opt. 2004"
     units = "m"
     dims = ['wavelength', 'time', 'altitude']
@@ -74,7 +74,7 @@ dimensions = ['altitude', 'time', 'wavelength', 'nv']
     dtype = 'byte'
 
 [extinction]
-    _FillValue = -9999
+    _FillValue = 9.969209968386869E36
     long_name = "aerosol extinction coefficient"
     ancillary_variables = "error_extinction vertical_resolution"
     coordinates = "longitude latitude"
@@ -83,7 +83,7 @@ dimensions = ['altitude', 'time', 'wavelength', 'nv']
     dtype = 'double'
 
 [error_extinction]
-    _FillValue = -9999
+    _FillValue = 9.969209968386869E36
     long_name = "absolute statistical uncertainty of extinction"
     units = "1/m"
     coordinates = "longitude latitude"
@@ -91,7 +91,7 @@ dimensions = ['altitude', 'time', 'wavelength', 'nv']
     dtype = 'double'
 
 [user_defined_category]
-    _FillValue = 0
+    _FillValue = -2147483647
     long_name = "user defined category of the measurement"
     comment = "Those flags might have not been set in a homogeneous way. Before using them, contact the originator to obtain more detailed information on how these flags have been set."
     flag_masks = [1, 2, 4, 8, 16, 32, 64, 128, 256, 512]
@@ -131,14 +131,14 @@ dimensions = ['altitude', 'time', 'wavelength', 'nv']
     dtype = 'float'
 
 [station_altitude]
-    _FillValue = -9999
+    _FillValue = 9.969209968386869E36
     long_name = "station altitude above sea level"
     units = "m"
     dims = []
     dtype = 'float'
 
 [extinction_assumed_wavelength_dependence]
-    _FillValue = -9999
+    _FillValue = 9.969209968386869E36
     long_name = "assumed wavelength dependence for extinction retrieval"
     units = "1"
     dims = ['wavelength']
@@ -151,21 +151,21 @@ dimensions = ['altitude', 'time', 'wavelength', 'nv']
     dtype = 'float'
 
 [zenith_angle]
-    _FillValue = -9999
+    _FillValue = 9.969209968386869E36
     long_name = "laser pointing angle with respect to the zenith"
     units = "degrees"
     dims = []
     dtype = 'float'
 
 [shots]
-    _FillValue = -9999
+    _FillValue = -2147483647
     long_name = "accumulated laser shots"
     units = "1"
     dims = []
     dtype = 'int'
 
 [earlinet_product_type]
-    _FillValue = -9999
+    _FillValue = -2147483647
     long_name = "Earlinet product type"
     flag_values = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14]
     flag_meanings = "e0355 b0355 e0351 b0351 e0532 b0532 e1064 b1064 b0253 b0313 b0335 b0510 b0694 b0817"
@@ -182,7 +182,7 @@ dimensions = ['altitude', 'time', 'wavelength', 'nv']
     dtype = 'byte'
 
 [backscatter]
-    _FillValue = -9999
+    _FillValue = 9.969209968386869E36
     long_name = "aerosol backscatter coefficient"
     units = "1/(m*sr)"
     ancillary_variables = "error_backscatter vertical_resolution"
@@ -191,7 +191,7 @@ dimensions = ['altitude', 'time', 'wavelength', 'nv']
     dtype = 'double'
 
 [error_backscatter]
-    _FillValue = -9999
+    _FillValue = 9.969209968386869E36
     long_name = "absolute statistical uncertainty of backscatter"
     units = "1/(m*sr)"
     coordinates = "longitude latitude"
@@ -207,7 +207,7 @@ dimensions = ['altitude', 'time', 'wavelength', 'nv']
     dtype = 'byte'
 
 [backscatter_calibration_range]
-    _FillValue = -9999
+    _FillValue = 9.969209968386869E36
     long_name = "height range where calibration was calculated"
     units = "m"
     dims = ['wavelength', 'nv']
@@ -230,21 +230,21 @@ dimensions = ['altitude', 'time', 'wavelength', 'nv']
     dtype = 'byte'
 
 [backscatter_calibration_value]
-    _FillValue = -9999
+    _FillValue = 9.969209968386869E36
     long_name = "assumed backscatter-ratio value (unitless) in calibration range"
     units = "1"
     dims = ['wavelength']
     dtype = 'float'
 
 [backscatter_calibration_search_range]
-    _FillValue = -9999
+    _FillValue = 9.969209968386869E36
     long_name = "height range wherein calibration range is searched"
     units = "m"
     dims = ['wavelength', 'nv']
     dtype = 'float'
 
 [error_particledepolarization]
-    _FillValue = -9999
+    _FillValue = 9.969209968386869E36
     long_name = "absolute statistical uncertainty of particledepolarization"
     units = "1"
     coordinates = "longitude latitude"
@@ -252,7 +252,7 @@ dimensions = ['altitude', 'time', 'wavelength', 'nv']
     dtype = 'double'
 
 [error_volumedepolarization]
-    _FillValue = -9999
+    _FillValue = 9.969209968386869E36
     long_name = "absolute statistical uncertainty of volumedepolarization"
     units = "1"
     coordinates = "longitude latitude"
@@ -260,7 +260,7 @@ dimensions = ['altitude', 'time', 'wavelength', 'nv']
     dtype = 'double'
 
 [particledepolarization]
-    _FillValue = -9999
+    _FillValue = 9.969209968386869E36
     long_name = "particle linear depolarization ratio"
     units = "1"
     ancillary_variables = "error_particledepolarization vertical_resolution"
@@ -269,7 +269,7 @@ dimensions = ['altitude', 'time', 'wavelength', 'nv']
     dtype = 'double'
 
 [volumedepolarization]
-    _FillValue = -9999
+    _FillValue = 9.969209968386869E36
     long_name = "volume linear depolarization ratio"
     units = "1"
     ancillary_variables = "error_volumedepolarization vertical_resolution"

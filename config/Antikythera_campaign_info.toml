@@ -27,17 +27,18 @@ scc_version_description = ""
 processor_name = ""
 processor_version = ""
 
-title = "Ground based LIDAR measurements"
-station_ID = "AKY"
+title = "Profiles of aerosol optical properties"
+source = "Ground based LIDAR measurements"
+station_ID = "aky"
 station_latitude = 35.86   # negative for southern hemisphere
 station_longitude = 23.81   # negative for west
 station_altitude = 193   # [m]
 station_starttime = "2018-06-01 00:00:00"
 station_endtime = "2099-01-01 00:00:00"
 comment = "Antikythera, Greece"
-references = "http://polly.rsd.tropos.de/"
+references = "Project website at http://www.earlinet.org"
 
-__file_format_version = "1.0"
+__file_format_version = "2.0"
 Conventions = "CF-1.7"
 hoi_system_ID = -1
 hoi_configuration_ID = -1

@@ -27,17 +27,18 @@ scc_version_description = ""
 processor_name = ""
 processor_version = ""
 
-title = "Ground based LIDAR measurements"
-station_ID = "MEL"
+title = "Profiles of aerosol optical properties"
+source = "Ground based LIDAR measurements"
+station_ID = "mel"
 station_latitude = 51.53   # negative for southern hemisphere
 station_longitude = 12.93   # negative for west
 station_altitude = 84   # [m]
 station_starttime = "2013-09-01 00:00:00"
 station_endtime = "2099-01-01 00:00:00"
 comment = "Melpitz, Germany"
-references = "http://polly.rsd.tropos.de/"
+references = "Project website at http://www.earlinet.org"
 
-__file_format_version = "1.0"
+__file_format_version = "2.0"
 Conventions = "CF-1.7"
 hoi_system_ID = -1
 hoi_configuration_ID = -1

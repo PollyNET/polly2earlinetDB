@@ -27,17 +27,18 @@ scc_version_description = ""
 processor_name = ""
 processor_version = ""
 
-title = "Ground based LIDAR measurements"
-station_ID = "HPB"
+title = "Profiles of aerosol optical properties"
+source = "Ground based LIDAR measurements"
+station_ID = "hpb"
 station_latitude = 47.80   # negative for southern hemisphere
 station_longitude = 11.01   # negative for west
 station_altitude = 974   # [m]
 station_starttime = "2015-09-12 00:00:00"
 station_endtime = "2099-01-01 00:00:00"
 comment = "Hohenpeissenberg, Germany"
-references = "http://polly.rsd.tropos.de/"
+references = "Project website at http://www.earlinet.org"
 
-__file_format_version = "1.0"
+__file_format_version = "2.0"
 Conventions = "CF-1.7"
 hoi_system_ID = -1
 hoi_configuration_ID = -1
