@@ -1,0 +1,93 @@
+Messung von (UTC):150803 1800
+bis (UTC): 150803 2159
+cut off first: 0
+use overlap: nein
+ovlp355: 
+ovlp532: 
+refheigt355(m) from : 10001
+refheight355 (m) to: 12003
+refwert355 (km^-1 sr^-1): 1.000000E-5
+refheigt532(m) from : 10001
+refheight532 (m) to: 12003
+refwert532 (km^-1 sr^-1): 1.000000E-5
+refheigt1064(m) from : 10001
+refheight1064 (m) to: 12003
+refwert1064 (km^-1 sr^-1): 1.000000E-5
+smoothingalpha355: 99
+smootingbeta355: 99
+smoothingalpha532: 99
+smootingbeta532: 99
+smoothingalpha1064: 99
+smootingbeta1064: 99
+dz: 7.471460
+Radiosonde used: yes
+C:\Users\hofer\Documents\CADEX\PollyXT\Daten\gdas\2015\08\03\pro_20150803_21_39_69.gdas1
+Depol correction:yes
+Iterations Vol. depol: 1
+Iterations 532 corr depol:1
+lower depol ref height:4.00
+upper depol ref height:5.000000
+DepolMethod: +-45°-calibration
+Depol at 355
+Dsen: 1086.00
+D355: 0.90
+D532: 1.44
+V*: 0.043900
+mol depol (filter dep.): 0.00890
+
+Method:Raman
+C:\Users\hofer\Documents\CADEX\PollyXT\Daten\201508\03\2015_08_03_Mon_TROPOS_18_00_01.nc
+Lidar type: 5
+Backgroundheight (m): 30000.000000
+First Height (m): 3.75
+Vertical Range (bins): 2200.00
+Angström for Raman Extinction: 0.00
+Upper Air Sonde: no
+Sounding Type: 7.000000
+D355 D355s V*355 dmol355 D532 D532s V*532 dmol532 D1064 D1064s V*1064 dmol1064 
+0.900000	1086.000000	0.043900	0.008900	1.440000	778.800000	0.018100	0.012400	1.030000	0.000000	0.000000	0.000000
+Correction_first_channel correcton_second_channel correction_iteration_sec_channel smooth_before_par_depol Ref_height_for_all 
+1	0	1	1	1
+refheigt532NF (km) from : 10001
+refheight 532 NF (km) to: 13998
+refwert532NF5 (km^-1 sr^-1): 3.000000E-5
+First bin manually: yes
+Manual first bin:251
+Death time correction: yes
+Smooth before backscatter: yes
+Smooth before depol: yes
+More files: no
+2 files: no
+Paths: 1 and 2 and more files
+D:\polly_1v2\2016_07_27_Wed_1v2_18_00_01.nc
+D:\polly_1v2\2016_07_28_Thu_1v2_00_00_01.nc
+D:\projects_done\pollystaub\data
+Lidar constants (per m) 355 532 1064 532NF:
+1.417161E+13	5.874711E+13	1.600559E+14	0.000000E+0
+Use particle ext for raman Bsc: yes
+change default first height: yes
+Manual first height (m): 3.750000
+Altitude of location manually: yes
+Manual altitude (m): 864.000000
+refheigt3552NF (km) from : 10001
+refheight 355 NF (km) to: 13998
+refwert355NF (km^-1 sr^-1): 1.350000E-3
+channel_ID:
+355 355s 387 407 532 532s 532hsr 607 1064 1064s 532NF 607NF 355NF 387NF
+0	1	2	3	4	5	-1	6	7	-1	8	9	10	11
+First bin: First bin NF: 
+251	252
+Range resolution: 7.500000
+First height NF (m): 0.000000
+Range-dependent vertical smoothing: no
+Polynomal fit coefficients for range-dependent smoothing (ax^2 +bx +c ): 
+1000.000000	400.000000
+Software version: VerlaufNG7e.vi
+Exclude depol calibration times: no
+Depol cal angle: 0.000000
+Dead time manually: no
+Manual dead times: 355t,  355s or 532 pp, 387, 407, 532t, 532s, 607 ,1064, 532nf, 607nf, 355nf, 387nf, HSRL or RR at 532 nm, 1064s  
+0.800000	0.800000	0.800000	0.800000	0.800000	0.800000	0.800000	0.800000	0.800000	0.800000	0.800000	0.800000	0.800000	0.800000
+Interpolation height for extinction (m): FF NF
+1000.000000	400.000000
+

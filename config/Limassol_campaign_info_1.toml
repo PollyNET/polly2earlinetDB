@@ -25,8 +25,8 @@ data_processing_institution = "Leibniz Institute for Tropospheric Research, Leip
 
 scc_version = ""
 scc_version_description = ""
-processor_name = "PollyNET version 1.3"
-processor_version = "1.3"
+processor_name = ""   # if this was set empty, the program will add the processor automatically based on the labview version or Picasso version
+processor_version = ""
 
 title = "Profiles of aerosol optical properties"
 source = "Ground based LIDAR measurements"

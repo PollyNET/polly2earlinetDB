@@ -316,9 +316,9 @@ class polly_earlinet_convertor(object):
         # search the campaign info file
         if (not os.path.exists(self.camp_info_file)) or \
            (not os.path.isfile(self.camp_info_file)):
-            logger.warning('Campaign info file does not exist. ' +
-                           'Please check the {file}.\nNow turn to ' +
-                           'auto-searching.'.format(file=self.camp_info_file))
+            logger.warning('Campaign info file does not exist. Please check ' +
+                           'the {file}'.format(file=self.camp_info_file) +
+                           '.\nNow turn to auto-searching.')
 
             # auto-search for campaign info file
             self.camp_info_file = self.search_camp_info_file(
@@ -328,13 +328,24 @@ class polly_earlinet_convertor(object):
             if (not os.path.exists(self.camp_info_file)) or \
                (not os.path.isfile(self.camp_info_file)):
                 logger.warning('Failed in searching the campaign info file. ' +
-                               'Your file is not supported by the ' +
-                               'campaign list.')
+                               'Your instrument or campaign is not ' +
+                               'supported by the campaign list.')
                 return None, None, None
 
         # load the campaign info
         with open(self.camp_info_file, 'r', encoding='utf-8') as fh:
             camp_info = toml.loads(fh.read())
+
+        if not (camp_info['processor_name']):
+            # set processor_name automatically if not set in the camp_info file
+            camp_info['processor_name'] = labviewInfo['software_version']
+
+            if not (labviewInfo['software_version']):
+                logger.warn('No software_version in your info file.\n' +
+                            'Please check your labview version. Or set the ' +
+                            'process_name in the campaign info file.')
+                return None, None, None
+
         self.camp_info = camp_info
 
         # read labview data file
@@ -550,6 +561,7 @@ class polly_earlinet_convertor(object):
             'zenith_angle': labviewInfo['zenith_angle'],
             }
 
+        # setup global attributes
         global_attrs = camp_info
 
         return dimensions, data, global_attrs
@@ -611,6 +623,7 @@ class polly_earlinet_convertor(object):
             soundingSearchList[labviewInfo['sounding_type']]
 
         data = {
+                'software_version': labviewInfo['software_version'],
                 'starttime': labviewInfo['starttime'],
                 'endtime': labviewInfo['endtime'],
                 'sounding_type': labviewInfo['sounding_type'],
@@ -817,7 +830,7 @@ class polly_earlinet_convertor(object):
                 (
                     r'(?<=Range resolution: )\d+\.?\d+',
                     float,
-                    30
+                    0
                 ),
             'software_version':
                 (
@@ -848,6 +861,13 @@ class polly_earlinet_convertor(object):
 
         # souding_type is still a float number, convert it to integer
         data['sounding_type'] = int(data['sounding_type'])
+
+        # determine the range_resolution (old version labview don't provide it)
+        if abs(data['range_resolution'] - 0) <= 1e-9:
+            logger.warn('range_resolution is 0 m. Check whether you are ' +
+                        'old version labview program. We will change the ' +
+                        'range_resolution to 30 m for the converison.')
+            data['range_resolution'] = 30
 
         return data
 
@@ -1374,8 +1394,8 @@ class polly_earlinet_convertor(object):
 
         # write history to global attributes
         historyStr = "{process_time}: {program_name}".format(
-                    process_time=starttime.strftime('%Y-%m-%dT%H:%M:%SZ'),
-                    program_name=self.camp_info['processor_name']
+                     process_time=starttime.strftime('%Y-%m-%dT%H:%M:%SZ'),
+                     program_name=self.camp_info['processor_name']
                   )
         setattr(dataset, 'history', historyStr)
 
@@ -1537,5 +1557,4 @@ def main():
 
 # When running through terminal
 if __name__ == '__main__':
-    # main()
-    p2e_go('arielle', 'leipzig', 'labview', 2, 'C:\\Users\\zhenping\\Documents\\PollyNET\\convert_to_earlinet_nc_new\\data\\le_arielle-20190723_2100-0058-49smooth.txt', 'C:\\Users\\zhenping\\Documents\\PollyNET\\convert_to_earlinet_nc_new\\data\\', '', True)
+    main()
