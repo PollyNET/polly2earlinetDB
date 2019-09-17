@@ -1445,6 +1445,37 @@ def p2e_go(polly_type, location, file_type, category, filename, output_dir,
            camp_info, force):
     '''
     convert the polly files according to the input information
+
+    parameters
+    ----------
+    polly_type: str
+    the name of the running instrument. see the full list in `doc\pollyType.md`
+
+    location: str
+    the location for the measurements. The naming should be included in
+    `config\campaign_list.toml`.
+
+    file_type: str
+    the type of the results that you need to convert. (`labview` or `picasso`)
+
+    category: integer
+    the category of your measurements.               
+    1: cirrus; 2:climatol; 4:dicycles; 8:etna; 16:forfires;
+    32:photosmog; 64:rurban; 128:sahadust; 256:stratos;
+    512:satellite_overpasses
+
+    filename: str
+    the path of your results. (wildcards are supported.)
+
+    output_dir: str
+    the directory for saving the converted netCDF files.
+
+    camp_info: str
+    filename of the campaigin configuration file.
+    (only the filename is necessary)
+
+    force: boolean
+    flag to control whether to override the previous results. (default: false)
     '''
 
     p2e_convertor = polly_earlinet_convertor(polly_type, location,

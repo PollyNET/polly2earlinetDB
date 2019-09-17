@@ -7,8 +7,8 @@ At June 24, 2019, the new EARLINET database was released and new data format for
 ## Requirements
 
 - python 3.5
-- [`Anaconda`](https://www.anaconda.com/distribution/)
-- Windows 10 or Ubuntu
+- [`Anaconda3`](https://www.anaconda.com/distribution/)
+- **Windows 10** or **Ubuntu**
 
 ## Download
 
@@ -32,7 +32,7 @@ cd polly_2_earlinet_convertor
 
 ### python virtual environment and install python dependencies
 
-If you have installed [`Anaconda`](https://www.anaconda.com/distribution/), you can easily setup the python environment for running the program. Otherwise, you can go [here](https://github.com/ZPYin/Pollynet_Processing_Chain/blob/master/doc/anaconda_installation.md) for some details.
+If you have installed [`Anaconda3`](https://www.anaconda.com/distribution/), you can easily setup the python environment for running the program. Otherwise, you can go [here](https://github.com/ZPYin/Pollynet_Processing_Chain/blob/master/doc/anaconda_installation.md) for some details of the installation.
 
 **create a new virtual environment.**
 
@@ -129,11 +129,11 @@ p2e_go -p pollyxt_lacros -l punta_arenas -f labview -c 2 -f /User/zhenping/deskt
 
 ## Q&A
 
-If you have any questions, please go to the `issues` sessions to check whether there was an answer. If not, please contact [me](#contact) or draft a new issue there.
+If you have any questions, please go to the [`issues`](https://github.com/ZPYin/polly_2_earlinet_convertor/issues) session to check whether there was an answer. If not, please contact [me](#contact) or draft a new issue there.
 
 ## Acknowledgement
 
-Thanks to **Iannis Binietoglou** with the repository of [`SCC access`](https://bitbucket.org/iannis_b/scc-access/src/default/) and **Ina Mattis** with the repository of [`inqbus.lidar`](https://github.com/Inqbus/inqbus.lidar). 
+Special thanks to the persistent help from [Holger Baars](baars@tropos.de) to test uploading the converted files to the new EARLINET database, which helps a lot for the debugging. In addition, I thank [Martin Radenz](radenz@tropos.de) to solve the file encoding issue.
 
 ## License
 
