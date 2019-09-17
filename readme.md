@@ -68,7 +68,7 @@ python setup.py install
 
 After the steps mentioned above, the command line tool **p2e_go** (polly_to_earlinet convertor) should be ready in your system **PATH**. You can see the instructions of the command with using `p2e_go -h`
 
-```bash
+```text
 usage: p2e_go [-h] [-p POLLY_TYPE] [-l LOCATION] [-t FILE_TYPE] [-c CATEGORY]
               [-f FILENAME] [-d OUTPUT_DIR] [--camp_info CAMP_INFO] [--force]
               {list} ...
