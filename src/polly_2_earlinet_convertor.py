@@ -1352,8 +1352,12 @@ class polly_earlinet_convertor(object):
         camp_info_file_base = os.path.basename(self.camp_info_file)
         camp_info_filename = os.path.splitext(camp_info_file_base)[0]
         system_label = self.campaign_dict[camp_info_filename]['system']
-        starttime = self.campaign_dict[camp_info_filename]['starttime']
-        endtime = self.campaign_dict[camp_info_filename]['endtime']
+        starttime = datetime.datetime.fromtimestamp(
+                        variables['time_bounds'][0]
+                    )
+        endtime = datetime.datetime.fromtimestamp(
+                        variables['time_bounds'][1]
+                    )
         setattr(dataset, 'system', system_label)
         setattr(dataset, 'measurement_start_datetime',
                 starttime.strftime('%Y-%m-%dT%H:%M:%SZ'))
