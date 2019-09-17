@@ -1372,6 +1372,13 @@ class polly_earlinet_convertor(object):
         loc_string = "{city}, {country}".format(city=city, country=country)
         setattr(dataset, 'location', loc_string)
 
+        # write history to global attributes
+        historyStr = "{process_time}: {program_name}".format(
+                    process_time=starttime.strftime('%Y-%m-%dT%H:%M:%SZ'),
+                    program_name=self.camp_info['processor_name']
+                  )
+        setattr(dataset, 'history', historyStr)
+
         dataset.close()
 
 
@@ -1530,4 +1537,5 @@ def main():
 
 # When running through terminal
 if __name__ == '__main__':
-    main()
+    # main()
+    p2e_go('arielle', 'leipzig', 'labview', 2, 'C:\\Users\\zhenping\\Documents\\PollyNET\\convert_to_earlinet_nc_new\\data\\le_arielle-20190723_2100-0058-49smooth.txt', 'C:\\Users\\zhenping\\Documents\\PollyNET\\convert_to_earlinet_nc_new\\data\\', '', True)

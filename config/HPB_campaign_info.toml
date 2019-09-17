@@ -7,25 +7,25 @@
 institution = "DWD Meteorological Observatory Hohenpeissenberg"
 
 PI = "Ina Mattis"
-PI_affliliation = "Deutscher Wetterdienst Observatorium Hohenpeißenberg"
+PI_affiliation = "Deutscher Wetterdienst Observatorium Hohenpeißenberg"
 PI_affiliation_acronym = "DWD"
 PI_address = "Albin-Schwaiger-Weg 10, 82383 Hohenpeißenberg"
 PI_phone = ""
 PI_email = "ina.mattis@dwd.de"
 
 Data_Originator = "Holger Baars"
-Data_Originator_affliliation = "Leibniz-Institut für Troposphärenforschung e.V."
+Data_Originator_affiliation = "Leibniz Institute for Tropospheric Research, Leipzig"
 Data_Originator_affiliation_acronym = "TROPOS"
 Data_Originator_address = "Permoserstraße 15, 04103 Leipzig, Germany"
 Data_Originator_phone = ""
 Data_Originator_email = "baars@tropos.de"
 
-data_processing_institution = "Leibniz-Institut für Troposphärenforschung e.V."
+data_processing_institution = "Leibniz Institute for Tropospheric Research, Leipzig"
 
 scc_version = ""
 scc_version_description = ""
-processor_name = ""
-processor_version = ""
+processor_name = "PollyNET version 1.3"
+processor_version = "1.3"
 
 title = "Profiles of aerosol optical properties"
 source = "Ground based LIDAR measurements"
