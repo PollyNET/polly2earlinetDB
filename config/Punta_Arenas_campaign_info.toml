@@ -1,0 +1,44 @@
+# Configurations for the PollyNET campaign
+# Those configuration will be used as the global attributes in the netCDF file for EARLINET.
+#
+# History:
+#   2019-09-23 First edition by Zhenping
+
+institution = "Leibniz Institute for Tropospheric Research, Leipzig"
+
+PI = "Patric Seifert"
+PI_affiliation = "Leibniz Institute for Tropospheric Research, Leipzig"
+PI_affiliation_acronym = "TROPOS"
+PI_address = "Permoserstraße 15, 04103 Leipzig, Germany"
+PI_phone = ""
+PI_email = "seifert@tropos.de"
+
+Data_Originator = "Holger Baars"
+Data_Originator_affiliation = "Leibniz Institute for Tropospheric Research, Leipzig"
+Data_Originator_affiliation_acronym = "TROPOS"
+Data_Originator_address = "Permoserstraße 15, 04103 Leipzig, Germany"
+Data_Originator_phone = ""
+Data_Originator_email = "baars@tropos.de"
+
+data_processing_institution = "Leibniz Institute for Tropospheric Research, Leipzig"
+
+scc_version = ""
+scc_version_description = ""
+processor_name = ""   # if this was set empty, the program will add the processor automatically based on the labview version or Picasso version
+processor_version = ""
+
+title = "Profiles of aerosol optical properties"
+source = "Ground based LIDAR measurements"
+station_ID = "pas"
+station_latitude = -53.13   # negative for southern hemisphere
+station_longitude = -70.88   # negative for west
+station_altitude = 0   # [m]
+station_starttime = "2018-12-01 00:00:00"
+station_endtime = "2020-03-31 00:00:00"
+comment = "DACAPO-PESO"
+references = "Project website at http://www.earlinet.org"
+
+__file_format_version = "2.0"
+Conventions = "CF-1.7"
+hoi_system_ID = 144
+hoi_configuration_ID = 457
