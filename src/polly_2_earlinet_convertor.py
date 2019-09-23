@@ -1402,6 +1402,39 @@ class polly_earlinet_convertor(object):
         dataset.close()
 
 
+class ArgumentParser(argparse.ArgumentParser):
+    """
+    Override the error message for argparse.
+
+    reference
+    ---------
+    https://stackoverflow.com/questions/5943249/python-argparse-and-controlling-overriding-the-exit-status-code/5943381
+    """
+
+    def _get_action_from_name(self, name):
+        """Given a name, get the Action instance registered with this parser.
+        If only it were made available in the ArgumentError object. It is
+        passed as it's first arg...
+        """
+        container = self._actions
+        if name is None:
+            return None
+        for action in container:
+            if '/'.join(action.option_strings) == name:
+                return action
+            elif action.metavar == name:
+                return action
+            elif action.dest == name:
+                return action
+
+    def error(self, message):
+        exc = sys.exc_info()[1]
+        if exc:
+            exc.argument = self._get_action_from_name(exc.argument_name)
+            raise exc
+        super(ArgumentParser, self).error(message)
+
+
 def show_list(flagShowCampaign=False,
               flagShowInstrument=False,
               flagShowAll=False):
@@ -1501,8 +1534,7 @@ def main():
     # Define the command line arguments.
     description = 'convert the polly profiles from labview program to ' + \
                   'EARLINET format'
-    parser = argparse.ArgumentParser(prog='p2e_go',
-                                     description=description)
+    parser = ArgumentParser(prog='p2e_go', description=description)
 
     # Setup the arguments
     parser.add_argument("-p", "--polly_type",
@@ -1552,7 +1584,7 @@ def main():
     helpMsg = "list supported campaign and instruments."
     subparsers = parser.add_subparsers(dest='list', help=helpMsg)
 
-    list_parser = subparsers.add_parser("list")
+    list_parser = subparsers.add_parser("list", help=helpMsg)
 
     list_parser.add_argument("--campaign",
                              help="show the supported campaign list",
@@ -1571,7 +1603,13 @@ def main():
         parser.print_help(sys.stderr)
         sys.exit(1)
 
-    args = parser.parse_args()
+    try:
+        args = parser.parse_args()
+    except argparse.ArgumentError as e:
+        # error info can be obtained by using e.argument_name and e.message
+        logger.error('Error in parsing the input arguments. Please check ' +
+                     'your inputs.\n{message}'.format(message=e.message))
+        raise ValueError
 
     if args.list:
         show_list(
