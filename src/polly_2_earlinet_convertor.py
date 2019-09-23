@@ -1015,7 +1015,7 @@ class polly_earlinet_convertor(object):
             'cloud_mask':
                 variables['cloud_mask'],
             'earlinet_product_type':
-                2,
+                1,
             'elastic_backscatter_algorithm':
                 1,
             'error_backscatter':
@@ -1097,7 +1097,7 @@ class polly_earlinet_convertor(object):
             'cloud_mask':
                 variables['cloud_mask'],
             'earlinet_product_type':
-                2,
+                6,
             'elastic_backscatter_algorithm':
                 1,
             'error_backscatter':
@@ -1179,7 +1179,7 @@ class polly_earlinet_convertor(object):
             'cloud_mask':
                 variables['cloud_mask'],
             'earlinet_product_type':
-                2,
+                5,
             'elastic_backscatter_algorithm':
                 1,
             'error_backscatter':
@@ -1261,7 +1261,7 @@ class polly_earlinet_convertor(object):
             'cloud_mask':
                 variables['cloud_mask'],
             'earlinet_product_type':
-                2,
+                8,
             'elastic_backscatter_algorithm':
                 1,
             'error_backscatter':

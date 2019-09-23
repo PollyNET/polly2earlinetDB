@@ -40,5 +40,5 @@ references = "Project website at http://www.earlinet.org"
 
 __file_format_version = "2.0"
 Conventions = "CF-1.7"
-hoi_system_ID = -1
-hoi_configuration_ID = -1
+hoi_system_ID = 88
+hoi_configuration_ID = 417
