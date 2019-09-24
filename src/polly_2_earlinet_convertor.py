@@ -214,21 +214,17 @@ class polly_earlinet_convertor(object):
 
         return camp_info
 
-    def read_data_file(self, filename, *args, range_lim=[None, None]):
+    def read_data_file(self, filename, *args):
         '''
         read the data from the polly data file (labview or picasso style)
         '''
 
-        if not (len(range_lim) is 2):
-            logger.error('range_lim must be 2-element list')
-            raise ValueError
-
         if self.fileType.lower() == 'labview':
             dims, data, global_attr = \
-                self.__read_labview_results(filename, range_lim=range_lim)
+                self.__read_labview_results(filename)
         elif self.fileType.lower() == 'picasso':
             dims, data, global_attr = \
-                self.__read_picasso_results(filename, range_lim=range_lim)
+                self.__read_picasso_results(filename)
         else:
             logger.error('Wrong input of fileType: {fileType}'.format(
                 fileType=self.fileType))
@@ -291,7 +287,7 @@ class polly_earlinet_convertor(object):
 
         return campaign_file_list[0]
 
-    def __read_labview_results(self, filename, *args, range_lim=[None, None]):
+    def __read_labview_results(self, filename):
         '''
         read labview results into the data pool, which will then be exported
         to earlinet data format.
@@ -360,20 +356,8 @@ class polly_earlinet_convertor(object):
         labviewData = self.__read_labview_data(filename)
 
         # cut off the bins with influences from smoothing
-        if not range_lim[0]:
-            # if range_lim is None, return all the valid bins
-            smoothWin = labviewInfo['smoothWindow']
-            labviewDataCut = labviewData[int(smoothWin/2):-int(smoothWin/2), :]
-        else:
-            # use the bins between the range_lim
-            flagBins = (labviewData[:, 0] >= (range_lim[0] / 1e3)) &\
-                       (labviewData[:, 0] <= (range_lim[1] / 1e3))
-            if np.sum(flagBins) == 0:
-                logger.warning('No bins located in your input range_lim.' +
-                               'Please check your input range_lim')
-                raise ValueError
-            else:
-                labviewDataCut = labviewData[flagBins, :]
+        smoothWin = labviewInfo['smoothWindow']
+        labviewDataCut = labviewData[int(smoothWin/2):-int(smoothWin/2), :]
 
         # convert the data matrix into dict with unit conversion
         labviewDataDict = {
@@ -891,15 +875,25 @@ class polly_earlinet_convertor(object):
 
         return data
 
-    def __read_picasso_results(self, *args, range_lim=[None, None]):
+    def __read_picasso_results(self, *args):
         data = []
         return data
 
-    def write_to_earlinet_nc(self, variables, dimensions, global_attri):
+    def write_to_earlinet_nc(self, variables, dimensions, global_attri, *args,
+                             range_lim_b=[None, None],
+                             range_lim_e=[None, None]):
         '''
         write the variables, dimensions and global_attri to EARLINET files.
         Examples can be found in 'include'
         '''
+
+        if not (len(range_lim_b) is 2):
+            logger.error('range_lim_b must be 2-element list')
+            raise ValueError
+
+        if not (len(range_lim_e) is 2):
+            logger.error('range_lim_e must be 2-element list')
+            raise ValueError
 
         force = self.force
 
@@ -929,73 +923,85 @@ class polly_earlinet_convertor(object):
                    strftime('%Y%m%d_%H%M'),
                    station_ID=self.camp_info['station_ID'].lower(),
                    instrument=self.pollyType.lower()))
-        var_b355 = {
-            'altitude':
-                variables['altitude'],
-            'atmospheric_molecular_calculation_source':
-                variables['atmospheric_molecular_calculation_source'],
-            'backscatter':
-                variables['bsc_355'],
-            'backscatter_calibration_range':
-                variables['backscatter_calibration_range_355'],
-            'backscatter_calibration_range_search_algorithm':
-                0,
-            'backscatter_calibration_search_range':
-                variables['backscatter_calibration_search_range_355'],
-            'backscatter_calibration_value':
-                variables['backscatter_calibration_value_355'],
-            'backscatter_evaluation_method':
-                variables['backscatter_evaluation_method'],
-            'cirrus_contamination':
-                variables['cirrus_contamination'],
-            'cirrus_contamination_source':
-                variables['cirrus_contamination_source'],
-            'cloud_mask':
-                variables['cloud_mask'],
-            'earlinet_product_type':
-                2,
-            'elastic_backscatter_algorithm':
-                1,
-            'error_backscatter':
-                variables['bsc_std_355'],
-            'error_particledepolarization':
-                variables['pdr_std_355'],
-            'error_retrieval_method':
-                variables['error_retrieval_method'],
-            'error_volumedepolarization':
-                variables['vdr_std_355'],
-            'latitude':
-                variables['latitude'],
-            'longitude':
-                variables['longitude'],
-            'particledepolarization':
-                variables['pdr_355'],
-            'raman_backscatter_algorithm':
-                variables['raman_backscatter_algorithm'],
-            'shots':
-                variables['shots'],
-            'station_altitude':
-                variables['station_altitude'],
-            'time':
-                variables['time'],
-            'time_bounds':
-                variables['time_bounds'],
-            'user_defined_category':
-                variables['user_defined_category'],
-            'vertical_resolution':
-                variables['vertical_resolution'],
-            'volumedepolarization':
-                variables['vdr_355'],
-            'wavelength':
-                355,
-            'zenith_angle':
-                variables['zenith_angle']
-        }
-        dim_b355 = dimensions
-        global_attri_b355 = global_attri
-        logger.info('Writing data to {file}'.format(file=file_b355))
-        self.__write_2_earlinet_nc(file_b355, var_b355, dim_b355,
-                                   global_attri_b355, force)
+
+        if range_lim_b[0]:
+            flagBinsBFile = (variables['altitude'] >= range_lim_b[0]) & \
+                            (variables['altitude'] <= range_lim_b[1])
+        else:
+            flagBinsBFile = np.ones(variables['altitude'].shape, dtype=bool)
+
+        if np.sum(flagBinsBFile) == 0:
+            logger.warn('No bins were selected with your input range_lim_b.\n',
+                        'Jump over {file}.'.format(file=file_b355))
+        else:
+            var_b355 = {
+                'altitude':
+                    variables['altitude'][flagBinsBFile],
+                'atmospheric_molecular_calculation_source':
+                    variables['atmospheric_molecular_calculation_source'],
+                'backscatter':
+                    variables['bsc_355'][flagBinsBFile],
+                'backscatter_calibration_range':
+                    variables['backscatter_calibration_range_355'],
+                'backscatter_calibration_range_search_algorithm':
+                    0,
+                'backscatter_calibration_search_range':
+                    variables['backscatter_calibration_search_range_355'],
+                'backscatter_calibration_value':
+                    variables['backscatter_calibration_value_355'],
+                'backscatter_evaluation_method':
+                    variables['backscatter_evaluation_method'],
+                'cirrus_contamination':
+                    variables['cirrus_contamination'],
+                'cirrus_contamination_source':
+                    variables['cirrus_contamination_source'],
+                'cloud_mask':
+                    variables['cloud_mask'][flagBinsBFile],
+                'earlinet_product_type':
+                    2,
+                'elastic_backscatter_algorithm':
+                    1,
+                'error_backscatter':
+                    variables['bsc_std_355'][flagBinsBFile],
+                'error_particledepolarization':
+                    variables['pdr_std_355'][flagBinsBFile],
+                'error_retrieval_method':
+                    variables['error_retrieval_method'],
+                'error_volumedepolarization':
+                    variables['vdr_std_355'][flagBinsBFile],
+                'latitude':
+                    variables['latitude'],
+                'longitude':
+                    variables['longitude'],
+                'particledepolarization':
+                    variables['pdr_355'][flagBinsBFile],
+                'raman_backscatter_algorithm':
+                    variables['raman_backscatter_algorithm'],
+                'shots':
+                    variables['shots'],
+                'station_altitude':
+                    variables['station_altitude'],
+                'time':
+                    variables['time'],
+                'time_bounds':
+                    variables['time_bounds'],
+                'user_defined_category':
+                    variables['user_defined_category'],
+                'vertical_resolution':
+                    variables['vertical_resolution'][flagBinsBFile],
+                'volumedepolarization':
+                    variables['vdr_355'][flagBinsBFile],
+                'wavelength':
+                    355,
+                'zenith_angle':
+                    variables['zenith_angle']
+            }
+            dim_b355 = dimensions
+            dim_b355['altitude'] = np.sum(flagBinsBFile)
+            global_attri_b355 = global_attri
+            logger.info('Writing data to {file}'.format(file=file_b355))
+            self.__write_2_earlinet_nc(file_b355, var_b355, dim_b355,
+                                       global_attri_b355, force)
 
         # write to e355
         # Up till now, I didn't find naming conventions for the nc files.
@@ -1011,73 +1017,85 @@ class polly_earlinet_convertor(object):
                    strftime('%Y%m%d_%H%M'),
                    station_ID=self.camp_info['station_ID'].lower(),
                    instrument=self.pollyType.lower()))
-        var_e355 = {
-            'altitude':
-                variables['altitude'],
-            'atmospheric_molecular_calculation_source':
-                variables['atmospheric_molecular_calculation_source'],
-            'backscatter':
-                variables['bsc_355'],
-            'backscatter_calibration_range':
-                variables['backscatter_calibration_range_355'],
-            'backscatter_calibration_range_search_algorithm':
-                0,
-            'backscatter_calibration_search_range':
-                variables['backscatter_calibration_search_range_355'],
-            'backscatter_calibration_value':
-                variables['backscatter_calibration_value_355'],
-            'backscatter_evaluation_method':
-                variables['backscatter_evaluation_method'],
-            'cirrus_contamination':
-                variables['cirrus_contamination'],
-            'cirrus_contamination_source':
-                variables['cirrus_contamination_source'],
-            'cloud_mask':
-                variables['cloud_mask'],
-            'earlinet_product_type':
-                1,
-            'elastic_backscatter_algorithm':
-                1,
-            'error_backscatter':
-                variables['bsc_std_355'],
-            'error_extinction':
-                variables['ext_std_355'],
-            'error_retrieval_method':
-                variables['error_retrieval_method'],
-            'extinction':
-                variables['ext_355'],
-            'extinction_assumed_wavelength_dependence':
-                variables['extinction_assumed_wavelength_dependence'],
-            'extinction_evaluation_algorithm':
-                variables['extinction_evaluation_algorithm'],
-            'latitude':
-                variables['latitude'],
-            'longitude':
-                variables['longitude'],
-            'raman_backscatter_algorithm':
-                variables['raman_backscatter_algorithm'],
-            'shots':
-                variables['shots'],
-            'station_altitude':
-                variables['station_altitude'],
-            'time':
-                variables['time'],
-            'time_bounds':
-                variables['time_bounds'],
-            'user_defined_category':
-                variables['user_defined_category'],
-            'vertical_resolution':
-                variables['vertical_resolution'],
-            'wavelength':
-                355,
-            'zenith_angle':
-                variables['zenith_angle']
-        }
-        dim_e355 = dimensions
-        global_attri_e355 = global_attri
-        logger.info('Writing data to {file}'.format(file=file_e355))
-        self.__write_2_earlinet_nc(file_e355, var_e355, dim_e355,
-                                   global_attri_e355, force)
+
+        if range_lim_e[0]:
+            flagBinsEFile = (variables['altitude'] >= range_lim_e[0]) & \
+                            (variables['altitude'] <= range_lim_e[1])
+        else:
+            flagBinsEFile = np.ones(variables['altitude'].shape, dtype=bool)
+
+        if np.sum(flagBinsEFile) == 0:
+            logger.warn('No bins were selected with your input range_lim_e.\n',
+                        'Jump over {file}.'.format(file=file_e355))
+        else:
+            var_e355 = {
+                'altitude':
+                    variables['altitude'][flagBinsEFile],
+                'atmospheric_molecular_calculation_source':
+                    variables['atmospheric_molecular_calculation_source'],
+                'backscatter':
+                    variables['bsc_355'][flagBinsEFile],
+                'backscatter_calibration_range':
+                    variables['backscatter_calibration_range_355'],
+                'backscatter_calibration_range_search_algorithm':
+                    0,
+                'backscatter_calibration_search_range':
+                    variables['backscatter_calibration_search_range_355'],
+                'backscatter_calibration_value':
+                    variables['backscatter_calibration_value_355'],
+                'backscatter_evaluation_method':
+                    variables['backscatter_evaluation_method'],
+                'cirrus_contamination':
+                    variables['cirrus_contamination'],
+                'cirrus_contamination_source':
+                    variables['cirrus_contamination_source'],
+                'cloud_mask':
+                    variables['cloud_mask'][flagBinsEFile],
+                'earlinet_product_type':
+                    1,
+                'elastic_backscatter_algorithm':
+                    1,
+                'error_backscatter':
+                    variables['bsc_std_355'][flagBinsEFile],
+                'error_extinction':
+                    variables['ext_std_355'][flagBinsEFile],
+                'error_retrieval_method':
+                    variables['error_retrieval_method'],
+                'extinction':
+                    variables['ext_355'][flagBinsEFile],
+                'extinction_assumed_wavelength_dependence':
+                    variables['extinction_assumed_wavelength_dependence'],
+                'extinction_evaluation_algorithm':
+                    variables['extinction_evaluation_algorithm'],
+                'latitude':
+                    variables['latitude'],
+                'longitude':
+                    variables['longitude'],
+                'raman_backscatter_algorithm':
+                    variables['raman_backscatter_algorithm'],
+                'shots':
+                    variables['shots'],
+                'station_altitude':
+                    variables['station_altitude'],
+                'time':
+                    variables['time'],
+                'time_bounds':
+                    variables['time_bounds'],
+                'user_defined_category':
+                    variables['user_defined_category'],
+                'vertical_resolution':
+                    variables['vertical_resolution'][flagBinsEFile],
+                'wavelength':
+                    355,
+                'zenith_angle':
+                    variables['zenith_angle']
+            }
+            dim_e355 = dimensions
+            dim_e355['altitude'] = np.sum(flagBinsEFile)
+            global_attri_e355 = global_attri
+            logger.info('Writing data to {file}'.format(file=file_e355))
+            self.__write_2_earlinet_nc(file_e355, var_e355, dim_e355,
+                                       global_attri_e355, force)
 
         # write to b532
         # Up till now, I didn't find naming conventions for the nc files.
@@ -1093,73 +1111,85 @@ class polly_earlinet_convertor(object):
                    strftime('%Y%m%d_%H%M'),
                    station_ID=self.camp_info['station_ID'].lower(),
                    instrument=self.pollyType.lower()))
-        var_b532 = {
-            'altitude':
-                variables['altitude'],
-            'atmospheric_molecular_calculation_source':
-                variables['atmospheric_molecular_calculation_source'],
-            'backscatter':
-                variables['bsc_532'],
-            'backscatter_calibration_range':
-                variables['backscatter_calibration_range_532'],
-            'backscatter_calibration_range_search_algorithm':
-                0,
-            'backscatter_calibration_search_range':
-                variables['backscatter_calibration_search_range_532'],
-            'backscatter_calibration_value':
-                variables['backscatter_calibration_value_532'],
-            'backscatter_evaluation_method':
-                variables['backscatter_evaluation_method'],
-            'cirrus_contamination':
-                variables['cirrus_contamination'],
-            'cirrus_contamination_source':
-                variables['cirrus_contamination_source'],
-            'cloud_mask':
-                variables['cloud_mask'],
-            'earlinet_product_type':
-                6,
-            'elastic_backscatter_algorithm':
-                1,
-            'error_backscatter':
-                variables['bsc_std_532'],
-            'error_particledepolarization':
-                variables['pdr_std_532'],
-            'error_retrieval_method':
-                variables['error_retrieval_method'],
-            'error_volumedepolarization':
-                variables['vdr_std_532'],
-            'latitude':
-                variables['latitude'],
-            'longitude':
-                variables['longitude'],
-            'particledepolarization':
-                variables['pdr_532'],
-            'raman_backscatter_algorithm':
-                variables['raman_backscatter_algorithm'],
-            'shots':
-                variables['shots'],
-            'station_altitude':
-                variables['station_altitude'],
-            'time':
-                variables['time'],
-            'time_bounds':
-                variables['time_bounds'],
-            'user_defined_category':
-                variables['user_defined_category'],
-            'vertical_resolution':
-                variables['vertical_resolution'],
-            'volumedepolarization':
-                variables['vdr_532'],
-            'wavelength':
-                532,
-            'zenith_angle':
-                variables['zenith_angle']
-        }
-        dim_b532 = dimensions
-        global_attri_b532 = global_attri
-        logger.info('Writing data to {file}'.format(file=file_b532))
-        self.__write_2_earlinet_nc(file_b532, var_b532, dim_b532,
-                                   global_attri_b532, force)
+
+        if range_lim_b[0]:
+            flagBinsBFile = (variables['altitude'] >= range_lim_b[0]) & \
+                            (variables['altitude'] <= range_lim_b[1])
+        else:
+            flagBinsBFile = np.ones(variables['altitude'].shape, dtype=bool)
+
+        if np.sum(flagBinsBFile) == 0:
+            logger.warn('No bins were selected with your input range_lim_b.\n',
+                        'Jump over {file}.'.format(file=file_b532))
+        else:
+            var_b532 = {
+                'altitude':
+                    variables['altitude'][flagBinsBFile],
+                'atmospheric_molecular_calculation_source':
+                    variables['atmospheric_molecular_calculation_source'],
+                'backscatter':
+                    variables['bsc_532'][flagBinsBFile],
+                'backscatter_calibration_range':
+                    variables['backscatter_calibration_range_532'],
+                'backscatter_calibration_range_search_algorithm':
+                    0,
+                'backscatter_calibration_search_range':
+                    variables['backscatter_calibration_search_range_532'],
+                'backscatter_calibration_value':
+                    variables['backscatter_calibration_value_532'],
+                'backscatter_evaluation_method':
+                    variables['backscatter_evaluation_method'],
+                'cirrus_contamination':
+                    variables['cirrus_contamination'],
+                'cirrus_contamination_source':
+                    variables['cirrus_contamination_source'],
+                'cloud_mask':
+                    variables['cloud_mask'][flagBinsBFile],
+                'earlinet_product_type':
+                    6,
+                'elastic_backscatter_algorithm':
+                    1,
+                'error_backscatter':
+                    variables['bsc_std_532'][flagBinsBFile],
+                'error_particledepolarization':
+                    variables['pdr_std_532'][flagBinsBFile],
+                'error_retrieval_method':
+                    variables['error_retrieval_method'],
+                'error_volumedepolarization':
+                    variables['vdr_std_532'][flagBinsBFile],
+                'latitude':
+                    variables['latitude'],
+                'longitude':
+                    variables['longitude'],
+                'particledepolarization':
+                    variables['pdr_532'][flagBinsBFile],
+                'raman_backscatter_algorithm':
+                    variables['raman_backscatter_algorithm'],
+                'shots':
+                    variables['shots'],
+                'station_altitude':
+                    variables['station_altitude'],
+                'time':
+                    variables['time'],
+                'time_bounds':
+                    variables['time_bounds'],
+                'user_defined_category':
+                    variables['user_defined_category'],
+                'vertical_resolution':
+                    variables['vertical_resolution'][flagBinsBFile],
+                'volumedepolarization':
+                    variables['vdr_532'][flagBinsBFile],
+                'wavelength':
+                    532,
+                'zenith_angle':
+                    variables['zenith_angle']
+            }
+            dim_b532 = dimensions
+            dim_b532['altitude'] = np.sum(flagBinsBFile)
+            global_attri_b532 = global_attri
+            logger.info('Writing data to {file}'.format(file=file_b532))
+            self.__write_2_earlinet_nc(file_b532, var_b532, dim_b532,
+                                       global_attri_b532, force)
 
         # write to e532
         # Up till now, I didn't find naming conventions for the nc files.
@@ -1175,73 +1205,85 @@ class polly_earlinet_convertor(object):
                    strftime('%Y%m%d_%H%M'),
                    station_ID=self.camp_info['station_ID'].lower(),
                    instrument=self.pollyType.lower()))
-        var_e532 = {
-            'altitude':
-                variables['altitude'],
-            'atmospheric_molecular_calculation_source':
-                variables['atmospheric_molecular_calculation_source'],
-            'backscatter':
-                variables['bsc_532'],
-            'backscatter_calibration_range':
-                variables['backscatter_calibration_range_532'],
-            'backscatter_calibration_range_search_algorithm':
-                0,
-            'backscatter_calibration_search_range':
-                variables['backscatter_calibration_search_range_532'],
-            'backscatter_calibration_value':
-                variables['backscatter_calibration_value_532'],
-            'backscatter_evaluation_method':
-                variables['backscatter_evaluation_method'],
-            'cirrus_contamination':
-                variables['cirrus_contamination'],
-            'cirrus_contamination_source':
-                variables['cirrus_contamination_source'],
-            'cloud_mask':
-                variables['cloud_mask'],
-            'earlinet_product_type':
-                5,
-            'elastic_backscatter_algorithm':
-                1,
-            'error_backscatter':
-                variables['bsc_std_532'],
-            'error_extinction':
-                variables['ext_std_532'],
-            'error_retrieval_method':
-                variables['error_retrieval_method'],
-            'extinction':
-                variables['ext_532'],
-            'extinction_assumed_wavelength_dependence':
-                variables['extinction_assumed_wavelength_dependence'],
-            'extinction_evaluation_algorithm':
-                variables['extinction_evaluation_algorithm'],
-            'latitude':
-                variables['latitude'],
-            'longitude':
-                variables['longitude'],
-            'raman_backscatter_algorithm':
-                variables['raman_backscatter_algorithm'],
-            'shots':
-                variables['shots'],
-            'station_altitude':
-                variables['station_altitude'],
-            'time':
-                variables['time'],
-            'time_bounds':
-                variables['time_bounds'],
-            'user_defined_category':
-                variables['user_defined_category'],
-            'vertical_resolution':
-                variables['vertical_resolution'],
-            'wavelength':
-                532,
-            'zenith_angle':
-                variables['zenith_angle']
-        }
-        dim_e532 = dimensions
-        global_attri_e532 = global_attri
-        logger.info('Writing data to {file}'.format(file=file_e532))
-        self.__write_2_earlinet_nc(file_e532, var_e532, dim_e532,
-                                   global_attri_e532, force)
+
+        if range_lim_e[0]:
+            flagBinsEFile = (variables['altitude'] >= range_lim_e[0]) & \
+                            (variables['altitude'] <= range_lim_e[1])
+        else:
+            flagBinsEFile = np.ones(variables['altitude'].shape, dtype=bool)
+
+        if np.sum(flagBinsEFile) == 0:
+            logger.warn('No bins were selected with your input range_lim_e.\n',
+                        'Jump over {file}.'.format(file=file_e532))
+        else:
+            var_e532 = {
+                'altitude':
+                    variables['altitude'][flagBinsEFile],
+                'atmospheric_molecular_calculation_source':
+                    variables['atmospheric_molecular_calculation_source'],
+                'backscatter':
+                    variables['bsc_532'][flagBinsEFile],
+                'backscatter_calibration_range':
+                    variables['backscatter_calibration_range_532'],
+                'backscatter_calibration_range_search_algorithm':
+                    0,
+                'backscatter_calibration_search_range':
+                    variables['backscatter_calibration_search_range_532'],
+                'backscatter_calibration_value':
+                    variables['backscatter_calibration_value_532'],
+                'backscatter_evaluation_method':
+                    variables['backscatter_evaluation_method'],
+                'cirrus_contamination':
+                    variables['cirrus_contamination'],
+                'cirrus_contamination_source':
+                    variables['cirrus_contamination_source'],
+                'cloud_mask':
+                    variables['cloud_mask'][flagBinsEFile],
+                'earlinet_product_type':
+                    5,
+                'elastic_backscatter_algorithm':
+                    1,
+                'error_backscatter':
+                    variables['bsc_std_532'][flagBinsEFile],
+                'error_extinction':
+                    variables['ext_std_532'][flagBinsEFile],
+                'error_retrieval_method':
+                    variables['error_retrieval_method'],
+                'extinction':
+                    variables['ext_532'][flagBinsEFile],
+                'extinction_assumed_wavelength_dependence':
+                    variables['extinction_assumed_wavelength_dependence'],
+                'extinction_evaluation_algorithm':
+                    variables['extinction_evaluation_algorithm'],
+                'latitude':
+                    variables['latitude'],
+                'longitude':
+                    variables['longitude'],
+                'raman_backscatter_algorithm':
+                    variables['raman_backscatter_algorithm'],
+                'shots':
+                    variables['shots'],
+                'station_altitude':
+                    variables['station_altitude'],
+                'time':
+                    variables['time'],
+                'time_bounds':
+                    variables['time_bounds'],
+                'user_defined_category':
+                    variables['user_defined_category'],
+                'vertical_resolution':
+                    variables['vertical_resolution'][flagBinsEFile],
+                'wavelength':
+                    532,
+                'zenith_angle':
+                    variables['zenith_angle']
+            }
+            dim_e532 = dimensions
+            dim_e532['altitude'] = np.sum(flagBinsEFile)
+            global_attri_e532 = global_attri
+            logger.info('Writing data to {file}'.format(file=file_e532))
+            self.__write_2_earlinet_nc(file_e532, var_e532, dim_e532,
+                                       global_attri_e532, force)
 
         # write to b1064
         # Up till now, I didn't find naming conventions for the nc files.
@@ -1257,65 +1299,77 @@ class polly_earlinet_convertor(object):
                    strftime('%Y%m%d_%H%M'),
                    station_ID=self.camp_info['station_ID'].lower(),
                    instrument=self.pollyType.lower()))
-        var_b1064 = {
-            'altitude':
-                variables['altitude'],
-            'atmospheric_molecular_calculation_source':
-                variables['atmospheric_molecular_calculation_source'],
-            'backscatter':
-                variables['bsc_1064'],
-            'backscatter_calibration_range':
-                variables['backscatter_calibration_range_1064'],
-            'backscatter_calibration_range_search_algorithm':
-                0,
-            'backscatter_calibration_search_range':
-                variables['backscatter_calibration_search_range_1064'],
-            'backscatter_calibration_value':
-                variables['backscatter_calibration_value_1064'],
-            'backscatter_evaluation_method':
-                variables['backscatter_evaluation_method'],
-            'cirrus_contamination':
-                variables['cirrus_contamination'],
-            'cirrus_contamination_source':
-                variables['cirrus_contamination_source'],
-            'cloud_mask':
-                variables['cloud_mask'],
-            'earlinet_product_type':
-                8,
-            'elastic_backscatter_algorithm':
-                1,
-            'error_backscatter':
-                variables['bsc_std_1064'],
-            'error_retrieval_method':
-                variables['error_retrieval_method'],
-            'latitude':
-                variables['latitude'],
-            'longitude':
-                variables['longitude'],
-            'raman_backscatter_algorithm':
-                variables['raman_backscatter_algorithm'],
-            'shots':
-                variables['shots'],
-            'station_altitude':
-                variables['station_altitude'],
-            'time':
-                variables['time'],
-            'time_bounds':
-                variables['time_bounds'],
-            'user_defined_category':
-                variables['user_defined_category'],
-            'vertical_resolution':
-                variables['vertical_resolution'],
-            'wavelength':
-                1064,
-            'zenith_angle':
-                variables['zenith_angle']
-        }
-        dim_b1064 = dimensions
-        global_attri_b1064 = global_attri
-        logger.info('Writing data to {file}'.format(file=file_b1064))
-        self.__write_2_earlinet_nc(file_b1064, var_b1064, dim_b1064,
-                                   global_attri_b1064, force)
+
+        if range_lim_b[0]:
+            flagBinsBFile = (variables['altitude'] >= range_lim_b[0]) & \
+                            (variables['altitude'] <= range_lim_b[1])
+        else:
+            flagBinsBFile = np.ones(variables['altitude'].shape, dtype=bool)
+
+        if np.sum(flagBinsBFile) == 0:
+            logger.warn('No bins were selected with your input range_lim_b.\n',
+                        'Jump over {file}.'.format(file=file_b1064))
+        else:
+            var_b1064 = {
+                'altitude':
+                    variables['altitude'][flagBinsBFile],
+                'atmospheric_molecular_calculation_source':
+                    variables['atmospheric_molecular_calculation_source'],
+                'backscatter':
+                    variables['bsc_1064'][flagBinsBFile],
+                'backscatter_calibration_range':
+                    variables['backscatter_calibration_range_1064'],
+                'backscatter_calibration_range_search_algorithm':
+                    0,
+                'backscatter_calibration_search_range':
+                    variables['backscatter_calibration_search_range_1064'],
+                'backscatter_calibration_value':
+                    variables['backscatter_calibration_value_1064'],
+                'backscatter_evaluation_method':
+                    variables['backscatter_evaluation_method'],
+                'cirrus_contamination':
+                    variables['cirrus_contamination'],
+                'cirrus_contamination_source':
+                    variables['cirrus_contamination_source'],
+                'cloud_mask':
+                    variables['cloud_mask'][flagBinsBFile],
+                'earlinet_product_type':
+                    8,
+                'elastic_backscatter_algorithm':
+                    1,
+                'error_backscatter':
+                    variables['bsc_std_1064'][flagBinsBFile],
+                'error_retrieval_method':
+                    variables['error_retrieval_method'],
+                'latitude':
+                    variables['latitude'],
+                'longitude':
+                    variables['longitude'],
+                'raman_backscatter_algorithm':
+                    variables['raman_backscatter_algorithm'],
+                'shots':
+                    variables['shots'],
+                'station_altitude':
+                    variables['station_altitude'],
+                'time':
+                    variables['time'],
+                'time_bounds':
+                    variables['time_bounds'],
+                'user_defined_category':
+                    variables['user_defined_category'],
+                'vertical_resolution':
+                    variables['vertical_resolution'][flagBinsBFile],
+                'wavelength':
+                    1064,
+                'zenith_angle':
+                    variables['zenith_angle']
+            }
+            dim_b1064 = dimensions
+            dim_b1064['altitude'] = np.sum(flagBinsBFile)
+            global_attri_b1064 = global_attri
+            logger.info('Writing data to {file}'.format(file=file_b1064))
+            self.__write_2_earlinet_nc(file_b1064, var_b1064, dim_b1064,
+                                       global_attri_b1064, force)
 
     def __write_2_earlinet_nc(self, filename, variables, dimensions,
                               global_attri, force):
@@ -1495,7 +1549,7 @@ def show_list(flagShowCampaign=False,
 
 
 def p2e_go(polly_type, location, file_type, category, filename, output_dir,
-           range_lim, camp_info, force):
+           range_lim_b, range_lim_e, camp_info, force):
     '''
     convert the polly files according to the input information
 
@@ -1523,8 +1577,11 @@ def p2e_go(polly_type, location, file_type, category, filename, output_dir,
     output_dir: str
     the directory for saving the converted netCDF files.
 
-    range_lim: 2-element list
-    range limit for the variables. [m]
+    range_lim_b: 2-element list
+    range limit for the variables in b-files (b355, b532, b1064). [m]
+
+    range_lim_e: 2-element list
+    range limit for the variables in e-files (e355, e532). [m]
 
     camp_info: str
     filename of the campaigin configuration file.
@@ -1549,8 +1606,10 @@ def p2e_go(polly_type, location, file_type, category, filename, output_dir,
     # convert all the files
     for task in fileLists:
         dims, data, global_attrs = \
-            p2e_convertor.read_data_file(task, range_lim=range_lim)
-        p2e_convertor.write_to_earlinet_nc(data, dims, global_attrs)
+            p2e_convertor.read_data_file(task)
+        p2e_convertor.write_to_earlinet_nc(data, dims, global_attrs,
+                                           range_lim_b=range_lim_b,
+                                           range_lim_e=range_lim_e)
 
 
 def main():
@@ -1592,10 +1651,19 @@ def main():
                         help='setup the directory for the converted files',
                         dest='output_dir',
                         default='')
-    parser.add_argument("-r", "--range",
+    parser.add_argument("--range_e",
                         help='setup the height range for the ' +
-                             'converted files. \n(e.g., -r 200 16000)',
-                        dest='range_lim',
+                             'converted e-files. \n' +
+                             '(e.g., --range_e 200 16000)',
+                        dest='range_lim_e',
+                        type=int,
+                        nargs=2,
+                        default=[None, None])
+    parser.add_argument("--range_b",
+                        help='setup the height range for the ' +
+                             'converted b-files. \n' +
+                             '(e.g., --range_b 200 16000)',
+                        dest='range_lim_b',
                         type=int,
                         nargs=2,
                         default=[None, None])
@@ -1653,7 +1721,8 @@ def main():
         # run the command
         p2e_go(args.polly_type, args.location, args.file_type,
                args.category, args.filename, args.output_dir,
-               args.range_lim, args.camp_info, args.force)
+               args.range_lim_b, args.range_lim_e,
+               args.camp_info, args.force)
 
 
 # When running through terminal
