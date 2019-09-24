@@ -118,13 +118,13 @@ p2e_go list --all   # show all campaigns together with the systems
 **Convert one file**
 
 ```bash
-p2e_go -p pollyxt_lacros -l punta_arenas -f labview -c 2 -f /User/zhenping/desktop/file1.txt -d /Users/zhenping/Destkop/test --force
+p2e_go -p pollyxt_lacros -l punta_arenas -t labview -c 2 -f /User/zhenping/desktop/file1.txt -d /Users/zhenping/Destkop/test --force
 ```
 
 **convert files with using wildcards**
 
 ```bash
-p2e_go -p pollyxt_lacros -l punta_arenas -f labview -c 2 -f /User/zhenping/desktop/file*.txt -d /Users/zhenping/Destkop/test --force
+p2e_go -p pollyxt_lacros -l punta_arenas -t labview -c 2 -f /User/zhenping/desktop/file*.txt -d /Users/zhenping/Destkop/test --force
 ```
 
 ## Q&A
