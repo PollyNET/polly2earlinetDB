@@ -7,6 +7,7 @@ import numpy as np
 import datetime
 import re
 import argparse
+from argparse import RawTextHelpFormatter
 from netCDF4 import Dataset
 from scipy.interpolate import interp1d
 
@@ -213,14 +214,21 @@ class polly_earlinet_convertor(object):
 
         return camp_info
 
-    def read_data_file(self, filename):
+    def read_data_file(self, filename, *args, range_lim=[None, None]):
         '''
         read the data from the polly data file (labview or picasso style)
         '''
+
+        if not (len(range_lim) is 2):
+            logger.error('range_lim must be 2-element list')
+            raise ValueError
+
         if self.fileType.lower() == 'labview':
-            dims, data, global_attr = self.__read_labview_results(filename)
+            dims, data, global_attr = \
+                self.__read_labview_results(filename, range_lim=range_lim)
         elif self.fileType.lower() == 'picasso':
-            dims, data, global_attr = self.__read_picasso_results(filename)
+            dims, data, global_attr = \
+                self.__read_picasso_results(filename, range_lim=range_lim)
         else:
             logger.error('Wrong input of fileType: {fileType}'.format(
                 fileType=self.fileType))
@@ -283,7 +291,7 @@ class polly_earlinet_convertor(object):
 
         return campaign_file_list[0]
 
-    def __read_labview_results(self, filename):
+    def __read_labview_results(self, filename, *args, range_lim=[None, None]):
         '''
         read labview results into the data pool, which will then be exported
         to earlinet data format.
@@ -352,8 +360,20 @@ class polly_earlinet_convertor(object):
         labviewData = self.__read_labview_data(filename)
 
         # cut off the bins with influences from smoothing
-        smoothWin = labviewInfo['smoothWindow']
-        labviewDataCut = labviewData[int(smoothWin/2):-int(smoothWin/2), :]
+        if not range_lim[0]:
+            # if range_lim is None, return all the valid bins
+            smoothWin = labviewInfo['smoothWindow']
+            labviewDataCut = labviewData[int(smoothWin/2):-int(smoothWin/2), :]
+        else:
+            # use the bins between the range_lim
+            flagBins = (labviewData[:, 0] >= (range_lim[0] / 1e3)) &\
+                       (labviewData[:, 0] <= (range_lim[1] / 1e3))
+            if np.sum(flagBins) == 0:
+                logger.warning('No bins located in your input range_lim.' +
+                               'Please check your input range_lim')
+                raise ValueError
+            else:
+                labviewDataCut = labviewData[flagBins, :]
 
         # convert the data matrix into dict with unit conversion
         labviewDataDict = {
@@ -871,7 +891,7 @@ class polly_earlinet_convertor(object):
 
         return data
 
-    def __read_picasso_results(self):
+    def __read_picasso_results(self, *args, range_lim=[None, None]):
         data = []
         return data
 
@@ -1475,7 +1495,7 @@ def show_list(flagShowCampaign=False,
 
 
 def p2e_go(polly_type, location, file_type, category, filename, output_dir,
-           camp_info, force):
+           range_lim, camp_info, force):
     '''
     convert the polly files according to the input information
 
@@ -1503,6 +1523,9 @@ def p2e_go(polly_type, location, file_type, category, filename, output_dir,
     output_dir: str
     the directory for saving the converted netCDF files.
 
+    range_lim: 2-element list
+    range limit for the variables. [m]
+
     camp_info: str
     filename of the campaigin configuration file.
     (only the filename is necessary)
@@ -1525,7 +1548,8 @@ def p2e_go(polly_type, location, file_type, category, filename, output_dir,
 
     # convert all the files
     for task in fileLists:
-        dims, data, global_attrs = p2e_convertor.read_data_file(task)
+        dims, data, global_attrs = \
+            p2e_convertor.read_data_file(task, range_lim=range_lim)
         p2e_convertor.write_to_earlinet_nc(data, dims, global_attrs)
 
 
@@ -1534,7 +1558,8 @@ def main():
     # Define the command line arguments.
     description = 'convert the polly profiles from labview program to ' + \
                   'EARLINET format'
-    parser = ArgumentParser(prog='p2e_go', description=description)
+    parser = ArgumentParser(prog='p2e_go', description=description,
+                            formatter_class=RawTextHelpFormatter)
 
     # Setup the arguments
     parser.add_argument("-p", "--polly_type",
@@ -1552,7 +1577,7 @@ def main():
                         default='labview')
     helpMsg = "setup the category of the profile\n" + \
               "flag_masks: 1, 2, 4, 8, 16, 32, 64, 128, 256, 512\n" + \
-              "flag_meanings: cirrus climatol dicycles etna forfires " + \
+              "flag_meanings: cirrus climatol dicycles etna forfires \n" + \
               "photosmog rurban sahadust stratos satellite_overpasses"
     parser.add_argument("-c", "--category",
                         help=helpMsg,
@@ -1567,6 +1592,13 @@ def main():
                         help='setup the directory for the converted files',
                         dest='output_dir',
                         default='')
+    parser.add_argument("-r", "--range",
+                        help='setup the height range for the ' +
+                             'converted files. \n(e.g., -r 200 16000)',
+                        dest='range_lim',
+                        type=int,
+                        nargs=2,
+                        default=[None, None])
     helpMsg = 'setup the campaign info file [*.toml].\n' + \
               'If not set, the program will search the config folder for ' + \
               'a suitable one.'
@@ -1621,7 +1653,7 @@ def main():
         # run the command
         p2e_go(args.polly_type, args.location, args.file_type,
                args.category, args.filename, args.output_dir,
-               args.camp_info, args.force)
+               args.range_lim, args.camp_info, args.force)
 
 
 # When running through terminal

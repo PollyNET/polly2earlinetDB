@@ -70,13 +70,15 @@ After the steps mentioned above, the command line tool **p2e_go** (polly_to_earl
 
 ```text
 usage: p2e_go [-h] [-p POLLY_TYPE] [-l LOCATION] [-t FILE_TYPE] [-c CATEGORY]
-              [-f FILENAME] [-d OUTPUT_DIR] [--camp_info CAMP_INFO] [--force]
+              [-f FILENAME] [-d OUTPUT_DIR] [-r RANGE_LIM RANGE_LIM]
+              [--camp_info CAMP_INFO] [--force]
               {list} ...
 
 convert the polly profiles from labview program to EARLINET format
 
 positional arguments:
   {list}                list supported campaign and instruments.
+    list                list supported campaign and instruments.
 
 optional arguments:
   -h, --help            show this help message and exit
@@ -87,18 +89,19 @@ optional arguments:
   -t FILE_TYPE, --file_type FILE_TYPE
                         setup the type of the profile (labview | picasso)
   -c CATEGORY, --category CATEGORY
-                        setup the category of the profile flag_masks: 1, 2, 4,
-                        8, 16, 32, 64, 128, 256, 512 flag_meanings: cirrus
-                        climatol dicycles etna forfires photosmog rurban
-                        sahadust stratos satellite_overpasses
+                        setup the category of the profile
+                        flag_masks: 1, 2, 4, 8, 16, 32, 64, 128, 256, 512
+                        flag_meanings: cirrus climatol dicycles etna forfires photosmog rurban sahadust stratos satellite_overpasses
   -f FILENAME, --filename FILENAME
                         setup the filename of the polly profile
   -d OUTPUT_DIR, --output_dir OUTPUT_DIR
                         setup the directory for the converted files
+  -r RANGE_LIM RANGE_LIM, --range RANGE_LIM RANGE_LIM
+                        setup the height range for the converted files.
+                        (e.g., -r 200 16000)
   --camp_info CAMP_INFO
-                        setup the campaign info file [*.toml]. If not set, the
-                        program will search the config folder for a suitable
-                        one.
+                        setup the campaign info file [*.toml].
+                        If not set, the program will search the config folder for a suitable one.
   --force               whether to overwrite the nc files if they exists
 ```
 
