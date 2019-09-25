@@ -990,7 +990,8 @@ class polly_earlinet_convertor(object):
                 'user_defined_category':
                     variables['user_defined_category'],
                 'vertical_resolution':
-                    variables['vertical_resolution'][flagBinsBFile],
+                    variables['vertical_resolution'][flagBinsBFile] *
+                    variables['vertical_smooth_bins'],
                 'volumedepolarization':
                     variables['vdr_355'][flagBinsBFile],
                 'wavelength':
@@ -1087,7 +1088,8 @@ class polly_earlinet_convertor(object):
                 'user_defined_category':
                     variables['user_defined_category'],
                 'vertical_resolution':
-                    variables['vertical_resolution'][flagBinsEFile],
+                    variables['vertical_resolution'][flagBinsEFile] *
+                    variables['vertical_smooth_bins'],
                 'wavelength':
                     355,
                 'zenith_angle':
@@ -1180,7 +1182,8 @@ class polly_earlinet_convertor(object):
                 'user_defined_category':
                     variables['user_defined_category'],
                 'vertical_resolution':
-                    variables['vertical_resolution'][flagBinsBFile],
+                    variables['vertical_resolution'][flagBinsBFile] *
+                    variables['vertical_smooth_bins'],
                 'volumedepolarization':
                     variables['vdr_532'][flagBinsBFile],
                 'wavelength':
@@ -1277,7 +1280,8 @@ class polly_earlinet_convertor(object):
                 'user_defined_category':
                     variables['user_defined_category'],
                 'vertical_resolution':
-                    variables['vertical_resolution'][flagBinsEFile],
+                    variables['vertical_resolution'][flagBinsEFile] *
+                    variables['vertical_smooth_bins'],
                 'wavelength':
                     532,
                 'zenith_angle':
@@ -1364,7 +1368,8 @@ class polly_earlinet_convertor(object):
                 'user_defined_category':
                     variables['user_defined_category'],
                 'vertical_resolution':
-                    variables['vertical_resolution'][flagBinsBFile],
+                    variables['vertical_resolution'][flagBinsBFile] *
+                    variables['vertical_smooth_bins'],
                 'wavelength':
                     1064,
                 'zenith_angle':
