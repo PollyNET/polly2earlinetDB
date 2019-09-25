@@ -91,7 +91,7 @@ optional arguments:
   -t FILE_TYPE, --file_type FILE_TYPE
                         setup the type of the profile (labview | picasso)
   -c CATEGORY, --category CATEGORY
-                        setup the category of the profile
+                        setup the category of the profile (user_defined_category)
                         flag_masks: 1, 2, 4, 8, 16, 32, 64, 128, 256, 512
                         flag_meanings: cirrus climatol dicycles etna forfires
                         photosmog rurban sahadust stratos satellite_overpasses
