@@ -129,6 +129,14 @@ p2e_go list --all   # show all campaigns together with the systems
 ```bash
 p2e_go -p pollyxt_lacros -l punta_arenas -t labview -c 2 -f /User/zhenping/desktop/file1.txt -d /Users/zhenping/Destkop/test --force
 ```
+Outputs
+|file namings|example|description|
+|:----------:|:-----:|:----------|
+|{date:yyyymmdd\_HH:MM}\_{smooth:03d}\_{station ID}\_{PollyType}\_b355.nc|20190723\_1900\_075\_lei\_arielle\_b355.nc|results associated with backscatter, vol/par depolarization ratio at 355 nm|
+|{date:yyyymmdd\_HH:MM}\_{smooth:03d}\_{station ID}\_{PollyType}\_b532.nc|20190723\_1900\_075\_lei\_arielle\_b532.nc|results associated with backscatter, vol/par depolarization ratio at 532 nm|
+|{date:yyyymmdd\_HH:MM}\_{smooth:03d}\_{station ID}\_{PollyType}\_b1064.nc|20190723\_1900\_075\_lei\_arielle\_b1064.nc|results associated with backscatter coefficient at 1064 nm|
+|{date:yyyymmdd\_HH:MM}\_{smooth:03d}\_{station ID}\_{PollyType}\_e355.nc|20190723\_1900\_075\_lei\_arielle\_e355.nc|results associated with backscatter and extinction coefficients at 355 nm|
+|{date:yyyymmdd\_HH:MM}\_{smooth:03d}\_{station ID}\_{PollyType}\_e532.nc|20190723\_1900\_075\_lei\_arielle\_e532.nc|results associated w532 backscatter and extinction coefficients at 532 nm|
 
 **convert files with using wildcards**
 

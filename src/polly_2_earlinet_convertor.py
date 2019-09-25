@@ -563,6 +563,7 @@ class polly_earlinet_convertor(object):
             'shots': labviewInfo['shots'],
             'station_altitude': camp_info['station_altitude'],
             'zenith_angle': labviewInfo['zenith_angle'],
+            'vertical_smooth_bins': labviewInfo['smoothWindow']
             }
 
         # setup global attributes
@@ -917,10 +918,11 @@ class polly_earlinet_convertor(object):
         # yyyymmdd_HHMM_{station_ID}_{instrument}_{b355|e355}.nc
         file_b355 = os.path.join(
             self.outputDir,
-            '{date}_{station_ID}_{instrument}_b355.nc'.
+            '{date}_{smooth:03d}_{station_ID}_{instrument}_b355.nc'.
             format(date=datetime.datetime.
                    utcfromtimestamp(variables['time']).
                    strftime('%Y%m%d_%H%M'),
+                   smooth=variables['vertical_smooth_bins'],
                    station_ID=self.camp_info['station_ID'].lower(),
                    instrument=self.pollyType.lower()))
 
@@ -1011,10 +1013,11 @@ class polly_earlinet_convertor(object):
         # yyyymmdd_HHMM_{station_ID}_{instrument}_{b355|e355}.nc
         file_e355 = os.path.join(
             self.outputDir,
-            '{date}_{station_ID}_{instrument}_e355.nc'.
+            '{date}_{smooth:03d}_{station_ID}_{instrument}_e355.nc'.
             format(date=datetime.datetime.
                    utcfromtimestamp(variables['time']).
                    strftime('%Y%m%d_%H%M'),
+                   smooth=variables['vertical_smooth_bins'],
                    station_ID=self.camp_info['station_ID'].lower(),
                    instrument=self.pollyType.lower()))
 
@@ -1105,10 +1108,11 @@ class polly_earlinet_convertor(object):
         # yyyymmdd_HHMM_{station_ID}_{instrument}_{b532|e532}.nc
         file_b532 = os.path.join(
             self.outputDir,
-            '{date}_{station_ID}_{instrument}_b532.nc'.
+            '{date}_{smooth:03d}_{station_ID}_{instrument}_b532.nc'.
             format(date=datetime.datetime.
                    utcfromtimestamp(variables['time']).
                    strftime('%Y%m%d_%H%M'),
+                   smooth=variables['vertical_smooth_bins'],
                    station_ID=self.camp_info['station_ID'].lower(),
                    instrument=self.pollyType.lower()))
 
@@ -1199,10 +1203,11 @@ class polly_earlinet_convertor(object):
         # yyyymmdd_HHMM_{station_ID}_{instrument}_{b532|e532}.nc
         file_e532 = os.path.join(
             self.outputDir,
-            '{date}_{station_ID}_{instrument}_e532.nc'.
+            '{date}_{smooth:03d}_{station_ID}_{instrument}_e532.nc'.
             format(date=datetime.datetime.
                    utcfromtimestamp(variables['time']).
                    strftime('%Y%m%d_%H%M'),
+                   smooth=variables['vertical_smooth_bins'],
                    station_ID=self.camp_info['station_ID'].lower(),
                    instrument=self.pollyType.lower()))
 
@@ -1293,10 +1298,11 @@ class polly_earlinet_convertor(object):
         # yyyymmdd_HHMM_{station_ID}_{instrument}_{b1064}.nc
         file_b1064 = os.path.join(
             self.outputDir,
-            '{date}_{station_ID}_{instrument}_b1064.nc'.
+            '{date}_{smooth:03d}_{station_ID}_{instrument}_b1064.nc'.
             format(date=datetime.datetime.
                    utcfromtimestamp(variables['time']).
                    strftime('%Y%m%d_%H%M'),
+                   smooth=variables['vertical_smooth_bins'],
                    station_ID=self.camp_info['station_ID'].lower(),
                    instrument=self.pollyType.lower()))
 
