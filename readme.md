@@ -129,8 +129,8 @@ p2e_go list --all   # show all campaigns together with the systems
 ```bash
 p2e_go -p pollyxt_lacros -l punta_arenas -t labview -c 2 -f /User/zhenping/desktop/file1.txt -d /Users/zhenping/Destkop/test --force
 ```
-Outputs
-|file namings|example|description|
+
+|output file namings|example|description|
 |:----------:|:-----:|:----------|
 |{date:yyyymmdd\_HH:MM}\_{smooth:03d}\_{station ID}\_{PollyType}\_b355.nc|20190723\_1900\_075\_lei\_arielle\_b355.nc|results associated with backscatter, vol/par depolarization ratio at 355 nm|
 |{date:yyyymmdd\_HH:MM}\_{smooth:03d}\_{station ID}\_{PollyType}\_b532.nc|20190723\_1900\_075\_lei\_arielle\_b532.nc|results associated with backscatter, vol/par depolarization ratio at 532 nm|
