@@ -357,7 +357,7 @@ class polly_earlinet_convertor(object):
 
         # cut off the bins with influences from smoothing
         smoothWin = labviewInfo['smoothWindow']
-        labviewDataCut = labviewData[int(smoothWin/2):-int(smoothWin/2), :]
+        labviewDataCut = labviewData[0:-int(smoothWin/2), :]
 
         # convert the data matrix into dict with unit conversion
         labviewDataDict = {
@@ -926,7 +926,7 @@ class polly_earlinet_convertor(object):
                    station_ID=self.camp_info['station_ID'].lower(),
                    instrument=self.pollyType.lower()))
 
-        if range_lim_b[0]:
+        if not range_lim_b[0] is None:
             flagBinsBFile = (variables['altitude'] >= range_lim_b[0]) & \
                             (variables['altitude'] <= range_lim_b[1])
         else:
@@ -1021,7 +1021,7 @@ class polly_earlinet_convertor(object):
                    station_ID=self.camp_info['station_ID'].lower(),
                    instrument=self.pollyType.lower()))
 
-        if range_lim_e[0]:
+        if not range_lim_e[0] is None:
             flagBinsEFile = (variables['altitude'] >= range_lim_e[0]) & \
                             (variables['altitude'] <= range_lim_e[1])
         else:
@@ -1116,7 +1116,7 @@ class polly_earlinet_convertor(object):
                    station_ID=self.camp_info['station_ID'].lower(),
                    instrument=self.pollyType.lower()))
 
-        if range_lim_b[0]:
+        if not range_lim_b[0] is None:
             flagBinsBFile = (variables['altitude'] >= range_lim_b[0]) & \
                             (variables['altitude'] <= range_lim_b[1])
         else:
@@ -1211,7 +1211,7 @@ class polly_earlinet_convertor(object):
                    station_ID=self.camp_info['station_ID'].lower(),
                    instrument=self.pollyType.lower()))
 
-        if range_lim_e[0]:
+        if not range_lim_e[0] is None:
             flagBinsEFile = (variables['altitude'] >= range_lim_e[0]) & \
                             (variables['altitude'] <= range_lim_e[1])
         else:
@@ -1306,7 +1306,7 @@ class polly_earlinet_convertor(object):
                    station_ID=self.camp_info['station_ID'].lower(),
                    instrument=self.pollyType.lower()))
 
-        if range_lim_b[0]:
+        if not range_lim_b[0] is None:
             flagBinsBFile = (variables['altitude'] >= range_lim_b[0]) & \
                             (variables['altitude'] <= range_lim_b[1])
         else:
@@ -1572,7 +1572,7 @@ def p2e_go(polly_type, location, file_type, category, filename, output_dir,
     the type of the results that you need to convert. (`labview` or `picasso`)
 
     category: integer
-    the category of your measurements.               
+    the category of your measurements.
     1: cirrus; 2:climatol; 4:dicycles; 8:etna; 16:forfires;
     32:photosmog; 64:rurban; 128:sahadust; 256:stratos;
     512:satellite_overpasses
@@ -1640,7 +1640,7 @@ def main():
                         help=helpMsg,
                         dest='file_type',
                         default='labview')
-    helpMsg = "setup the category of the profile\n" + \
+    helpMsg = "setup the category of the profile (user_defined_category)\n" + \
               "flag_masks: 1, 2, 4, 8, 16, 32, 64, 128, 256, 512\n" + \
               "flag_meanings: cirrus climatol dicycles etna forfires \n" + \
               "photosmog rurban sahadust stratos satellite_overpasses"
