@@ -17,6 +17,7 @@ CONVERT_KEY_FILE = 'labview_key_2_earlinet_key_spec.toml'
 METADATA_FILE = 'metadata.toml'
 CAMPAIGN_LIST_FILE = 'campaign_list.toml'
 NETCDF_FORMAT = "NETCDF4"
+NETCDF_COMPLEVEL = 5   # netCDF compression level
 PROJECTDIR = os.path.dirname(
     os.path.dirname(os.path.realpath(__file__))
 )
@@ -692,6 +693,7 @@ class polly_earlinet_convertor(object):
 
         # decoder structure
         # key:  regex, conversion function fill value
+        # Inspired by Martin Radenz
         decoders = {
             'starttime':
                 (
@@ -1403,7 +1405,10 @@ class polly_earlinet_convertor(object):
             # no available data
             return
 
-        dataset = Dataset(filename, 'w', format=NETCDF_FORMAT, zlib=True)
+        dataset = Dataset(filename, 'w', 
+                          format=NETCDF_FORMAT,
+                          zlib=True,
+                          complevel=NETCDF_COMPLEVEL)
 
         # create dimensions
         for dim_key in self.metadata['dimensions']:
@@ -1424,14 +1429,18 @@ class polly_earlinet_convertor(object):
                     var_key,
                     npTypeDict[self.metadata[var_key]['dtype']],
                     tuple(self.metadata[var_key]['dims']),
-                    fill_value=self.metadata[var_key]['_FillValue']
+                    fill_value=self.metadata[var_key]['_FillValue'],
+                    zlib=True,
+                    complevel=NETCDF_COMPLEVEL
                 )
             else:
                 # without fill_values
                 dataset.createVariable(
                     var_key,
                     npTypeDict[self.metadata[var_key]['dtype']],
-                    tuple(self.metadata[var_key]['dims'])
+                    tuple(self.metadata[var_key]['dims']),
+                    zlib=True,
+                    complevel=NETCDF_COMPLEVEL
                     )
 
             # write variables

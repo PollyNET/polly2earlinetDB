@@ -7,7 +7,7 @@ At June 24, 2019, the new EARLINET database was released and new data format for
 ## Requirements
 
 - python 3.5
-- [`Anaconda3`](https://www.anaconda.com/distribution/)
+- [`Anaconda3`](https://www.anaconda.com/distribution/) (Python 3.x version)
 - **Windows 10** or **Ubuntu**
 
 ## Download
@@ -41,17 +41,20 @@ conda create -n polly_earlinet
 ```
 
 **activate the virtual environment**
+
 ```bash
 activate polly_earlinet # windows
 source activate polly_earlinet # linux
 ```
 
 **install python3.5**
+
 ```bash
 conda install python=3.5
 ```
 
 **install python dependencies**
+
 ```bash
 pip install -r requirements.txt
 ```
