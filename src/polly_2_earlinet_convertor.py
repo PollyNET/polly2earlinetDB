@@ -4,7 +4,7 @@ import toml
 import logging
 import glob
 import numpy as np
-import datetime
+from datetime import datetime, timedelta, timezone
 import re
 import argparse
 from argparse import RawTextHelpFormatter
@@ -166,9 +166,9 @@ class polly_earlinet_convertor(object):
 
         # convert the timestamp to datetime object
         for camp_label in camp_dict:
-            camp_dict[camp_label]['starttime'] = datetime.datetime.strptime(
+            camp_dict[camp_label]['starttime'] = datetime.strptime(
                 camp_dict[camp_label]['starttime'], '%Y-%m-%d %H:%M:%S')
-            camp_dict[camp_label]['endtime'] = datetime.datetime.strptime(
+            camp_dict[camp_label]['endtime'] = datetime.strptime(
                 camp_dict[camp_label]['endtime'], '%Y-%m-%d %H:%M:%S')
 
         return camp_dict
@@ -492,10 +492,13 @@ class polly_earlinet_convertor(object):
         }
 
         data = {
-            'altitude': labviewDataDict['height'],
-            'time': labviewInfo['starttime'].timestamp(),
-            'time_bounds': np.array([tObj.timestamp()
-                                     for tObj in labviewInfo['time_bounds']]),
+            'altitude': labviewDataDict['height'] +
+            camp_info['station_altitude'],
+            'time':
+            labviewInfo['starttime'].replace(tzinfo=timezone.utc).timestamp(),
+            'time_bounds':
+            np.array([tObj.replace(tzinfo=timezone.utc).timestamp()
+                      for tObj in labviewInfo['time_bounds']]),
             'vertical_resolution': labviewInfo['vertical_resolution'] *
             np.ones(labviewDataDict['height'].shape,
                     dtype=np.double),
@@ -592,9 +595,9 @@ class polly_earlinet_convertor(object):
             return None
 
         # convert the datetime
-        labviewInfo['starttime'] = datetime.datetime.strptime(
+        labviewInfo['starttime'] = datetime.strptime(
             labviewInfo['starttime'], '%y%m%d %H%M')
-        labviewInfo['endtime'] = datetime.datetime.strptime(
+        labviewInfo['endtime'] = datetime.strptime(
             labviewInfo['endtime'], '%y%m%d %H%M')
 
         # concatenate reference height
@@ -921,7 +924,7 @@ class polly_earlinet_convertor(object):
         file_b355 = os.path.join(
             self.outputDir,
             '{date}_{smooth:03d}_{station_ID}_{instrument}_b355.nc'.
-            format(date=datetime.datetime.
+            format(date=datetime.
                    utcfromtimestamp(variables['time']).
                    strftime('%Y%m%d_%H%M'),
                    smooth=variables['vertical_smooth_bins'],
@@ -1017,7 +1020,7 @@ class polly_earlinet_convertor(object):
         file_e355 = os.path.join(
             self.outputDir,
             '{date}_{smooth:03d}_{station_ID}_{instrument}_e355.nc'.
-            format(date=datetime.datetime.
+            format(date=datetime.
                    utcfromtimestamp(variables['time']).
                    strftime('%Y%m%d_%H%M'),
                    smooth=variables['vertical_smooth_bins'],
@@ -1113,7 +1116,7 @@ class polly_earlinet_convertor(object):
         file_b532 = os.path.join(
             self.outputDir,
             '{date}_{smooth:03d}_{station_ID}_{instrument}_b532.nc'.
-            format(date=datetime.datetime.
+            format(date=datetime.
                    utcfromtimestamp(variables['time']).
                    strftime('%Y%m%d_%H%M'),
                    smooth=variables['vertical_smooth_bins'],
@@ -1209,7 +1212,7 @@ class polly_earlinet_convertor(object):
         file_e532 = os.path.join(
             self.outputDir,
             '{date}_{smooth:03d}_{station_ID}_{instrument}_e532.nc'.
-            format(date=datetime.datetime.
+            format(date=datetime.
                    utcfromtimestamp(variables['time']).
                    strftime('%Y%m%d_%H%M'),
                    smooth=variables['vertical_smooth_bins'],
@@ -1305,7 +1308,7 @@ class polly_earlinet_convertor(object):
         file_b1064 = os.path.join(
             self.outputDir,
             '{date}_{smooth:03d}_{station_ID}_{instrument}_b1064.nc'.
-            format(date=datetime.datetime.
+            format(date=datetime.
                    utcfromtimestamp(variables['time']).
                    strftime('%Y%m%d_%H%M'),
                    smooth=variables['vertical_smooth_bins'],
@@ -1405,7 +1408,7 @@ class polly_earlinet_convertor(object):
             # no available data
             return
 
-        dataset = Dataset(filename, 'w', 
+        dataset = Dataset(filename, 'w',
                           format=NETCDF_FORMAT,
                           zlib=True,
                           complevel=NETCDF_COMPLEVEL)
@@ -1466,10 +1469,10 @@ class polly_earlinet_convertor(object):
         camp_info_file_base = os.path.basename(self.camp_info_file)
         camp_info_filename = os.path.splitext(camp_info_file_base)[0]
         system_label = self.campaign_dict[camp_info_filename]['system']
-        starttime = datetime.datetime.fromtimestamp(
+        starttime = datetime.utcfromtimestamp(
                         variables['time_bounds'][0]
                     )
-        endtime = datetime.datetime.fromtimestamp(
+        endtime = datetime.utcfromtimestamp(
                         variables['time_bounds'][1]
                     )
         setattr(dataset, 'system', system_label)
@@ -1570,17 +1573,18 @@ def show_list(flagShowCampaign=False,
 
 def p2e_go(polly_type, location, file_type, category, filename, output_dir,
            range_lim_b, range_lim_e, camp_info, force):
-    '''
+    """
     convert the polly files according to the input information
 
     parameters
     ----------
     polly_type: str
-    the name of the running instrument. see the full list in `doc\pollyType.md`
+    the name of the running instrument. see the full list in
+    `doc\\pollyType.md`
 
     location: str
     the location for the measurements. The naming should be included in
-    `config\campaign_list.toml`.
+    `config\\campaign_list.toml`.
 
     file_type: str
     the type of the results that you need to convert. (`labview` or `picasso`)
@@ -1609,7 +1613,7 @@ def p2e_go(polly_type, location, file_type, category, filename, output_dir,
 
     force: boolean
     flag to control whether to override the previous results. (default: false)
-    '''
+    """
 
     p2e_convertor = polly_earlinet_convertor(polly_type, location,
                                              fileType=file_type,
@@ -1625,8 +1629,7 @@ def p2e_go(polly_type, location, file_type, category, filename, output_dir,
 
     # convert all the files
     for task in fileLists:
-        dims, data, global_attrs = \
-            p2e_convertor.read_data_file(task)
+        dims, data, global_attrs = p2e_convertor.read_data_file(task)
         p2e_convertor.write_to_earlinet_nc(data, dims, global_attrs,
                                            range_lim_b=range_lim_b,
                                            range_lim_e=range_lim_e)
