@@ -154,7 +154,7 @@ If you have any questions, please go to the [`issues`](https://github.com/ZPYin/
 
 ## Acknowledgement
 
-Special thanks to the persistent help from [Holger Baars](baars@tropos.de) to test uploading the converted files to the new EARLINET database, which helps a lot for the debugging. In addition, I thank [Martin Radenz](radenz@tropos.de) to solve the file encoding issue.
+Special thanks to the persistent help from [Holger Baars](https://www.tropos.de/institut/ueber-uns/mitarbeitende/holger-baars) to test uploading the converted files to the new EARLINET database, which helps a lot for the debugging. In addition, I thank [Martin Radenz](radenz@tropos.de) to solve the file encoding issue.
 
 ## License
 
