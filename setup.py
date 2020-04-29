@@ -29,6 +29,15 @@ def find_version(*file_paths):
     raise RuntimeError("Unable to find version string.")
 
 
+# Read the dependencies
+thelibFolder = os.path.dirname(os.path.realpath(__file__))
+requirementPath = os.path.join(thelibFolder, 'requirements.txt')
+install_requires_list = []
+if os.path.isfile(requirementPath):
+    with open(requirementPath) as f:
+        install_requires_list = f.read().splitlines()
+
+
 # Run setup
 setup(name='polly_2_earlinet_convertor',
       packages=['src', 'config', 'include'],
@@ -44,6 +53,7 @@ setup(name='polly_2_earlinet_convertor',
                   ' from labview program to EARLINET format nc ' +
                   'files through command line.',
       long_description=long_description,
+      install_requires=install_requires_list,
       url='https://github.com/ZPYin/polly_2_earlinet_convertor',
       download_url='https://github.com/ZPYin/polly_2_earlinet_convertor' +
                    '/archive/master.zip',
@@ -60,10 +70,6 @@ setup(name='polly_2_earlinet_convertor',
           'Topic :: Scientific/Engineering :: Atmospheric Science',
       ],
       keywords='polly EARLINET convertor',
-      install_requires=[
-          'setuptools',
-          # -*- Extra requirements: -*-
-      ],
       entry_points={
           'console_scripts': [
               'p2e_go=src.polly_2_earlinet_convertor:main',
