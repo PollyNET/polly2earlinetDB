@@ -1,8 +1,8 @@
-others/
-.vscode/
-log/
+others
+.vscode
 log
 polly_2_earlinet_convertor.egg-info/
 build/
 dist/
 data/*.nc
+__pycache__
