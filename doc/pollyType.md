@@ -17,4 +17,6 @@
 
 ## polly-related campaigns
 
-You can find the list [here](https://github.com/ZPYin/Pollynet_Processing_Chain/blob/master/todo_filelist/pollynet_history_of_places_new.txt)
+You can find the list [here][1]
+
+[1]: http://picasso.tropos.de/list/lidars
