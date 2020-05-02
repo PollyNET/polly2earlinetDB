@@ -311,6 +311,7 @@ class polly_earlinet_convertor(object):
             # if failed in retrieving the labview info
             return None, None, None
 
+        ## TODO: add support profiles with Klett/Fernald method
         # # jump over Klett profiles
         # if labviewInfo['retrieving_method'] == 1:
         #     logger.warning(
@@ -881,7 +882,7 @@ class polly_earlinet_convertor(object):
 
         return data
 
-    def __read_picasso_results(self, *args):
+    def __read_picasso_results(self, filename):
         '''
         read picasso results into the data pool, which will then be exported
         to earlinet data format.
@@ -890,7 +891,284 @@ class polly_earlinet_convertor(object):
         return None
         '''
 
-        return
+        if (not os.path.exists(filename)) or (not os.path.isfile(filename)):
+            logger.warning('{file} does not exist!\nFinish!'.
+                           format(file=filename))
+            return None, None, None
+
+        logger.info('Start reading {filename}'.format(filename=filename))
+
+        # read labview info file
+        infoFilename = filename[0:-4] + '-info.txt'
+        labviewInfo = self.__read_labview_info(infoFilename)
+
+        if not labviewInfo:
+            # if failed in retrieving the labview info
+            return None, None, None
+
+        # # jump over Klett profiles
+        # if labviewInfo['retrieving_method'] == 1:
+        #     logger.warning(
+        #     'File was retrieved with Klett method.\n{file}\nJump over!!!'.
+        #     format(file=filename))
+        #     return None, None, None
+
+        # search the campaign info file
+        if (not os.path.exists(self.camp_info_file)) or \
+           (not os.path.isfile(self.camp_info_file)):
+            logger.warning('Campaign info file does not exist. Please check ' +
+                           'the {file}'.format(file=self.camp_info_file) +
+                           '.\nNow turn to auto-searching.')
+
+            # auto-search for campaign info file
+            self.camp_info_file = self.search_camp_info_file(
+                                    self.pollyType,
+                                    self.location, labviewInfo['starttime'])
+
+            if (not os.path.exists(self.camp_info_file)) or \
+               (not os.path.isfile(self.camp_info_file)):
+                logger.warning('Failed in searching the campaign info file. ' +
+                               'Your instrument or campaign is not ' +
+                               'supported by the campaign list.')
+                return None, None, None
+
+        # load the campaign info
+        with open(self.camp_info_file, 'r', encoding='utf-8') as fh:
+            camp_info = toml.loads(fh.read())
+
+        if not (camp_info['processor_name']):
+            # set processor_name automatically if not set in the camp_info file
+            camp_info['processor_name'] = labviewInfo['software_version']
+
+            if not (labviewInfo['software_version']):
+                logger.warn('No software_version in your info file.\n' +
+                            'Please check your labview version. Or set the ' +
+                            'process_name in the campaign info file.')
+                return None, None, None
+
+        self.camp_info = camp_info
+
+        # read labview data file
+        labviewData = self.__read_labview_data(filename)
+
+        # cut off the bins with influences from smoothing
+        smoothWin = labviewInfo['smoothWindow']
+        labviewDataCut = labviewData[0:-int(smoothWin/2), :]
+
+        # convert the data matrix into dict with unit conversion
+        labviewDataDict = {
+            'height': labviewDataCut[:, 0] * 1e3,
+            'bsc_355': labviewDataCut[:, 1] * 1e-6,
+            'bsc_std_355': labviewDataCut[:, 2] * 1e-6,
+            'bsc_532': labviewDataCut[:, 3] * 1e-6,
+            'bsc_std_532': labviewDataCut[:, 4] * 1e-6,
+            'bsc_1064': labviewDataCut[:, 5] * 1e-6,
+            'bsc_std_1064': labviewDataCut[:, 6] * 1e-6,
+            'ext_355': labviewDataCut[:, 7] * 1e-6,
+            'ext_std_355': labviewDataCut[:, 8] * 1e-6,
+            'ext_532': labviewDataCut[:, 9] * 1e-6,
+            'ext_std_532': labviewDataCut[:, 10] * 1e-6,
+            'lr_355': labviewDataCut[:, 11],
+            'lr_std_355': labviewDataCut[:, 12],
+            'lr_532': labviewDataCut[:, 13],
+            'lr_std_532': labviewDataCut[:, 14],
+            'EAE_355_532': labviewDataCut[:, 15],
+            'EAE_std_355_532': labviewDataCut[:, 16],
+            'BAE_355_532': labviewDataCut[:, 17],
+            'BAE_std_355_532': labviewDataCut[:, 18],
+            'BAE_532_1064': labviewDataCut[:, 19],
+            'BAE_std_532_1064': labviewDataCut[:, 20],
+            'height_vdr_532': labviewDataCut[:, 21] * 1e3,
+            'vdr_532': labviewDataCut[:, 22],
+            'vdr_std_532': labviewDataCut[:, 23],
+            'height_pdr_532': labviewDataCut[:, 24] * 1e3,
+            'pdr_532': labviewDataCut[:, 25],
+            'pdr_std_532': labviewDataCut[:, 26],
+            'height_sounding': labviewDataCut[:, 27] * 1e3,
+            'temperature': labviewDataCut[:, 28],
+            'pressure': labviewDataCut[:, 29],
+            'height_vdr_355': labviewDataCut[:, 30] * 1e3,
+            'vdr_355': labviewDataCut[:, 31],
+            'vdr_std_355': labviewDataCut[:, 32],
+            'height_pdr_355': labviewDataCut[:, 33] * 1e3,
+            'pdr_355': labviewDataCut[:, 34],
+            'pdr_std_355': labviewDataCut[:, 35],
+            # the unit in labview file is wrong
+            'bsc_mol_355': labviewDataCut[:, 66] * 1e-3,
+            'bsc_mol_532': labviewDataCut[:, 67] * 1e-3,
+            'bsc_mol_1064': labviewDataCut[:, 68] * 1e-3
+        }
+
+        # interpolate the data into the same grid
+        fh_vdr_532 = interp1d(
+            labviewDataDict['height_vdr_532'],
+            labviewDataDict['vdr_532'],
+            kind='linear',
+            fill_value='extrapolate')
+        fh_vdr_std_532 = interp1d(
+            labviewDataDict['height_vdr_532'],
+            labviewDataDict['vdr_std_532'],
+            kind='linear',
+            fill_value='extrapolate')
+        fh_pdr_532 = interp1d(
+            labviewDataDict['height_pdr_532'],
+            labviewDataDict['pdr_532'],
+            kind='linear',
+            fill_value='extrapolate')
+        fh_pdr_std_532 = interp1d(
+            labviewDataDict['height_pdr_532'],
+            labviewDataDict['pdr_std_532'],
+            kind='linear',
+            fill_value='extrapolate')
+        fh_vdr_355 = interp1d(
+            labviewDataDict['height_vdr_355'],
+            labviewDataDict['vdr_355'],
+            kind='linear',
+            fill_value='extrapolate')
+        fh_vdr_std_355 = interp1d(
+            labviewDataDict['height_vdr_355'],
+            labviewDataDict['vdr_std_355'],
+            kind='linear',
+            fill_value='extrapolate')
+        fh_pdr_355 = interp1d(
+            labviewDataDict['height_pdr_355'],
+            labviewDataDict['pdr_355'],
+            kind='linear',
+            fill_value='extrapolate')
+        fh_pdr_std_355 = interp1d(
+            labviewDataDict['height_pdr_355'],
+            labviewDataDict['pdr_std_355'],
+            kind='linear',
+            fill_value='extrapolate')
+
+        labviewDataDict['vdr_532'] = fh_vdr_532(labviewDataDict['height'])
+        labviewDataDict['vdr_std_532'] = fh_vdr_std_532(
+            labviewDataDict['height'])
+        labviewDataDict['pdr_532'] = fh_pdr_532(labviewDataDict['height'])
+        labviewDataDict['pdr_std_532'] = fh_pdr_std_532(
+            labviewDataDict['height'])
+        labviewDataDict['vdr_355'] = fh_vdr_355(labviewDataDict['height'])
+        labviewDataDict['vdr_std_355'] = fh_vdr_std_355(
+            labviewDataDict['height'])
+        labviewDataDict['pdr_355'] = fh_pdr_355(labviewDataDict['height'])
+        labviewDataDict['pdr_std_355'] = fh_pdr_std_355(
+            labviewDataDict['height'])
+
+        # calculate the backscatter-ratio at the reference height
+        refMask355 = (labviewDataDict['height'] >=
+                      labviewInfo['backscatter_calibration_range_355'][0]) & \
+                     (labviewDataDict['height'] <=
+                      labviewInfo['backscatter_calibration_range_355'][1])
+        refBscMol355 = np.nanmean(labviewDataDict['bsc_mol_355'][refMask355])
+        refBscRatio355 = labviewInfo['backscatter_calibration_value_355'] / \
+            refBscMol355 + 1
+        refMask532 = (labviewDataDict['height'] >=
+                      labviewInfo['backscatter_calibration_range_532'][0]) & \
+                     (labviewDataDict['height'] <=
+                      labviewInfo['backscatter_calibration_range_532'][1])
+        refBscMol532 = np.nanmean(labviewDataDict['bsc_mol_532'][refMask532])
+        refBscRatio532 = labviewInfo['backscatter_calibration_value_532'] / \
+            refBscMol532 + 1
+        refMask1064 = (labviewDataDict['height'] >=
+                       labviewInfo['backscatter_calibration_range_1064'][0]) &\
+                      (labviewDataDict['height'] <=
+                       labviewInfo['backscatter_calibration_range_1064'][1])
+        refBscMol1064 = np.nanmean(
+            labviewDataDict['bsc_mol_1064'][refMask1064])
+        refBscRatio1064 = labviewInfo['backscatter_calibration_value_1064'] / \
+            refBscMol1064 + 1
+
+        # convert the labview data into the data container
+        dimensions = {
+            'altitude': len(labviewDataDict['height']),
+            'time': 1,
+            'wavelength': 1,
+            'nv': 2   # number of values (2 for reference height)
+        }
+
+        data = {
+            'altitude': labviewDataDict['height'] +
+            camp_info['station_altitude'],
+            'time':
+            labviewInfo['starttime'].replace(tzinfo=timezone.utc).timestamp(),
+            'time_bounds':
+            np.array([tObj.replace(tzinfo=timezone.utc).timestamp()
+                      for tObj in labviewInfo['time_bounds']]),
+            'vertical_resolution': labviewInfo['vertical_resolution'] *
+            np.ones(labviewDataDict['height'].shape,
+                    dtype=np.double),
+            'cloud_mask': -127 * np.ones(labviewDataDict['height'].shape,
+                                         dtype=np.byte),
+            'cirrus_contamination': 0,   # 0: not_available;
+                                         # 1: no_cirrus;
+                                         # 2: cirrus_detected
+            'cirrus_contamination_source': 0,   # 0: not_available;
+                                                # 1: user_provided;
+                                                # 2: automatic_calculated
+            'error_retrieval_method': 1,   # 0: monte_carlo;
+                                           # 1: error_propagation
+            'extinction_evaluation_algorithm': 1,   # 0: Ansmann;
+                                                    # 1: via_backscatter_ratio
+            'backscatter_evaluation_method':
+                labviewInfo['backscatter_evaluation_method'],
+            'raman_backscatter_algorithm':
+                labviewInfo['raman_backscatter_algorithm'],
+            'extinction_assumed_wavelength_dependence':
+                labviewInfo['extinction_assumed_wavelength_dependence'],
+            'backscatter_calibration_range_355':
+                labviewInfo['backscatter_calibration_range_355'],
+            'backscatter_calibration_range_532':
+                labviewInfo['backscatter_calibration_range_532'],
+            'backscatter_calibration_range_1064':
+                labviewInfo['backscatter_calibration_range_1064'],
+            'backscatter_calibration_value_355':
+                refBscRatio355,
+            'backscatter_calibration_value_532':
+                refBscRatio532,
+            'backscatter_calibration_value_1064':
+                refBscRatio1064,
+            # the backscatter calibration search range
+            # was not supported by labview. Therefore, set it to be constants.
+            'backscatter_calibration_search_range_355':
+                [0, 20000],
+            'backscatter_calibration_search_range_532':
+                [0, 20000],
+            'backscatter_calibration_search_range_1064':
+                [0, 20000],
+            'ext_355': labviewDataDict['ext_355'],
+            'ext_std_355': labviewDataDict['ext_std_355'],
+            'ext_532': labviewDataDict['ext_532'],
+            'ext_std_532': labviewDataDict['ext_std_532'],
+            'bsc_355': labviewDataDict['bsc_355'],
+            'bsc_std_355': labviewDataDict['bsc_std_355'],
+            'bsc_532': labviewDataDict['bsc_532'],
+            'bsc_std_532': labviewDataDict['bsc_std_532'],
+            'bsc_1064': labviewDataDict['bsc_1064'],
+            'bsc_std_1064': labviewDataDict['bsc_std_1064'],
+            'vdr_355': labviewDataDict['vdr_355'],
+            'vdr_std_355': labviewDataDict['vdr_std_355'],
+            'vdr_532': labviewDataDict['vdr_532'],
+            'vdr_std_532': labviewDataDict['vdr_std_532'],
+            'pdr_355': labviewDataDict['pdr_355'],
+            'pdr_std_355': labviewDataDict['pdr_std_355'],
+            'pdr_532': labviewDataDict['pdr_532'],
+            'pdr_std_532': labviewDataDict['pdr_std_532'],
+            'user_defined_category': self.category,
+            'cirrus_contamination_source': 0,
+            'atmospheric_molecular_calculation_source':
+            labviewInfo['sounding_type'],
+            'latitude': camp_info['station_latitude'],
+            'longitude': camp_info['station_longitude'],
+            'shots': labviewInfo['shots'],
+            'station_altitude': camp_info['station_altitude'],
+            'zenith_angle': labviewInfo['zenith_angle'],
+            'vertical_smooth_bins': labviewInfo['smoothWindow']
+            }
+
+        # setup global attributes
+        global_attrs = camp_info
+
+        return dimensions, data, global_attrs
 
     def write_to_earlinet_nc(self, variables, dimensions, global_attri, *args,
                              range_lim_b=[None, None],

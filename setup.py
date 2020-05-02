@@ -4,6 +4,7 @@ from setuptools import setup
 import os
 import re
 import io
+import pip
 
 # Read the long description from the readme file
 with open("readme.md", "rb") as f:
@@ -37,6 +38,17 @@ if os.path.isfile(requirementPath):
     with open(requirementPath) as f:
         install_requires_list = f.read().splitlines()
 
+
+# install external modules
+def install(package):
+    if hasattr(pip, 'main'):
+        pip.main(['install', package])
+    else:
+        pip._internal.main(['install', package])
+
+
+install(os.path.join(os.path.dirname(__file__), 'include',
+        'iannis_b-lidar_molecular-de3d2ef2f36b'))
 
 # Run setup
 setup(name='polly_2_earlinet_convertor',

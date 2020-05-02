@@ -6,13 +6,13 @@ At June 24, 2019, the new EARLINET database was released and new data format for
 ## Requirements
 
 - python 3.5
-- [`Anaconda3`](https://www.anaconda.com/distribution/) (Python 3.x version)
+- [`Anaconda3`][1] (Python 3.x version)
 
 ## Installation
 
 ### python virtual environment and install python dependencies
 
-If you have installed [`Anaconda3`](https://www.anaconda.com/distribution/), you can easily setup the python environment for running the program. Otherwise, you can go [here](https://github.com/ZPYin/Pollynet_Processing_Chain/blob/master/doc/anaconda_installation.md) for some details of the installation.
+If you have installed [`Anaconda3`][1], you can easily setup the python environment for running the program. Otherwise, you can go [here][2] for some details of the installation.
 
 **create a new virtual environment.**
 
@@ -121,11 +121,13 @@ p2e_go -p pollyxt_lacros -l punta_arenas -t labview -c 2 -f /User/zhenping/deskt
 
 ## Q&A
 
-If you have any questions, please go to the [`issues`](https://github.com/ZPYin/polly_2_earlinet_convertor/issues) session to check whether there was an answer. If not, please contact [me](#contact) or draft a new issue there.
+If you have any questions, please go to the [`issues`][4] session to check whether there was an answer. If not, please contact [me](#contact) or draft a new issue there.
 
 ## Acknowledgement
 
-Special thanks to the persistent help from [Holger Baars](https://www.tropos.de/institut/ueber-uns/mitarbeitende/holger-baars) to test uploading the converted files to the new EARLINET database, which helps a lot for the debugging. In addition, I thank [Martin Radenz](radenz@tropos.de) to solve the file encoding issue.
+Special thanks to the persistent help from [Holger Baars][5] to test uploading the converted files to the new EARLINET database, which helps a lot for the debugging. In addition, I thank [Martin Radenz](radenz@tropos.de) to solve the file encoding issue.
+
+> The repository is dependent on the [lidar_molecular][3], developed by **Iannis Binietoglou**. Thanks for sharing your great work.
 
 ## License
 
@@ -137,3 +139,9 @@ Feel free to distribute it!!! :beer::beer::beer:
 
 Zhenping Yin 
 <zhenping@tropos.de>
+
+[1]: https://www.anaconda.com/distribution/
+[2]: https://github.com/ZPYin/Pollynet_Processing_Chain/blob/master/doc/anaconda_installation.md
+[3]: https://bitbucket.org/iannis_b/lidar_molecular/
+[4]: https://github.com/ZPYin/polly_2_earlinet_convertor/issues
+[5]: https://www.tropos.de/institut/ueber-uns/mitarbeitende/holger-baars
