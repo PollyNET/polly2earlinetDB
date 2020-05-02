@@ -882,8 +882,15 @@ class polly_earlinet_convertor(object):
         return data
 
     def __read_picasso_results(self, *args):
-        data = []
-        return data
+        '''
+        read picasso results into the data pool, which will then be exported
+        to earlinet data format.
+
+        If the file does no exist or the file was retrieved with Klett method,
+        return None
+        '''
+
+        return
 
     def write_to_earlinet_nc(self, variables, dimensions, global_attri, *args,
                              range_lim_b=[None, None],
