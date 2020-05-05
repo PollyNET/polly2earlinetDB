@@ -3,17 +3,19 @@ import sys
 import toml
 import logging
 import glob
-import numpy as np
-from datetime import datetime, timedelta, timezone
 import re
 import argparse
+import numpy as np
+from datetime import datetime, timedelta, timezone
 from argparse import RawTextHelpFormatter
 from netCDF4 import Dataset
 from scipy.interpolate import interp1d
+from molecular.rayleigh_scattering import *
 
 LOG_MODE = 'DEBUG'
 LOGFILE = 'log'
-CONVERT_KEY_FILE = 'labview_key_2_earlinet_key_spec.toml'
+LABVIEW_KEY_FILE = 'labview_key_2_earlinet_key_spec.toml'
+PICASSO_KEY_FILE = 'picasso_key_2_earlinet_key_spec.toml'
 METADATA_FILE = 'metadata.toml'
 CAMPAIGN_LIST_FILE = 'campaign_list.toml'
 NETCDF_FORMAT = "NETCDF4"
@@ -49,6 +51,27 @@ logger.addHandler(fh)
 logger.addHandler(ch)
 
 
+def find_in_string(dec, inStr):
+    '''
+    search substring with regular expression.
+
+    Parameters
+    ----------
+    dec: tuple
+        (search parttern, data type, default value)
+    inStr: str
+        input string.
+    '''
+
+    res = re.search(dec[0], inStr)
+    if res is not None:
+        val = dec[1](res.group())
+    else:
+        val = dec[2]
+
+    return val
+
+
 class polly_earlinet_convertor(object):
     """
     Description
@@ -59,7 +82,7 @@ class polly_earlinet_convertor(object):
     Method
     ------
     read_data_file: read polly results into data container of 'variables',
-                    'dimensions' and 'global_attr'
+                    'dimensions' and 'global_attri'
 
     search_data_files: search the polly data files through wildcards
 
@@ -136,6 +159,7 @@ class polly_earlinet_convertor(object):
         '''
         load the metadata for output nc files.
         '''
+
         if (not os.path.exists(filename)) or (not os.path.isfile(filename)):
             logger.error('metadata file does not exist!\n{file}'.
                          format(filename))
@@ -175,16 +199,20 @@ class polly_earlinet_convertor(object):
 
     def load_convert_key_config(self):
         '''
-        load the convert key for mapping the labview configurations to
+        load the convert key for mapping the labview/picasso configurations to
         EARLINET standard configurations.
         '''
-        convert_key_filepath = os.path.join(self.projectDir,
-                                            'config',
-                                            CONVERT_KEY_FILE)
+
+        if self.fileType.lower() == 'labview':
+            convert_key_filepath = os.path.join(
+                self.projectDir, 'config', LABVIEW_KEY_FILE)
+        elif self.fileType.lower() == 'picasso':
+            convert_key_filepath = os.path.join(
+                self.projectDir, 'config', PICASSO_KEY_FILE)
 
         if (not os.path.exists(convert_key_filepath)) or \
            (not os.path.isfile(convert_key_filepath)):
-            logger.error('CONVERT_KEY_FILE does not exist!\n{file}'.format(
+            logger.error('file does not exist!\n{file}'.format(
                 file=convert_key_filepath))
             raise FileNotFoundError
 
@@ -193,7 +221,7 @@ class polly_earlinet_convertor(object):
             with open(convert_key_filepath, 'r', encoding='utf-8') as fh:
                 conversion_key = toml.loads(fh.read())
         except Exception as e:
-            logger.error('Failure in reading CONVERT_KEY_FILE\n{file}'.format(
+            logger.error('Failure in reading {file}'.format(
                 file=convert_key_filepath))
             raise IOError
 
@@ -215,35 +243,82 @@ class polly_earlinet_convertor(object):
 
         return camp_info
 
-    def read_data_file(self, filename, *args):
+    def read_data_file(self, filename, *args, **kwargs):
         '''
         read the data from the polly data file (labview or picasso style)
+
+        Parameters
+        ----------
+        filename: str
+            absolute path of the data filename.
+        Keywords
+        --------
         '''
 
         if self.fileType.lower() == 'labview':
-            dims, data, global_attr = \
-                self.__read_labview_results(filename)
+            dims, data, global_attri = \
+                self.__read_labview_results(filename, **kwargs)
         elif self.fileType.lower() == 'picasso':
-            dims, data, global_attr = \
-                self.__read_picasso_results(filename)
+            dims, data, global_attri = \
+                self.__read_picasso_results(filename, **kwargs)
         else:
             logger.error('Wrong input of fileType: {fileType}'.format(
                 fileType=self.fileType))
 
-        return dims, data, global_attr
+        return dims, data, global_attri
+
+    def list_avail_fileType(self, variables):
+        '''
+        list available earlinet products that can be converted to.
+        '''
+
+        availFileList = []
+
+        # determine b355
+        if ('pdr_355' in variables.keys()) and \
+           ('vdr_355' in variables.keys()) and \
+           ('bsc_355' in variables.keys()):
+            availFileList.append('b355')
+
+        # determine e355
+        if ('ext_355' in variables.keys()) and \
+           ('bsc_355' in variables.keys()):
+            availFileList.append('e355')
+
+        # determine b532
+        if ('pdr_532' in variables.keys()) and \
+           ('vdr_532' in variables.keys()) and \
+           ('bsc_532' in variables.keys()):
+            availFileList.append('b532')
+
+        # determine e532
+        if ('ext_532' in variables.keys()) and \
+           ('bsc_532' in variables.keys()):
+            availFileList.append('e532')
+
+        # determine b1064
+        if ('bsc_1064' in variables.keys()):
+            availFileList.append('b1064')
+
+        return availFileList
 
     def search_data_files(self, filename, filepath=None):
         '''
         Search the polly data files. Wildcards are supported.
         '''
+
         if not filepath:
             filepath = os.getcwd()
 
         # search the files
         logger.info('Start to search polly data files...')
-        fileList = glob.glob(os.path.join(filepath, filename))
-        logger.info('number of files: {nFiles:d}'.
-                    format(nFiles=len(fileList)))
+        if self.fileType.lower() == 'labview':
+            fileList = glob.glob(os.path.join(filepath, filename))
+
+        elif self.fileType.lower() == 'picasso':
+            fileList = glob.glob(os.path.join(filepath, filename))
+
+        logger.info('number of files: {nFiles:d}'.format(nFiles=len(fileList)))
 
         return fileList
 
@@ -253,6 +328,7 @@ class polly_earlinet_convertor(object):
 
         If no file was found, return None
         '''
+
         instrument_list = [item.lower() for item in self.instrument_list]
         location_list = [item.lower() for item in self.location_list]
 
@@ -296,6 +372,7 @@ class polly_earlinet_convertor(object):
         If the file does no exist or the file was retrieved with Klett method,
         return None
         '''
+
         if (not os.path.exists(filename)) or (not os.path.isfile(filename)):
             logger.warning('{file} does not exist!\nFinish!'.
                            format(file=filename))
@@ -311,12 +388,14 @@ class polly_earlinet_convertor(object):
             # if failed in retrieving the labview info
             return None, None, None
 
-        # # jump over Klett profiles
-        # if labviewInfo['retrieving_method'] == 1:
-        #     logger.warning(
-        #     'File was retrieved with Klett method.\n{file}\nJump over!!!'.
-        #     format(file=filename))
-        #     return None, None, None
+        # TODO: add support profiles with Klett/Fernald method
+        # jump over Klett profiles
+        if labviewInfo['retrieving_method'] == 1:
+            logger.warning(
+                'Klett file was not supported.\n{file}\nJump over!!!'.
+                format(file=filename))
+
+            return None, None, None
 
         # search the campaign info file
         if (not os.path.exists(self.camp_info_file)) or \
@@ -377,12 +456,6 @@ class polly_earlinet_convertor(object):
             'lr_std_355': labviewDataCut[:, 12],
             'lr_532': labviewDataCut[:, 13],
             'lr_std_532': labviewDataCut[:, 14],
-            'EAE_355_532': labviewDataCut[:, 15],
-            'EAE_std_355_532': labviewDataCut[:, 16],
-            'BAE_355_532': labviewDataCut[:, 17],
-            'BAE_std_355_532': labviewDataCut[:, 18],
-            'BAE_532_1064': labviewDataCut[:, 19],
-            'BAE_std_532_1064': labviewDataCut[:, 20],
             'height_vdr_532': labviewDataCut[:, 21] * 1e3,
             'vdr_532': labviewDataCut[:, 22],
             'vdr_std_532': labviewDataCut[:, 23],
@@ -499,9 +572,15 @@ class polly_earlinet_convertor(object):
             'time_bounds':
             np.array([tObj.replace(tzinfo=timezone.utc).timestamp()
                       for tObj in labviewInfo['time_bounds']]),
-            'vertical_resolution': labviewInfo['vertical_resolution'] *
-            np.ones(labviewDataDict['height'].shape,
-                    dtype=np.double),
+            'vertical_resolution_355': labviewInfo['vertical_resolution'] *
+                labviewInfo['smoothWindow'] *
+                np.ones(labviewDataDict['height'].shape, dtype=np.double),
+            'vertical_resolution_532': labviewInfo['vertical_resolution'] *
+                labviewInfo['smoothWindow'] *
+                np.ones(labviewDataDict['height'].shape, dtype=np.double),
+            'vertical_resolution_1064': labviewInfo['vertical_resolution'] *
+                labviewInfo['smoothWindow'] *
+                np.ones(labviewDataDict['height'].shape, dtype=np.double),
             'cloud_mask': -127 * np.ones(labviewDataDict['height'].shape,
                                          dtype=np.byte),
             'cirrus_contamination': 0,   # 0: not_available;
@@ -510,15 +589,35 @@ class polly_earlinet_convertor(object):
             'cirrus_contamination_source': 0,   # 0: not_available;
                                                 # 1: user_provided;
                                                 # 2: automatic_calculated
-            'error_retrieval_method': 1,   # 0: monte_carlo;
-                                           # 1: error_propagation
-            'extinction_evaluation_algorithm': 1,   # 0: Ansmann;
-                                                    # 1: via_backscatter_ratio
-            'backscatter_evaluation_method':
+            'error_retrieval_method_355': 1,   # 0: monte_carlo;
+                                               # 1: error_propagation
+            'error_retrieval_method_532': 1,   # 0: monte_carlo;
+                                               # 1: error_propagation
+            'error_retrieval_method_1064': 1,   # 0: monte_carlo;
+                                                # 1: error_propagation
+            'extinction_evaluation_algorithm_355': 1,   # 0: Ansmann;
+                                                # 1: via_backscatter_ratio
+            'extinction_evaluation_algorithm_532': 1,   # 0: Ansmann;
+                                                # 1: via_backscatter_ratio
+            'extinction_evaluation_algorithm_1064': 1,   # 0: Ansmann;
+                                                # 1: via_backscatter_ratio
+            'backscatter_evaluation_method_355':
                 labviewInfo['backscatter_evaluation_method'],
-            'raman_backscatter_algorithm':
+            'backscatter_evaluation_method_532':
+                labviewInfo['backscatter_evaluation_method'],
+            'backscatter_evaluation_method_1064':
+                labviewInfo['backscatter_evaluation_method'],
+            'raman_backscatter_algorithm_355':
                 labviewInfo['raman_backscatter_algorithm'],
-            'extinction_assumed_wavelength_dependence':
+            'raman_backscatter_algorithm_532':
+                labviewInfo['raman_backscatter_algorithm'],
+            'raman_backscatter_algorithm_1064':
+                labviewInfo['raman_backscatter_algorithm'],
+            'extinction_assumed_wavelength_dependence_355':
+                labviewInfo['extinction_assumed_wavelength_dependence'],
+            'extinction_assumed_wavelength_dependence_532':
+                labviewInfo['extinction_assumed_wavelength_dependence'],
+            'extinction_assumed_wavelength_dependence_1064':
                 labviewInfo['extinction_assumed_wavelength_dependence'],
             'backscatter_calibration_range_355':
                 labviewInfo['backscatter_calibration_range_355'],
@@ -566,14 +665,13 @@ class polly_earlinet_convertor(object):
             'longitude': camp_info['station_longitude'],
             'shots': labviewInfo['shots'],
             'station_altitude': camp_info['station_altitude'],
-            'zenith_angle': labviewInfo['zenith_angle'],
-            'vertical_smooth_bins': labviewInfo['smoothWindow']
+            'zenith_angle': labviewInfo['zenith_angle']
             }
 
         # setup global attributes
-        global_attrs = camp_info
+        global_attris = camp_info
 
-        return dimensions, data, global_attrs
+        return dimensions, data, global_attris
 
     def __read_labview_data(self, filename):
         '''
@@ -585,7 +683,7 @@ class polly_earlinet_convertor(object):
 
     def __read_labview_info(self, filename):
         '''
-        read the labview info file, which contains the retrieving information
+        read the labview info file, which contains the retrieving information.
         '''
 
         labviewInfo = self.labview_info_parser(filename)
@@ -698,165 +796,132 @@ class polly_earlinet_convertor(object):
         # key:  regex, conversion function fill value
         # Inspired by Martin Radenz
         decoders = {
-            'starttime':
-                (
-                        r'(?<=Messung von \(UTC\):)\d+.\d+',
-                        str,
-                        '000000 0000'
-                ),
-            'endtime':
-                (
-                    r'(?<=bis \(UTC\): )\d+.\d+',
+            'starttime': (
+                    r'(?<=Messung von \(UTC\):)\d+.\d+',
                     str,
                     '000000 0000'
-                ),
-            'reference_height_bottom_355':
-                (
-                    r'(?<=refheigt355\(m\) from : )\d+',
-                    float,
-                    0
-                ),
-            'reference_height_top_355':
-                (
-                    r'(?<=refheight355 \(m\) to: )\d+',
-                    float,
-                    0
-                ),
-            'reference_value_355':
-                (
-                    r'(?<=refwert355 \(km\^-1 sr\^-1\): )\d+\.\d+[eE]-?\d+',
-                    float,
-                    0
-                ),
-            'reference_height_bottom_532':
-                (
-                    r'(?<=refheigt532\(m\) from : )\d+',
-                    float,
-                    0
-                ),
-            'reference_height_top_532':
-                (
-                    r'(?<=refheight532 \(m\) to: )\d+',
-                    float,
-                    0
-                ),
-            'reference_value_532':
-                (
-                    r'(?<=refwert532 \(km\^-1 sr\^-1\): )\d+\.\d+[eE]-?\d+',
-                    float,
-                    0
-                ),
-            'reference_height_bottom_1064':
-                (
-                    r'(?<=refheigt1064\(m\) from : )\d+',
-                    float,
-                    0
-                ),
-            'reference_height_top_1064':
-                (
-                    r'(?<=refheight1064 \(m\) to: )\d+',
-                    float,
-                    0
-                ),
-            'reference_value_1064':
-                (
-                    r'(?<=refwert1064 \(km\^-1 sr\^-1\): )\d+\.\d+[eE]-?\d+',
-                    float,
-                    0
-                ),
-            'smooth_ext_355':
-                (
-                    r'(?<=smoothingalpha355: )\d+',
-                    int,
-                    0
-                ),
-            'smooth_bsc_355':
-                (
-                    r'(?<=smootingbeta355: )\d+',
-                    int,
-                    0
-                ),
-            'smooth_ext_532':
-                (
-                    r'(?<=smoothingalpha532: )\d+',
-                    int,
-                    0
-                ),
-            'smooth_bsc_532':
-                (
-                    r'(?<=smootingbeta532: )\d+',
-                    int,
-                    0
-                ),
-            'smooth_ext_1064':
-                (
-                    r'(?<=smoothingalpha1064: )\d+',
-                    int,
-                    0
-                ),
-            'smooth_bsc_1064':
-                (
-                    r'(?<=smootingbeta1064: )\d+',
-                    int,
-                    0
-                ),
-            'dz':
-                (
-                    r'(?<=dz: )\d+\.?\d+',
-                    float,
-                    0
-                ),
-            'retrieving_method':
-                (
-                    r'(?<=\nMethod:)\w+',
-                    str,
-                    'Raman'
-                ),
-            'AE':
-                (
-                    r'(?<=Angström for Raman Extinction: )\d+\.?\d+',
-                    float,
-                    0
-                ),
-            'sounding_type':
-                (
-                    r'(?<=Sounding Type: )\d\.?\d+',
-                    float,
-                    0
-                ),
-            'flag_deadtime_correction':
-                (
-                    r'(?<=Death time correction: )\w+',
-                    str,
-                    'no'
-                ),
-            'flag_use_particle_ext_for_raman_bsc':
-                (
-                    r'(?<=Use particle ext for raman Bsc: )\w+',
-                    str,
-                    'no'
-                ),
-            'range_resolution':
-                (
-                    r'(?<=Range resolution: )\d+\.?\d+',
-                    float,
-                    0
-                ),
-            'software_version':
-                (
-                    r'(?<=Software version: )\w+\.?\w+',
-                    str,
-                    ''
-                ),
+            ),
+            'endtime': (
+                r'(?<=bis \(UTC\): )\d+.\d+',
+                str,
+                '000000 0000'
+            ),
+            'reference_height_bottom_355': (
+                r'(?<=refheigt355\(m\) from : )\d+',
+                float,
+                0
+            ),
+            'reference_height_top_355': (
+                r'(?<=refheight355 \(m\) to: )\d+',
+                float,
+                0
+            ),
+            'reference_value_355': (
+                r'(?<=refwert355 \(km\^-1 sr\^-1\): )\d+\.\d+[eE]-?\d+',
+                float,
+                0
+            ),
+            'reference_height_bottom_532': (
+                r'(?<=refheigt532\(m\) from : )\d+',
+                float,
+                0
+            ),
+            'reference_height_top_532': (
+                r'(?<=refheight532 \(m\) to: )\d+',
+                float,
+                0
+            ),
+            'reference_value_532': (
+                r'(?<=refwert532 \(km\^-1 sr\^-1\): )\d+\.\d+[eE]-?\d+',
+                float,
+                0
+            ),
+            'reference_height_bottom_1064': (
+                r'(?<=refheigt1064\(m\) from : )\d+',
+                float,
+                0
+            ),
+            'reference_height_top_1064': (
+                r'(?<=refheight1064 \(m\) to: )\d+',
+                float,
+                0
+            ),
+            'reference_value_1064': (
+                r'(?<=refwert1064 \(km\^-1 sr\^-1\): )\d+\.\d+[eE]-?\d+',
+                float,
+                0
+            ),
+            'smooth_ext_355': (
+                r'(?<=smoothingalpha355: )\d+',
+                int,
+                0
+            ),
+            'smooth_bsc_355': (
+                r'(?<=smootingbeta355: )\d+',
+                int,
+                0
+            ),
+            'smooth_ext_532': (
+                r'(?<=smoothingalpha532: )\d+',
+                int,
+                0
+            ),
+            'smooth_bsc_532': (
+                r'(?<=smootingbeta532: )\d+',
+                int,
+                0
+            ),
+            'smooth_ext_1064': (
+                r'(?<=smoothingalpha1064: )\d+',
+                int,
+                0
+            ),
+            'smooth_bsc_1064': (
+                r'(?<=smootingbeta1064: )\d+',
+                int,
+                0
+            ),
+            'dz':  (
+                r'(?<=dz: )\d+\.?\d+',
+                float,
+                0
+            ),
+            'retrieving_method': (
+                r'(?<=\nMethod:)\w+',
+                str,
+                'Raman'
+            ),
+            'AE':  (
+                r'(?<=Angström for Raman Extinction: )\d+\.?\d+',
+                float,
+                0
+            ),
+            'sounding_type': (
+                r'(?<=Sounding Type: )\d\.?\d+',
+                float,
+                0
+            ),
+            'flag_deadtime_correction': (
+                r'(?<=Death time correction: )\w+',
+                str,
+                'no'
+            ),
+            'flag_use_particle_ext_for_raman_bsc': (
+                r'(?<=Use particle ext for raman Bsc: )\w+',
+                str,
+                'no'
+            ),
+            'range_resolution': (
+                r'(?<=Range resolution: )\d+\.?\d+',
+                float,
+                0
+            ),
+            'software_version': (
+                r'(?<=Software version: )\w+\.?\w+',
+                str,
+                ''
+            ),
         }
-
-        def find_in_string(key, dec, str):
-            res = re.search(dec[0], str)
-            if res is not None:
-                val = dec[1](res.group())
-            else:
-                val = dec[2]
-            return val
 
         # intialize the data
         data = {}
@@ -866,7 +931,7 @@ class polly_earlinet_convertor(object):
             content = fh.read()
 
         for key, regex in decoders.items():
-            val = find_in_string(key, regex, content)
+            val = find_in_string(regex, content)
             data.update({key: val})
 
         # souding_type is still a float number, convert it to integer
@@ -874,79 +939,362 @@ class polly_earlinet_convertor(object):
 
         # determine the range_resolution (old version labview don't provide it)
         if abs(data['range_resolution'] - 0) <= 1e-9:
-            logger.warn('range_resolution is 0 m. Check whether you are ' +
+            logger.warn('range_resolution is 0 m. Check whether you used ' +
                         'old version labview program. We will change the ' +
                         'range_resolution to 30 m for the converison.')
             data['range_resolution'] = 30
 
         return data
 
-    def __read_picasso_results(self, *args):
+    def picasso_attri_parser(self, inStr, *arg,
+                             varname='reference_search_bottom'):
+        '''
+        parse information from picasso variable attributes.
+
+        Params
+        ------
+        inStr: str
+            input string.
+        Keywords
+        --------
+        varname: str
+            'reference_search_bottom'
+            'reference_search_top'
+            'smoothing_window':
+            'angstroem_exponent'
+            'reference_value'
+            'meteor_source'
+        '''
+
+        decoders = {
+            'reference_search_top': (
+                r'(?<=Reference search range:......... - )\d+.\d+',
+                float,
+                0
+            ),
+            'reference_search_bottom': (
+                r'(?<=Reference search range: )\d+.\d+',
+                float,
+                0,
+            ),
+            'smoothing_window': (
+                r'(?<=Smoothing window: )\d+\.+\d+[eE][+-]\d+',
+                float,
+                0
+            ),
+            'angstroem_exponent': (
+                r'(?<=Angstroem exponent: )\d+.\d+',
+                float,
+                0
+            ),
+            'reference_value': (
+                r'(?<=Reference value: )\d+\.\d+[eE]-?\d+',
+                float,
+                0
+            ),
+            'meteor_source': (
+                r'(?<=Meteorological Source: )\w+',
+                str,
+                'standard_atmosphere'
+            )
+        }
+
+        if varname in decoders.keys():
+            val = find_in_string(decoders[varname], inStr)
+        else:
+            raise ValueError
+
+        return val
+
+    def __read_picasso_results(self, filename, *args):
         '''
         read picasso results into the data pool, which will then be exported
         to earlinet data format.
-
-        If the file does no exist or the file was retrieved with Klett method,
-        return None
         '''
 
-        return
+        if (not os.path.exists(filename)) or (not os.path.isfile(filename)):
+            logger.warning('{file} does not exist!\nFinish!'.
+                           format(file=filename))
+            return None, None, None
 
-    def write_to_earlinet_nc(self, variables, dimensions, global_attri, *args,
-                             range_lim_b=[None, None],
-                             range_lim_e=[None, None]):
+        logger.info('Start reading {filename}'.format(filename=filename))
+
+        # read picasso data
+        fh = Dataset(filename, 'r')
+        pData = fh.variables
+
+        # search the campaign info file
+        if (not os.path.exists(self.camp_info_file)) or \
+           (not os.path.isfile(self.camp_info_file)):
+            logger.warning('Campaign info file does not exist. Please check ' +
+                           'the {file}'.format(file=self.camp_info_file) +
+                           '.\nNow turn to auto-searching.')
+
+            # auto-search for campaign info file
+            self.camp_info_file = self.search_camp_info_file(
+                self.pollyType,
+                self.location,
+                datetime.utcfromtimestamp(pData['start_time'][:]))
+
+            if (not os.path.exists(self.camp_info_file)) or \
+               (not os.path.isfile(self.camp_info_file)):
+                logger.warning('Failed in searching the campaign info file. ' +
+                               'Your instrument or campaign is not ' +
+                               'supported by the campaign list.')
+                return None, None, None
+
+        # load the campaign info
+        with open(self.camp_info_file, 'r', encoding='utf-8') as fh:
+            camp_info = toml.loads(fh.read())
+
+        if not (camp_info['processor_name']):
+            # set processor_name automatically if not set in the camp_info file
+            camp_info['processor_name'] = 'Pollynet_Processing_Chain'
+
+        self.camp_info = camp_info
+
+        # convert the labview data into the data container
+        dimensions = {
+            'altitude': len(pData['height']),
+            'time': 1,
+            'wavelength': 1,
+            'nv': 2   # number of values (2 for reference height)
+        }
+
+        meteorDict = dict(zip(
+            self.conversion_key['pk_meteor_source'],
+            self.conversion_key['ek_meteor_source']))
+        data = {
+            'altitude': pData['height'][:] + camp_info['station_altitude'],
+            'time': np.mean([pData['start_time'][:], pData['end_time'][:]]),
+            'time_bounds':
+            np.array([pData['start_time'][:], pData['end_time'][:]]),
+            'cloud_mask': -127 * np.ones(pData['height'].shape, dtype=np.byte),
+            'cirrus_contamination': 1,   # 0: not_available;
+                                         # 1: no_cirrus;
+                                         # 2: cirrus_detected
+            'cirrus_contamination_source': 2,   # 0: not_available;
+                                                # 1: user_provided;
+                                                # 2: automatic_calculated
+            'user_defined_category': self.category,
+            'cirrus_contamination_source': 0,
+            'atmospheric_molecular_calculation_source':
+                meteorDict[self.picasso_attri_parser(
+                                pData['pressure'].retrieving_info,
+                                varname='meteor_source')],
+            'latitude': camp_info['station_latitude'],
+            'longitude': camp_info['station_longitude'],
+            'shots': pData['shots'][:],
+            'station_altitude': camp_info['station_altitude'],
+            'zenith_angle': pData['zenith_angle'][:],
+        }
+
+        # capsule data into 355 data container
+        if 'aerBsc_raman_355' in pData.keys():
+            smoothWin_355 = self.picasso_attri_parser(
+                pData['aerBsc_raman_355'].retrieving_info,
+                varname='smoothing_window')
+            refH_bottom_355 = self.picasso_attri_parser(
+                pData['aerBsc_raman_355'].retrieving_info,
+                varname='reference_search_bottom')
+            refH_top_355 = self.picasso_attri_parser(
+                pData['aerBsc_raman_355'].retrieving_info,
+                varname='reference_search_top')
+            angstr_355 = self.picasso_attri_parser(
+                pData['aerBsc_raman_355'].retrieving_info,
+                varname='angstroem_exponent')
+            refVal_355 = self.picasso_attri_parser(
+                pData['aerBsc_raman_355'].retrieving_info,
+                varname='reference_value')
+
+            # calculate the backscatter-ratio at the reference height
+            refMask355 = (pData['height'][:] >= refH_bottom_355) & \
+                         (pData['height'][:] <= refH_top_355)
+            refBscMol355 = np.nanmean(
+                beta_pi_rayleigh(
+                    355,
+                    pressure=pData['pressure'][refMask355],
+                    temperature=pData['temperature'][refMask355]))
+            refBscRatio355 = refVal_355 / refBscMol355 + 1
+
+            # 0: monte_carlo;
+            # 1: error_propagation
+            data['error_retrieval_method_355'] = 1
+
+            # 0: Ansmann;
+            # 1: via_backscatter_ratio
+            data['extinction_evaluation_algorithm_355'] = 0
+
+            # 0: Raman
+            # 1: elastic_backscatter
+            data['backscatter_evaluation_method_355'] = 0
+
+            # 0: Ansmann
+            # 1: via_backscatter_ratio
+            data['raman_backscatter_algorithm_355'] = 0
+
+            data['vertical_resolution_355'] = smoothWin_355 * \
+                np.ones(pData['height'][:].shape, dtype=np.double)
+            data['extinction_assumed_wavelength_dependence_355'] = angstr_355
+            data['backscatter_calibration_range_355'] = \
+                pData['reference_height_355'][:]
+            data['backscatter_calibration_value_355'] = refBscRatio355
+            data['backscatter_calibration_search_range_355'] = \
+                [refH_bottom_355, refH_top_355]
+            data['bsc_355'] = pData['aerBsc_raman_355'][:]
+            data['bsc_std_355'] = 0.1 * pData['aerBsc_raman_355'][:]
+
+        if 'aerExt_raman_355' in pData.keys():
+            data['ext_355'] = pData['aerExt_raman_355'][:]
+            data['ext_std_355'] = 0.1 * pData['aerExt_raman_355'][:]
+
+        if 'volDepol_raman_355' in pData.keys():
+            data['pdr_355'] = pData['parDepol_raman_355'][:]
+            data['pdr_std_355'] = 0.1 * pData['parDepol_raman_355'][:]
+            data['vdr_355'] = pData['volDepol_raman_355'][:]
+            data['vdr_std_355'] = 0.1 * pData['volDepol_raman_355'][:]
+
+        # capsule data into 532 data container
+        if 'aerBsc_raman_532' in pData.keys():
+            smoothWin_532 = self.picasso_attri_parser(
+                pData['aerBsc_raman_532'].retrieving_info,
+                varname='smoothing_window')
+            refH_bottom_532 = self.picasso_attri_parser(
+                pData['aerBsc_raman_532'].retrieving_info,
+                varname='reference_search_bottom')
+            refH_top_532 = self.picasso_attri_parser(
+                pData['aerBsc_raman_532'].retrieving_info,
+                varname='reference_search_top')
+            angstr_532 = self.picasso_attri_parser(
+                pData['aerBsc_raman_532'].retrieving_info,
+                varname='angstroem_exponent')
+            refVal_532 = self.picasso_attri_parser(
+                pData['aerBsc_raman_532'].retrieving_info,
+                varname='reference_value')
+
+            # calculate the backscatter-ratio at the reference height
+            refMask532 = (pData['height'][:] >= refH_bottom_532) & \
+                         (pData['height'][:] <= refH_top_532)
+            refBscMol532 = np.nanmean(
+                beta_pi_rayleigh(
+                    532,
+                    pressure=pData['pressure'][refMask532],
+                    temperature=pData['temperature'][refMask532]))
+            refBscRatio532 = refVal_532 / refBscMol532 + 1
+
+            # 0: monte_carlo;
+            # 1: error_propagation
+            data['error_retrieval_method_532'] = 1
+
+            # 0: Ansmann;
+            # 1: via_backscatter_ratio
+            data['extinction_evaluation_algorithm_532'] = 0
+
+            # 0: Raman
+            # 1: elastic_backscatter
+            data['backscatter_evaluation_method_532'] = 0
+
+            # 0: Ansmann
+            # 1: via_backscatter_ratio
+            data['raman_backscatter_algorithm_532'] = 0
+
+            data['vertical_resolution_532'] = smoothWin_532 * \
+                np.ones(pData['height'][:].shape, dtype=np.double)
+            data['extinction_assumed_wavelength_dependence_532'] = angstr_532
+            data['backscatter_calibration_range_532'] = \
+                pData['reference_height_532'][:]
+            data['backscatter_calibration_value_532'] = refBscRatio532
+            data['backscatter_calibration_search_range_532'] = \
+                [refH_bottom_532, refH_top_532]
+            data['bsc_532'] = pData['aerBsc_raman_532'][:]
+            data['bsc_std_532'] = 0.1 * pData['aerBsc_raman_532'][:]
+
+        if 'aerExt_raman_532' in pData.keys():
+            data['ext_532'] = pData['aerExt_raman_532'][:]
+            data['ext_std_532'] = 0.1 * pData['aerExt_raman_532'][:]
+
+        if 'volDepol_raman_532' in pData.keys():
+            data['pdr_532'] = pData['parDepol_raman_532'][:]
+            data['pdr_std_532'] = 0.1 * pData['parDepol_raman_532'][:]
+            data['vdr_532'] = pData['volDepol_raman_532'][:]
+            data['vdr_std_532'] = 0.1 * pData['volDepol_raman_532'][:]
+
+        # capsule data into 1064 data container
+        if 'aerBsc_raman_1064' in pData.keys():
+            smoothWin_1064 = self.picasso_attri_parser(
+                pData['aerBsc_raman_1064'].retrieving_info,
+                varname='smoothing_window')
+            refH_bottom_1064 = self.picasso_attri_parser(
+                pData['aerBsc_raman_1064'].retrieving_info,
+                varname='reference_search_bottom')
+            refH_top_1064 = self.picasso_attri_parser(
+                pData['aerBsc_raman_1064'].retrieving_info,
+                varname='reference_search_top')
+            angstr_1064 = self.picasso_attri_parser(
+                pData['aerBsc_raman_1064'].retrieving_info,
+                varname='angstroem_exponent')
+            refVal_1064 = self.picasso_attri_parser(
+                pData['aerBsc_raman_1064'].retrieving_info,
+                varname='reference_value')
+
+            # calculate the backscatter-ratio at the reference height
+            refMask1064 = (pData['height'][:] >= refH_bottom_1064) & \
+                          (pData['height'][:] <= refH_top_1064)
+            refBscMol1064 = np.nanmean(
+                beta_pi_rayleigh(
+                    1064,
+                    pressure=pData['pressure'][refMask1064],
+                    temperature=pData['temperature'][refMask1064]))
+            refBscRatio1064 = refVal_1064 / refBscMol1064 + 1
+
+            # 0: monte_carlo;
+            # 1: error_propagation
+            data['error_retrieval_method_1064'] = 1
+
+            # 0: Ansmann;
+            # 1: via_backscatter_ratio
+            data['extinction_evaluation_algorithm_1064'] = 0
+
+            # 0: Raman
+            # 1: elastic_backscatter
+            data['backscatter_evaluation_method_1064'] = 0
+
+            # 0: Ansmann
+            # 1: via_backscatter_ratio
+            data['raman_backscatter_algorithm_1064'] = 0
+
+            data['vertical_resolution_1064'] = smoothWin_1064 * \
+                np.ones(pData['height'][:].shape, dtype=np.double)
+            data['extinction_assumed_wavelength_dependence_1064'] = angstr_1064
+            data['backscatter_calibration_range_1064'] = \
+                pData['reference_height_1064'][:]
+            data['backscatter_calibration_value_1064'] = refBscRatio1064
+            data['backscatter_calibration_search_range_1064'] = \
+                [refH_bottom_1064, refH_top_1064]
+            data['bsc_1064'] = pData['aerBsc_raman_1064'][:]
+            data['bsc_std_1064'] = 0.1 * pData['aerBsc_raman_1064'][:]
+
+        # setup global attributes
+        global_attris = camp_info
+
+        return dimensions, data, global_attris
+
+    def __write_2_earlinet_b355(self, filename, variables, dimensions,
+                                global_attri, *args,
+                                range_lim=[0, 14000], **kwargs):
         '''
-        write the variables, dimensions and global_attri to EARLINET files.
-        Examples can be found in 'include'
+        write variables to b355 file.
         '''
 
-        if not (len(range_lim_b) is 2):
-            logger.error('range_lim_b must be 2-element list')
-            raise ValueError
-
-        if not (len(range_lim_e) is 2):
-            logger.error('range_lim_e must be 2-element list')
-            raise ValueError
-
-        force = self.force
-
-        if (not variables) or (not dimensions) or (not global_attri):
-            return
-
-        # determine whether the output directory exists or not
-        if not os.path.exists(self.outputDir):
-            logger.warning('Output directory for saving the results does' +
-                           'not exist.\n{path}'.format(path=self.outputDir))
-            # prompt up the request for creating the output directory
-            res = input("Create the folder forcefully? (yes|no): ")
-            if res.lower() == 'yes':
-                os.mkdir(self.outputDir)
-
-        # write to b355
-        # Up till now, I didn't find naming conventions for the nc files.
-        # according to the emails, the filename can be handled by the webpage
-        # Therefore, I just give it an arbitrary style with
-        #
-        # yyyymmdd_HHMM_{station_ID}_{instrument}_{b355|e355}.nc
-        file_b355 = os.path.join(
-            self.outputDir,
-            '{date}_{smooth:03d}_{station_ID}_{instrument}_b355.nc'.
-            format(date=datetime.
-                   utcfromtimestamp(variables['time']).
-                   strftime('%Y%m%d_%H%M'),
-                   smooth=variables['vertical_smooth_bins'],
-                   station_ID=self.camp_info['station_ID'].lower(),
-                   instrument=self.pollyType.lower()))
-
-        if not range_lim_b[0] is None:
-            flagBinsBFile = (variables['altitude'] >= range_lim_b[0]) & \
-                            (variables['altitude'] <= range_lim_b[1])
+        if not range_lim[0] is None:
+            flagBinsBFile = (variables['altitude'] >= range_lim[0]) & \
+                            (variables['altitude'] <= range_lim[1])
         else:
             flagBinsBFile = np.ones(variables['altitude'].shape, dtype=bool)
 
         if np.sum(flagBinsBFile) == 0:
-            logger.warn('No bins were selected with your input range_lim_b.\n',
-                        'Jump over {file}.'.format(file=file_b355))
+            logger.warn('No bins were selected with your input range_lim.\n',
+                        'Jump over {file}.'.format(file=filename))
         else:
             var_b355 = {
                 'altitude':
@@ -964,7 +1312,7 @@ class polly_earlinet_convertor(object):
                 'backscatter_calibration_value':
                     variables['backscatter_calibration_value_355'],
                 'backscatter_evaluation_method':
-                    variables['backscatter_evaluation_method'],
+                    variables['backscatter_evaluation_method_355'],
                 'cirrus_contamination':
                     variables['cirrus_contamination'],
                 'cirrus_contamination_source':
@@ -980,7 +1328,7 @@ class polly_earlinet_convertor(object):
                 'error_particledepolarization':
                     variables['pdr_std_355'][flagBinsBFile],
                 'error_retrieval_method':
-                    variables['error_retrieval_method'],
+                    variables['error_retrieval_method_355'],
                 'error_volumedepolarization':
                     variables['vdr_std_355'][flagBinsBFile],
                 'latitude':
@@ -990,7 +1338,7 @@ class polly_earlinet_convertor(object):
                 'particledepolarization':
                     variables['pdr_355'][flagBinsBFile],
                 'raman_backscatter_algorithm':
-                    variables['raman_backscatter_algorithm'],
+                    variables['raman_backscatter_algorithm_355'],
                 'shots':
                     variables['shots'],
                 'station_altitude':
@@ -1002,8 +1350,7 @@ class polly_earlinet_convertor(object):
                 'user_defined_category':
                     variables['user_defined_category'],
                 'vertical_resolution':
-                    variables['vertical_resolution'][flagBinsBFile] *
-                    variables['vertical_smooth_bins'],
+                    variables['vertical_resolution_355'][flagBinsBFile],
                 'volumedepolarization':
                     variables['vdr_355'][flagBinsBFile],
                 'wavelength':
@@ -1014,35 +1361,26 @@ class polly_earlinet_convertor(object):
             dim_b355 = dimensions
             dim_b355['altitude'] = np.sum(flagBinsBFile)
             global_attri_b355 = global_attri
-            logger.info('Writing data to {file}'.format(file=file_b355))
-            self.__write_2_earlinet_nc(file_b355, var_b355, dim_b355,
-                                       global_attri_b355, force)
+            logger.info('Writing data to {file}'.format(file=filename))
+            self.__write_2_earlinet_nc(filename, var_b355, dim_b355,
+                                       global_attri_b355)
 
-        # write to e355
-        # Up till now, I didn't find naming conventions for the nc files.
-        # according to the emails, the filename can be handled by the webpage
-        # Therefore, I just give it an arbitrary style with
-        #
-        # yyyymmdd_HHMM_{station_ID}_{instrument}_{b355|e355}.nc
-        file_e355 = os.path.join(
-            self.outputDir,
-            '{date}_{smooth:03d}_{station_ID}_{instrument}_e355.nc'.
-            format(date=datetime.
-                   utcfromtimestamp(variables['time']).
-                   strftime('%Y%m%d_%H%M'),
-                   smooth=variables['vertical_smooth_bins'],
-                   station_ID=self.camp_info['station_ID'].lower(),
-                   instrument=self.pollyType.lower()))
+    def __write_2_earlinet_e355(self, filename, variables, dimensions,
+                                global_attri, *args,
+                                range_lim=[0, 5000], **kwargs):
+        '''
+        write to earlinet e355 file.
+        '''
 
-        if not range_lim_e[0] is None:
-            flagBinsEFile = (variables['altitude'] >= range_lim_e[0]) & \
-                            (variables['altitude'] <= range_lim_e[1])
+        if not range_lim[0] is None:
+            flagBinsEFile = (variables['altitude'] >= range_lim[0]) & \
+                            (variables['altitude'] <= range_lim[1])
         else:
             flagBinsEFile = np.ones(variables['altitude'].shape, dtype=bool)
 
         if np.sum(flagBinsEFile) == 0:
-            logger.warn('No bins were selected with your input range_lim_e.\n',
-                        'Jump over {file}.'.format(file=file_e355))
+            logger.warn('No bins were selected with your input range_lim.\n',
+                        'Jump over {file}.'.format(file=filename))
         else:
             var_e355 = {
                 'altitude':
@@ -1060,7 +1398,7 @@ class polly_earlinet_convertor(object):
                 'backscatter_calibration_value':
                     variables['backscatter_calibration_value_355'],
                 'backscatter_evaluation_method':
-                    variables['backscatter_evaluation_method'],
+                    variables['backscatter_evaluation_method_355'],
                 'cirrus_contamination':
                     variables['cirrus_contamination'],
                 'cirrus_contamination_source':
@@ -1076,19 +1414,19 @@ class polly_earlinet_convertor(object):
                 'error_extinction':
                     variables['ext_std_355'][flagBinsEFile],
                 'error_retrieval_method':
-                    variables['error_retrieval_method'],
+                    variables['error_retrieval_method_355'],
                 'extinction':
                     variables['ext_355'][flagBinsEFile],
                 'extinction_assumed_wavelength_dependence':
-                    variables['extinction_assumed_wavelength_dependence'],
+                    variables['extinction_assumed_wavelength_dependence_355'],
                 'extinction_evaluation_algorithm':
-                    variables['extinction_evaluation_algorithm'],
+                    variables['extinction_evaluation_algorithm_355'],
                 'latitude':
                     variables['latitude'],
                 'longitude':
                     variables['longitude'],
                 'raman_backscatter_algorithm':
-                    variables['raman_backscatter_algorithm'],
+                    variables['raman_backscatter_algorithm_355'],
                 'shots':
                     variables['shots'],
                 'station_altitude':
@@ -1100,8 +1438,7 @@ class polly_earlinet_convertor(object):
                 'user_defined_category':
                     variables['user_defined_category'],
                 'vertical_resolution':
-                    variables['vertical_resolution'][flagBinsEFile] *
-                    variables['vertical_smooth_bins'],
+                    variables['vertical_resolution_355'][flagBinsEFile],
                 'wavelength':
                     355,
                 'zenith_angle':
@@ -1110,35 +1447,26 @@ class polly_earlinet_convertor(object):
             dim_e355 = dimensions
             dim_e355['altitude'] = np.sum(flagBinsEFile)
             global_attri_e355 = global_attri
-            logger.info('Writing data to {file}'.format(file=file_e355))
-            self.__write_2_earlinet_nc(file_e355, var_e355, dim_e355,
-                                       global_attri_e355, force)
+            logger.info('Writing data to {file}'.format(file=filename))
+            self.__write_2_earlinet_nc(filename, var_e355, dim_e355,
+                                       global_attri_e355)
 
-        # write to b532
-        # Up till now, I didn't find naming conventions for the nc files.
-        # according to the emails, the filename can be handled by the webpage
-        # Therefore, I just give it an arbitrary style with
-        #
-        # yyyymmdd_HHMM_{station_ID}_{instrument}_{b532|e532}.nc
-        file_b532 = os.path.join(
-            self.outputDir,
-            '{date}_{smooth:03d}_{station_ID}_{instrument}_b532.nc'.
-            format(date=datetime.
-                   utcfromtimestamp(variables['time']).
-                   strftime('%Y%m%d_%H%M'),
-                   smooth=variables['vertical_smooth_bins'],
-                   station_ID=self.camp_info['station_ID'].lower(),
-                   instrument=self.pollyType.lower()))
+    def __write_2_earlinet_b532(self, filename, variables, dimensions,
+                                global_attri, *args,
+                                range_lim=[0, 14000], **kwargs):
+        '''
+        write to earlinet b532 file.
+        '''
 
-        if not range_lim_b[0] is None:
-            flagBinsBFile = (variables['altitude'] >= range_lim_b[0]) & \
-                            (variables['altitude'] <= range_lim_b[1])
+        if not range_lim[0] is None:
+            flagBinsBFile = (variables['altitude'] >= range_lim[0]) & \
+                            (variables['altitude'] <= range_lim[1])
         else:
             flagBinsBFile = np.ones(variables['altitude'].shape, dtype=bool)
 
         if np.sum(flagBinsBFile) == 0:
-            logger.warn('No bins were selected with your input range_lim_b.\n',
-                        'Jump over {file}.'.format(file=file_b532))
+            logger.warn('No bins were selected with your input range_lim.\n',
+                        'Jump over {file}.'.format(file=filename))
         else:
             var_b532 = {
                 'altitude':
@@ -1156,7 +1484,7 @@ class polly_earlinet_convertor(object):
                 'backscatter_calibration_value':
                     variables['backscatter_calibration_value_532'],
                 'backscatter_evaluation_method':
-                    variables['backscatter_evaluation_method'],
+                    variables['backscatter_evaluation_method_532'],
                 'cirrus_contamination':
                     variables['cirrus_contamination'],
                 'cirrus_contamination_source':
@@ -1172,7 +1500,7 @@ class polly_earlinet_convertor(object):
                 'error_particledepolarization':
                     variables['pdr_std_532'][flagBinsBFile],
                 'error_retrieval_method':
-                    variables['error_retrieval_method'],
+                    variables['error_retrieval_method_532'],
                 'error_volumedepolarization':
                     variables['vdr_std_532'][flagBinsBFile],
                 'latitude':
@@ -1182,7 +1510,7 @@ class polly_earlinet_convertor(object):
                 'particledepolarization':
                     variables['pdr_532'][flagBinsBFile],
                 'raman_backscatter_algorithm':
-                    variables['raman_backscatter_algorithm'],
+                    variables['raman_backscatter_algorithm_532'],
                 'shots':
                     variables['shots'],
                 'station_altitude':
@@ -1194,8 +1522,7 @@ class polly_earlinet_convertor(object):
                 'user_defined_category':
                     variables['user_defined_category'],
                 'vertical_resolution':
-                    variables['vertical_resolution'][flagBinsBFile] *
-                    variables['vertical_smooth_bins'],
+                    variables['vertical_resolution_532'][flagBinsBFile],
                 'volumedepolarization':
                     variables['vdr_532'][flagBinsBFile],
                 'wavelength':
@@ -1206,35 +1533,26 @@ class polly_earlinet_convertor(object):
             dim_b532 = dimensions
             dim_b532['altitude'] = np.sum(flagBinsBFile)
             global_attri_b532 = global_attri
-            logger.info('Writing data to {file}'.format(file=file_b532))
-            self.__write_2_earlinet_nc(file_b532, var_b532, dim_b532,
-                                       global_attri_b532, force)
+            logger.info('Writing data to {file}'.format(file=filename))
+            self.__write_2_earlinet_nc(filename, var_b532, dim_b532,
+                                       global_attri_b532)
 
-        # write to e532
-        # Up till now, I didn't find naming conventions for the nc files.
-        # according to the emails, the filename can be handled by the webpage
-        # Therefore, I just give it an arbitrary style with
-        #
-        # yyyymmdd_HHMM_{station_ID}_{instrument}_{b532|e532}.nc
-        file_e532 = os.path.join(
-            self.outputDir,
-            '{date}_{smooth:03d}_{station_ID}_{instrument}_e532.nc'.
-            format(date=datetime.
-                   utcfromtimestamp(variables['time']).
-                   strftime('%Y%m%d_%H%M'),
-                   smooth=variables['vertical_smooth_bins'],
-                   station_ID=self.camp_info['station_ID'].lower(),
-                   instrument=self.pollyType.lower()))
+    def __write_2_earlinet_e532(self, filename, variables, dimensions,
+                                global_attri, *args,
+                                range_lim=[0, 5000], **kwargs):
+        '''
+        write to earlient e532 file.
+        '''
 
-        if not range_lim_e[0] is None:
-            flagBinsEFile = (variables['altitude'] >= range_lim_e[0]) & \
-                            (variables['altitude'] <= range_lim_e[1])
+        if not range_lim[0] is None:
+            flagBinsEFile = (variables['altitude'] >= range_lim[0]) & \
+                            (variables['altitude'] <= range_lim[1])
         else:
             flagBinsEFile = np.ones(variables['altitude'].shape, dtype=bool)
 
         if np.sum(flagBinsEFile) == 0:
-            logger.warn('No bins were selected with your input range_lim_e.\n',
-                        'Jump over {file}.'.format(file=file_e532))
+            logger.warn('No bins were selected with your input range_lim.\n',
+                        'Jump over {file}.'.format(file=filename))
         else:
             var_e532 = {
                 'altitude':
@@ -1252,7 +1570,7 @@ class polly_earlinet_convertor(object):
                 'backscatter_calibration_value':
                     variables['backscatter_calibration_value_532'],
                 'backscatter_evaluation_method':
-                    variables['backscatter_evaluation_method'],
+                    variables['backscatter_evaluation_method_532'],
                 'cirrus_contamination':
                     variables['cirrus_contamination'],
                 'cirrus_contamination_source':
@@ -1268,19 +1586,19 @@ class polly_earlinet_convertor(object):
                 'error_extinction':
                     variables['ext_std_532'][flagBinsEFile],
                 'error_retrieval_method':
-                    variables['error_retrieval_method'],
+                    variables['error_retrieval_method_532'],
                 'extinction':
                     variables['ext_532'][flagBinsEFile],
                 'extinction_assumed_wavelength_dependence':
-                    variables['extinction_assumed_wavelength_dependence'],
+                    variables['extinction_assumed_wavelength_dependence_532'],
                 'extinction_evaluation_algorithm':
-                    variables['extinction_evaluation_algorithm'],
+                    variables['extinction_evaluation_algorithm_532'],
                 'latitude':
                     variables['latitude'],
                 'longitude':
                     variables['longitude'],
                 'raman_backscatter_algorithm':
-                    variables['raman_backscatter_algorithm'],
+                    variables['raman_backscatter_algorithm_532'],
                 'shots':
                     variables['shots'],
                 'station_altitude':
@@ -1292,8 +1610,7 @@ class polly_earlinet_convertor(object):
                 'user_defined_category':
                     variables['user_defined_category'],
                 'vertical_resolution':
-                    variables['vertical_resolution'][flagBinsEFile] *
-                    variables['vertical_smooth_bins'],
+                    variables['vertical_resolution_532'][flagBinsEFile],
                 'wavelength':
                     532,
                 'zenith_angle':
@@ -1302,35 +1619,26 @@ class polly_earlinet_convertor(object):
             dim_e532 = dimensions
             dim_e532['altitude'] = np.sum(flagBinsEFile)
             global_attri_e532 = global_attri
-            logger.info('Writing data to {file}'.format(file=file_e532))
-            self.__write_2_earlinet_nc(file_e532, var_e532, dim_e532,
-                                       global_attri_e532, force)
+            logger.info('Writing data to {file}'.format(file=filename))
+            self.__write_2_earlinet_nc(filename, var_e532, dim_e532,
+                                       global_attri_e532)
 
-        # write to b1064
-        # Up till now, I didn't find naming conventions for the nc files.
-        # according to the emails, the filename can be handled by the webpage
-        # Therefore, I just give it an arbitrary style with
-        #
-        # yyyymmdd_HHMM_{station_ID}_{instrument}_{b1064}.nc
-        file_b1064 = os.path.join(
-            self.outputDir,
-            '{date}_{smooth:03d}_{station_ID}_{instrument}_b1064.nc'.
-            format(date=datetime.
-                   utcfromtimestamp(variables['time']).
-                   strftime('%Y%m%d_%H%M'),
-                   smooth=variables['vertical_smooth_bins'],
-                   station_ID=self.camp_info['station_ID'].lower(),
-                   instrument=self.pollyType.lower()))
+    def __write_2_earlinet_b1064(self, filename, variables, dimensions,
+                                 global_attri, *args,
+                                 range_lim=[0, 14000], **kwargs):
+        '''
+        write to earlinet b1064 file.
+        '''
 
-        if not range_lim_b[0] is None:
-            flagBinsBFile = (variables['altitude'] >= range_lim_b[0]) & \
-                            (variables['altitude'] <= range_lim_b[1])
+        if not range_lim[0] is None:
+            flagBinsBFile = (variables['altitude'] >= range_lim[0]) & \
+                            (variables['altitude'] <= range_lim[1])
         else:
             flagBinsBFile = np.ones(variables['altitude'].shape, dtype=bool)
 
         if np.sum(flagBinsBFile) == 0:
-            logger.warn('No bins were selected with your input range_lim_b.\n',
-                        'Jump over {file}.'.format(file=file_b1064))
+            logger.warn('No bins were selected with your input range_lim.\n',
+                        'Jump over {file}.'.format(file=filename))
         else:
             var_b1064 = {
                 'altitude':
@@ -1348,7 +1656,7 @@ class polly_earlinet_convertor(object):
                 'backscatter_calibration_value':
                     variables['backscatter_calibration_value_1064'],
                 'backscatter_evaluation_method':
-                    variables['backscatter_evaluation_method'],
+                    variables['backscatter_evaluation_method_1064'],
                 'cirrus_contamination':
                     variables['cirrus_contamination'],
                 'cirrus_contamination_source':
@@ -1362,13 +1670,13 @@ class polly_earlinet_convertor(object):
                 'error_backscatter':
                     variables['bsc_std_1064'][flagBinsBFile],
                 'error_retrieval_method':
-                    variables['error_retrieval_method'],
+                    variables['error_retrieval_method_1064'],
                 'latitude':
                     variables['latitude'],
                 'longitude':
                     variables['longitude'],
                 'raman_backscatter_algorithm':
-                    variables['raman_backscatter_algorithm'],
+                    variables['raman_backscatter_algorithm_1064'],
                 'shots':
                     variables['shots'],
                 'station_altitude':
@@ -1380,8 +1688,7 @@ class polly_earlinet_convertor(object):
                 'user_defined_category':
                     variables['user_defined_category'],
                 'vertical_resolution':
-                    variables['vertical_resolution'][flagBinsBFile] *
-                    variables['vertical_smooth_bins'],
+                    variables['vertical_resolution_1064'][flagBinsBFile],
                 'wavelength':
                     1064,
                 'zenith_angle':
@@ -1390,24 +1697,165 @@ class polly_earlinet_convertor(object):
             dim_b1064 = dimensions
             dim_b1064['altitude'] = np.sum(flagBinsBFile)
             global_attri_b1064 = global_attri
-            logger.info('Writing data to {file}'.format(file=file_b1064))
-            self.__write_2_earlinet_nc(file_b1064, var_b1064, dim_b1064,
-                                       global_attri_b1064, force)
+            logger.info('Writing data to {file}'.format(file=filename))
+            self.__write_2_earlinet_nc(filename, var_b1064, dim_b1064,
+                                       global_attri_b1064)
+
+    def write_to_earlinet_nc(self, variables, dimensions, global_attri, *args,
+                             range_lim=[None, None],
+                             prodType='b355', **kwargs):
+        '''
+        write the variables, dimensions and global_attri to EARLINET files.
+
+        Parameters
+        ----------
+        variables: dict
+        dimensions: dict
+        global_attri: dict
+        Keywords
+        --------
+        range_lim: 2-element list
+            [bottom_height, top_height]. (m)
+        prodType: str
+            product type:
+            |product name|description|
+            |:----------:|:----------|
+            |'b355'|backscatter at 355 nm|
+            |'e355'|extinction at 355 nm|
+            |'b532'|backscatter at 532 nm|
+            |'e532'|extinction at 532 nm|
+            |'b1064'|backscatter at 1064 nm|
+        '''
+
+        if not (len(range_lim) is 2):
+            logger.error('range_lim must be 2-element list')
+            raise ValueError
+
+        if (not variables) or (not dimensions) or (not global_attri):
+            return
+
+        # determine whether the output directory exists or not
+        if not os.path.exists(self.outputDir):
+            logger.warning('Output directory for saving the results does' +
+                           'not exist.\n{path}'.format(path=self.outputDir))
+            # prompt up the request for creating the output directory
+            res = input("Create the folder forcefully? (yes|no): ")
+            if res.lower() == 'yes':
+                os.mkdir(self.outputDir)
+
+        if prodType == 'b355':
+            # write to b355
+            # yyyymmdd_HHMM_{station_ID}_{polly}_{b355|e355}.nc
+            file_b355 = os.path.join(
+                self.outputDir,
+                '{date}_{smooth:04.0f}_{station_ID}_{polly}_b355.nc'.format(
+                    date=datetime.utcfromtimestamp(variables['time']).
+                    strftime('%Y%m%d_%H%M'),
+                    smooth=variables['vertical_resolution_355'][0],
+                    station_ID=self.camp_info['station_ID'].lower(),
+                    polly=self.pollyType.lower()))
+
+            self.__write_2_earlinet_b355(
+                file_b355, variables, dimensions,
+                global_attri, *args,
+                range_lim=range_lim, **kwargs)
+
+        elif prodType == 'e355':
+            # write to e355
+            # yyyymmdd_HHMM_{station_ID}_{polly}_{b355|e355}.nc
+            file_e355 = os.path.join(
+                self.outputDir,
+                '{date}_{smooth:04.0f}_{station_ID}_{polly}_e355.nc'.format(
+                    date=datetime.utcfromtimestamp(variables['time']).
+                    strftime('%Y%m%d_%H%M'),
+                    smooth=variables['vertical_resolution_355'][0],
+                    station_ID=self.camp_info['station_ID'].lower(),
+                    polly=self.pollyType.lower()))
+
+            self.__write_2_earlinet_e355(
+                file_e355, variables, dimensions,
+                global_attri, *args,
+                range_lim=range_lim, **kwargs)
+
+        elif prodType == 'b532':
+            # write to b532
+            # yyyymmdd_HHMM_{station_ID}_{polly}_{b532|e532}.nc
+            file_b532 = os.path.join(
+                self.outputDir,
+                '{date}_{smooth:04.0f}_{station_ID}_{polly}_b532.nc'.format(
+                    date=datetime.utcfromtimestamp(variables['time']).
+                    strftime('%Y%m%d_%H%M'),
+                    smooth=variables['vertical_resolution_532'][0],
+                    station_ID=self.camp_info['station_ID'].lower(),
+                    polly=self.pollyType.lower()))
+
+            self.__write_2_earlinet_b532(
+                file_b532, variables, dimensions,
+                global_attri, *args,
+                range_lim=range_lim, **kwargs)
+
+        elif prodType == 'e532':
+            # write to e532
+            # yyyymmdd_HHMM_{station_ID}_{polly}_{b532|e532}.nc
+            file_e532 = os.path.join(
+                self.outputDir,
+                '{date}_{smooth:04.0f}_{station_ID}_{polly}_e532.nc'.format(
+                    date=datetime.utcfromtimestamp(variables['time']).
+                    strftime('%Y%m%d_%H%M'),
+                    smooth=variables['vertical_resolution_532'][0],
+                    station_ID=self.camp_info['station_ID'].lower(),
+                    polly=self.pollyType.lower()))
+            self.__write_2_earlinet_e532(
+                file_e532, variables, dimensions,
+                global_attri, *args,
+                range_lim=range_lim, **kwargs)
+
+        elif prodType == 'b1064':
+            # write to b1064
+            # yyyymmdd_HHMM_{station_ID}_{polly}_{b1064}.nc
+            file_b1064 = os.path.join(
+                self.outputDir,
+                '{date}_{smooth:04.0f}_{station_ID}_{polly}_b1064.nc'.
+                format(
+                    date=datetime.utcfromtimestamp(variables['time']).
+                    strftime('%Y%m%d_%H%M'),
+                    smooth=variables['vertical_resolution_1064'][0],
+                    station_ID=self.camp_info['station_ID'].lower(),
+                    polly=self.pollyType.lower()))
+            self.__write_2_earlinet_b1064(
+                file_b1064, variables, dimensions,
+                global_attri, *args,
+                range_lim=range_lim, **kwargs)
+
+        else:
+            logger.error('Unknown prodType: {0}'.format(fileType))
+            raise ValueError
 
     def __write_2_earlinet_nc(self, filename, variables, dimensions,
-                              global_attri, force):
+                              global_attri):
         '''
-        write to EARLINET nc file. Example can be found in 'include'
+        write to EARLINET nc file.
+
+        Parameters
+        ----------
+        filename: str
+            absolute path of the output file.
+        variables: dict
+            variables to be exported.
+        dimensions: dict
+            dimensions.
+        global_attri: dict
+            global attributes.
         '''
 
         # whether overwrite the file if it exists
         if (os.path.exists(filename)) and \
-           (os.path.isfile(filename)) and (not force):
+           (os.path.isfile(filename)) and (not self.force):
             logger.warning('{file} exists. Jump over!'.format(file=filename))
             return
 
         elif (os.path.exists(filename)) and \
-             (os.path.isfile(filename)) and force:
+             (os.path.isfile(filename)) and self.force:
             logger.warning('{file} exists. Overwrite it!'.
                            format(file=filename))
 
@@ -1431,9 +1879,9 @@ class polly_earlinet_convertor(object):
             'float': np.single,
             'double': np.double
         }
-        for var_key in variables:
+        for var_key in variables.keys():
             # create variable
-            if ('_FillValue' in self.metadata[var_key]):
+            if '_FillValue' in self.metadata[var_key].keys():
                 # with fill_values
                 dataset.createVariable(
                     var_key,
@@ -1457,7 +1905,7 @@ class polly_earlinet_convertor(object):
             dataset.variables[var_key][:] = variables[var_key]
 
             # write attributes
-            for var_attr in self.metadata[var_key]:
+            for var_attr in self.metadata[var_key].keys():
                 if (not var_attr == 'dtype') and \
                    (not var_attr == 'dims') and \
                    (not var_attr == '_FillValue'):
@@ -1468,7 +1916,7 @@ class polly_earlinet_convertor(object):
                         )
 
         # create global attributes
-        for attr_key in self.camp_info:
+        for attr_key in self.camp_info.keys():
             setattr(dataset, attr_key, self.camp_info[attr_key])
 
         # write system, measurement_start_datetime and
@@ -1520,6 +1968,7 @@ class ArgumentParser(argparse.ArgumentParser):
         If only it were made available in the ArgumentError object. It is
         passed as it's first arg...
         """
+
         container = self._actions
         if name is None:
             return None
@@ -1586,40 +2035,33 @@ def p2e_go(polly_type, location, file_type, category, filename, output_dir,
     parameters
     ----------
     polly_type: str
-    the name of the running instrument. see the full list in
-    `doc\\pollyType.md`
-
+        the name of the running instrument. see the full list in
+        `doc\\pollyType.md`
     location: str
-    the location for the measurements. The naming should be included in
-    `config\\campaign_list.toml`.
-
+        the location for the measurements. The naming should be included in
+        `config\\campaign_list.toml`.
     file_type: str
-    the type of the results that you need to convert. (`labview` or `picasso`)
-
+        the type of the results that you need to convert.
+        (`labview` or `picasso`)
     category: integer
-    the category of your measurements.
-    1: cirrus; 2:climatol; 4:dicycles; 8:etna; 16:forfires;
-    32:photosmog; 64:rurban; 128:sahadust; 256:stratos;
-    512:satellite_overpasses
-
+        the category of your measurements.
+        1: cirrus; 2:climatol; 4:dicycles; 8:etna; 16:forfires;
+        32:photosmog; 64:rurban; 128:sahadust; 256:stratos;
+        512:satellite_overpasses
     filename: str
-    the path of your results. (wildcards are supported.)
-
+        the path of your results. (wildcards are supported.)
     output_dir: str
-    the directory for saving the converted netCDF files.
-
+        the directory for saving the converted netCDF files.
     range_lim_b: 2-element list
-    range limit for the variables in b-files (b355, b532, b1064). [m]
-
+        range limit for the variables in b-files (b355, b532, b1064). [m]
     range_lim_e: 2-element list
-    range limit for the variables in e-files (e355, e532). [m]
-
+        range limit for the variables in e-files (e355, e532). [m]
     camp_info: str
-    filename of the campaigin configuration file.
-    (only the filename is necessary)
-
+        filename of the campaigin configuration file.
+        (only the filename is necessary)
     force: boolean
-    flag to control whether to override the previous results. (default: false)
+        flag to control whether to override the previous results.
+        (default: false)
     """
 
     p2e_convertor = polly_earlinet_convertor(polly_type, location,
@@ -1631,15 +2073,28 @@ def p2e_go(polly_type, location, file_type, category, filename, output_dir,
 
     # search files
     filePath = os.path.dirname(filename)
-    file = os.path.basename(filename)
-    fileLists = p2e_convertor.search_data_files(file, filepath=filePath)
+    basename = os.path.basename(filename)
+    fileLists = p2e_convertor.search_data_files(basename, filepath=filePath)
 
     # convert all the files
     for task in fileLists:
-        dims, data, global_attrs = p2e_convertor.read_data_file(task)
-        p2e_convertor.write_to_earlinet_nc(data, dims, global_attrs,
-                                           range_lim_b=range_lim_b,
-                                           range_lim_e=range_lim_e)
+        dims, data, global_attris = p2e_convertor.read_data_file(task)
+
+        p2e_convertor.write_to_earlinet_nc(
+            data, dims, global_attris,
+            range_lim=range_lim_b, prodType='b355')
+        p2e_convertor.write_to_earlinet_nc(
+            data, dims, global_attris,
+            range_lim=range_lim_e, prodType='e355')
+        p2e_convertor.write_to_earlinet_nc(
+            data, dims, global_attris,
+            range_lim=range_lim_b, prodType='b532')
+        p2e_convertor.write_to_earlinet_nc(
+            data, dims, global_attris,
+            range_lim=range_lim_e, prodType='e355')
+        p2e_convertor.write_to_earlinet_nc(
+            data, dims, global_attris,
+            range_lim=range_lim_b, prodType='b1064')
 
 
 def main():
