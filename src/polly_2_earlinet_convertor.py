@@ -61,6 +61,11 @@ def find_in_string(dec, inStr):
         (search parttern, data type, default value)
     inStr: str
         input string.
+
+    Examples
+    --------
+    >>> find_in_string('Jim is 10', (r"(?<=is ).*", int, 0))
+    10
     '''
 
     res = re.search(dec[0], inStr)
@@ -77,7 +82,7 @@ class polly_earlinet_convertor(object):
     Description
     -----------
     convert the polly data into EARLINET format
-    Exemplified file can be found under the folder of "include/".
+    Exemplified file can be found under the folder of "data/".
 
     Method
     ------
@@ -158,6 +163,15 @@ class polly_earlinet_convertor(object):
     def load_metadata(self, filename):
         '''
         load the metadata for output nc files.
+
+        Parameters
+        ----------
+        filename: str
+            absolute path of the metadata file.
+        Returns
+        -------
+        metaData: dict
+            metadata.
         '''
 
         if (not os.path.exists(filename)) or (not os.path.isfile(filename)):
@@ -172,7 +186,12 @@ class polly_earlinet_convertor(object):
 
     def load_campaign_list(self):
         '''
-        load the campaign information list into a dict
+        load the campaign information list into a dict.
+
+        Returns
+        -------
+        camp_dict: dict
+            campaign dict.
         '''
 
         camp_list_file = os.path.join(
@@ -201,6 +220,11 @@ class polly_earlinet_convertor(object):
         '''
         load the convert key for mapping the labview/picasso configurations to
         EARLINET standard configurations.
+
+        Returns
+        -------
+        conversion_key: dict
+            conversion keys.
         '''
 
         if self.fileType.lower() == 'labview':
@@ -230,6 +254,15 @@ class polly_earlinet_convertor(object):
     def load_camp_info(self, camp_info_file=None):
         '''
         load the campain information
+
+        Parameters
+        ----------
+        camp_info_file: str
+            absolute path of campaign information file.
+        Returns
+        -------
+        camp_info: dict
+            campaign information
         '''
 
         if (not os.path.exists(camp_info_file)) or \
@@ -250,9 +283,15 @@ class polly_earlinet_convertor(object):
         Parameters
         ----------
         filename: str
-            absolute path of the data filename.
-        Keywords
-        --------
+            absolute path of the data file.
+        Returns
+        -------
+        dims: dict
+            dimensions
+        data: dict
+            data
+        global_attri: dict
+            global attributes
         '''
 
         if self.fileType.lower() == 'labview':
@@ -267,44 +306,64 @@ class polly_earlinet_convertor(object):
 
         return dims, data, global_attri
 
-    def list_avail_fileType(self, variables):
+    def list_avail_prodType(self, variable):
         '''
         list available earlinet products that can be converted to.
+
+        Parameters
+        ----------
+        variable: dict
+            Data container.
+        Returns
+        -------
+        availProdList: list
+            available product list that can be converted.
         '''
 
-        availFileList = []
+        availProdList = []
 
         # determine b355
-        if ('pdr_355' in variables.keys()) and \
-           ('vdr_355' in variables.keys()) and \
-           ('bsc_355' in variables.keys()):
-            availFileList.append('b355')
+        if ('pdr_355' in variable.keys()) and \
+           ('vdr_355' in variable.keys()) and \
+           ('bsc_355' in variable.keys()):
+            availProdList.append('b355')
 
         # determine e355
-        if ('ext_355' in variables.keys()) and \
-           ('bsc_355' in variables.keys()):
-            availFileList.append('e355')
+        if ('ext_355' in variable.keys()) and \
+           ('bsc_355' in variable.keys()):
+            availProdList.append('e355')
 
         # determine b532
-        if ('pdr_532' in variables.keys()) and \
-           ('vdr_532' in variables.keys()) and \
-           ('bsc_532' in variables.keys()):
-            availFileList.append('b532')
+        if ('pdr_532' in variable.keys()) and \
+           ('vdr_532' in variable.keys()) and \
+           ('bsc_532' in variable.keys()):
+            availProdList.append('b532')
 
         # determine e532
-        if ('ext_532' in variables.keys()) and \
-           ('bsc_532' in variables.keys()):
-            availFileList.append('e532')
+        if ('ext_532' in variable.keys()) and \
+           ('bsc_532' in variable.keys()):
+            availProdList.append('e532')
 
         # determine b1064
-        if ('bsc_1064' in variables.keys()):
-            availFileList.append('b1064')
+        if ('bsc_1064' in variable.keys()):
+            availProdList.append('b1064')
 
-        return availFileList
+        return availProdList
 
     def search_data_files(self, filename, filepath=None):
         '''
         Search the polly data files. Wildcards are supported.
+
+        Parameters
+        ----------
+        filename: str
+            regular expression search pattern for data files.
+        filepath: str
+            directory of data files.
+        Returns
+        -------
+        fileList: list
+            found data files that need to be converted.
         '''
 
         if not filepath:
@@ -325,8 +384,20 @@ class polly_earlinet_convertor(object):
     def search_camp_info_file(self, pollyType, location, starttime):
         '''
         search the required campaign info file.
+        If no file was found, return None.
 
-        If no file was found, return None
+        Parameters
+        ----------
+        pollyType: str
+            polly type
+        location: str
+            campaign location.
+        starttime: datetime
+            starttime of the profile.
+        Returns
+        -------
+        campaign_file_list: str
+            absolute path of the campaign file.
         '''
 
         instrument_list = [item.lower() for item in self.instrument_list]
@@ -677,6 +748,7 @@ class polly_earlinet_convertor(object):
         '''
         read the labview retrieving data
         '''
+
         dataMatrix = np.loadtxt(filename, skiprows=1, dtype=float,
                                 encoding='cp1252')
         return dataMatrix
@@ -964,6 +1036,10 @@ class polly_earlinet_convertor(object):
             'angstroem_exponent'
             'reference_value'
             'meteor_source'
+        Returns
+        -------
+        val:
+            value
         '''
 
         decoders = {
@@ -1725,6 +1801,10 @@ class polly_earlinet_convertor(object):
             |'b532'|backscatter at 532 nm|
             |'e532'|extinction at 532 nm|
             |'b1064'|backscatter at 1064 nm|
+        Returns
+        -------
+        filename: str
+            absolute path of the exported file.
         '''
 
         if not (len(range_lim) is 2):
@@ -1746,7 +1826,7 @@ class polly_earlinet_convertor(object):
         if prodType == 'b355':
             # write to b355
             # yyyymmdd_HHMM_{station_ID}_{polly}_{b355|e355}.nc
-            file_b355 = os.path.join(
+            filename = os.path.join(
                 self.outputDir,
                 '{date}_{smooth:04.0f}_{station_ID}_{polly}_b355.nc'.format(
                     date=datetime.utcfromtimestamp(variables['time']).
@@ -1756,14 +1836,14 @@ class polly_earlinet_convertor(object):
                     polly=self.pollyType.lower()))
 
             self.__write_2_earlinet_b355(
-                file_b355, variables, dimensions,
+                filename, variables, dimensions,
                 global_attri, *args,
                 range_lim=range_lim, **kwargs)
 
         elif prodType == 'e355':
             # write to e355
             # yyyymmdd_HHMM_{station_ID}_{polly}_{b355|e355}.nc
-            file_e355 = os.path.join(
+            filename = os.path.join(
                 self.outputDir,
                 '{date}_{smooth:04.0f}_{station_ID}_{polly}_e355.nc'.format(
                     date=datetime.utcfromtimestamp(variables['time']).
@@ -1773,14 +1853,14 @@ class polly_earlinet_convertor(object):
                     polly=self.pollyType.lower()))
 
             self.__write_2_earlinet_e355(
-                file_e355, variables, dimensions,
+                filename, variables, dimensions,
                 global_attri, *args,
                 range_lim=range_lim, **kwargs)
 
         elif prodType == 'b532':
             # write to b532
             # yyyymmdd_HHMM_{station_ID}_{polly}_{b532|e532}.nc
-            file_b532 = os.path.join(
+            filename = os.path.join(
                 self.outputDir,
                 '{date}_{smooth:04.0f}_{station_ID}_{polly}_b532.nc'.format(
                     date=datetime.utcfromtimestamp(variables['time']).
@@ -1790,14 +1870,14 @@ class polly_earlinet_convertor(object):
                     polly=self.pollyType.lower()))
 
             self.__write_2_earlinet_b532(
-                file_b532, variables, dimensions,
+                filename, variables, dimensions,
                 global_attri, *args,
                 range_lim=range_lim, **kwargs)
 
         elif prodType == 'e532':
             # write to e532
             # yyyymmdd_HHMM_{station_ID}_{polly}_{b532|e532}.nc
-            file_e532 = os.path.join(
+            filename = os.path.join(
                 self.outputDir,
                 '{date}_{smooth:04.0f}_{station_ID}_{polly}_e532.nc'.format(
                     date=datetime.utcfromtimestamp(variables['time']).
@@ -1806,14 +1886,14 @@ class polly_earlinet_convertor(object):
                     station_ID=self.camp_info['station_ID'].lower(),
                     polly=self.pollyType.lower()))
             self.__write_2_earlinet_e532(
-                file_e532, variables, dimensions,
+                filename, variables, dimensions,
                 global_attri, *args,
                 range_lim=range_lim, **kwargs)
 
         elif prodType == 'b1064':
             # write to b1064
             # yyyymmdd_HHMM_{station_ID}_{polly}_{b1064}.nc
-            file_b1064 = os.path.join(
+            filename = os.path.join(
                 self.outputDir,
                 '{date}_{smooth:04.0f}_{station_ID}_{polly}_b1064.nc'.
                 format(
@@ -1823,13 +1903,15 @@ class polly_earlinet_convertor(object):
                     station_ID=self.camp_info['station_ID'].lower(),
                     polly=self.pollyType.lower()))
             self.__write_2_earlinet_b1064(
-                file_b1064, variables, dimensions,
+                filename, variables, dimensions,
                 global_attri, *args,
                 range_lim=range_lim, **kwargs)
 
         else:
             logger.error('Unknown prodType: {0}'.format(fileType))
             raise ValueError
+
+        return filename
 
     def __write_2_earlinet_nc(self, filename, variables, dimensions,
                               global_attri):
@@ -2057,7 +2139,7 @@ def p2e_go(polly_type, location, file_type, category, filename, output_dir,
     range_lim_e: 2-element list
         range limit for the variables in e-files (e355, e532). [m]
     camp_info: str
-        filename of the campaigin configuration file.
+        filename of the campaign configuration file.
         (only the filename is necessary)
     force: boolean
         flag to control whether to override the previous results.
@@ -2080,21 +2162,12 @@ def p2e_go(polly_type, location, file_type, category, filename, output_dir,
     for task in fileLists:
         dims, data, global_attris = p2e_convertor.read_data_file(task)
 
-        p2e_convertor.write_to_earlinet_nc(
-            data, dims, global_attris,
-            range_lim=range_lim_b, prodType='b355')
-        p2e_convertor.write_to_earlinet_nc(
-            data, dims, global_attris,
-            range_lim=range_lim_e, prodType='e355')
-        p2e_convertor.write_to_earlinet_nc(
-            data, dims, global_attris,
-            range_lim=range_lim_b, prodType='b532')
-        p2e_convertor.write_to_earlinet_nc(
-            data, dims, global_attris,
-            range_lim=range_lim_e, prodType='e355')
-        p2e_convertor.write_to_earlinet_nc(
-            data, dims, global_attris,
-            range_lim=range_lim_b, prodType='b1064')
+        availProdList = p2e_convertor.list_avail_prodType()
+
+        for prod in availProdList:
+            p2e_convertor.write_to_earlinet_nc(
+                data, dims, global_attris,
+                range_lim=range_lim_b, prodType='b355')
 
 
 def main():

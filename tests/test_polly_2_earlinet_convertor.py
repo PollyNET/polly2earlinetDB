@@ -176,6 +176,26 @@ class Test(unittest.TestCase):
             os.path.join(
                 tmpDir, '20200409_0029_0458_lei_pollyxt_tropos_b1064.nc')))
 
+    def test_list_avail_prodType(self):
+        print('---> Test on list_avail_prodType')
+
+        p2eConvertor = polly_earlinet_convertor(
+            'PollyXT_TROPOS', 'leipzig',
+            fileType='picasso', category=1,
+            output_dir=os.path.join(projectDir, 'data', 'tmp'),
+            force=True)
+
+        fileLists = p2eConvertor.search_data_files(
+            '*TROPOS*profiles.nc', filepath=os.path.join(projectDir, 'data')
+        )
+
+        dims, data, global_attris = p2eConvertor.read_data_file(fileLists[0])
+        availProds = p2eConvertor.list_avail_prodType(data)
+
+        self.assertListEqual(
+            availProds,
+            ['b355', 'e355', 'b532', 'e532', 'b1064'])
+
 
 def main():
 
