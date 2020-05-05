@@ -18,3 +18,4 @@
 - [ ] `vertical_resolution`: smoothWin * size(height) (resolution for each bin: m) (∆∆∆)
 - [x] `zenith_angle`: need to be implemented (∆∆∆)
 - [ ] `extinction_evaluation_algorithm`: 1 (non-weighted_linear_fit)
+- [ ] uncertainty of extinction and backscatter

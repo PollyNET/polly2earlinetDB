@@ -1,13 +1,18 @@
 # CHANGELOG
 
+## v1.1
+
+### New features
+
+- support for Picasso profiles (#1)
+
+### TODO
+
+- calculations for the vertical_resolution (#5)
+
 ## v0.1
 
 ### New features
 
 - enable the conversion of polly labivew files to EARLINET nc files
-- enalbe auto-search the configuration file for the labivew file
-
-### TODO
-
-- support for Picasso profiles (#1)
-- calculations for the vertical_resolution (#5)
+- enable auto-search the configuration file for the labivew file

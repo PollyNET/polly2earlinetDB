@@ -1,0 +1,14 @@
+# This configuration contains the conversion key for Picasso settings to 
+# EARLINET style settings
+#
+# History
+#   2020-05-05 First edition by Zhenping
+
+# meteorological data source
+## picasso style
+## 'gdas1', 'standard_atmosphere', 'websonde', 'radiosonde'
+pk_meteor_source = ['gdas1', 'standard_atmosphere', 'websonde', 'radiosonde']
+    ## EARLINET
+    ## 0: US_standard_atmosphere; 1: radiosonding; 
+    ## 2: ecmwf; 3: icon-iglo-12-23; 4: gdas
+ek_meteor_source = [4, 0, 1, 1]

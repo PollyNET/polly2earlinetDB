@@ -11,17 +11,15 @@ setup(name='molecular',
       packages=['molecular', ],
       version='0.5',
       description='Calculation of molecular atmosphere scattering parameters',
-      long_description = long_descr,
+      long_description=long_descr,
       author='Ioannis Binietoglou, Mike Kottas',
       author_email='binietoglou@noa.gr',
       install_requires=[
         "numpy",
         "matplotlib",
-        "scipy", 
+        "scipy",
         "sphinx",
         "numpydoc",
         "pytest",
         "sphinx-bootstrap-theme",
-    ],
-     )
-
+        ])

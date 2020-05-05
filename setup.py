@@ -1,10 +1,10 @@
 #!/usr/bin/env python
 
-from setuptools import setup
 import os
 import re
 import io
 import pip
+from setuptools import setup
 
 # Read the long description from the readme file
 with open("readme.md", "rb") as f:
