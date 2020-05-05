@@ -2107,7 +2107,7 @@ def main():
 
     # Setup the arguments
     parser.add_argument("-p", "--polly_type",
-                        help="setup the instrument type",
+                        help="specify the instrument type",
                         dest='polly_type',
                         default='pollyxt_tjk')
     parser.add_argument("-l", "--location",
