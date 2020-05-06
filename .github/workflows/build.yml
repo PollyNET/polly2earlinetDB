@@ -1,17 +1,19 @@
 name: Build
 
-on: 
-  pull_request:
+on:
+  push:
     branches:
       - master
+  pull_request:
 
 jobs:
   build:
+    name: Test on ${{ matrix.os }} with Python ${{ matrix.python-version }}
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
         os: [ubuntu-latest, windows-latest]
-        python-version: [3.5]
+        python-version: [3.5, 3.7]
 
     steps:
     - uses: actions/checkout@master
@@ -20,40 +22,17 @@ jobs:
       uses: actions/setup-python@master
       with:
         python-version: ${{ matrix.python-version }}
-  
-    - uses: actions/cache@v1
-      if: startsWith(${{ matrix.os }}, 'ubuntu')
-      with:
-        path: ~/.cache/pip
-        key: ${{ matrix.os }}-pip-${{ hashFiles('**/requirements.txt') }}
-        restore-keys: |
-          ${{ matrix.os }}-pip-
-
-    - uses: actions/cache@v1
-      if: startsWith(${{ matrix.os }}, 'macOS')
-      with:
-        path: ~/Library/Caches/pip
-        key: ${{ matrix.os }}-pip-${{ hashFiles('**/requirements.txt') }}
-        restore-keys: |
-          ${{ matrix.os }}-pip-
-
-    - uses: actions/cache@v1
-      if: startsWith(${{ matrix.os }}, 'Windows')
-      with:
-        path: ~\AppData\Local\pip\Cache
-        key: ${{ matrix.os }}-pip-${{ hashFiles('**/requirements.txt') }}
-        restore-keys: |
-          ${{ matrix.os }}-pip-
 
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
+        pip install -r requirements.txt
         python setup.py install
         pip install pycodestyle
 
     - name: Lint with pycodestyle
       run: |
-        pycodestyle --max-line-length=80 --max-doc-length=80 src/*.py
+        pycodestyle --max-line-length=80 --statistics src
 
     - name: Test with unittest
       run: |
