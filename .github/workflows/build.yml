@@ -1,0 +1,61 @@
+name: CI p2e
+
+on: 
+  push:
+    branches: 
+      - master
+#   schedule:
+#     - cron: '0 */12 * * *'
+
+jobs:
+  build:
+
+    runs-on: [ubuntu-latest, Windows, macOS]
+    strategy:
+      matrix:
+        python-version: [3.7]
+
+    steps:
+    - uses: actions/checkout@master
+
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@master
+      with:
+        python-version: ${{ matrix.python-version }}
+  
+    - uses: actions/cache@v1
+      if: startsWith(runner.os, 'Linux')
+      with:
+        path: ~/.cache/pip
+        key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
+        restore-keys: |
+          ${{ runner.os }}-pip-
+
+    - uses: actions/cache@v1
+      if: startsWith(runner.os, 'macOS')
+      with:
+        path: ~/Library/Caches/pip
+        key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
+        restore-keys: |
+          ${{ runner.os }}-pip-
+
+    - uses: actions/cache@v1
+      if: startsWith(runner.os, 'Windows')
+      with:
+        path: ~\AppData\Local\pip\Cache
+        key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
+        restore-keys: |
+          ${{ runner.os }}-pip-
+
+    - name: Install dependencies
+      run: |
+        python setup.py install
+        pip install pycodestyle -y
+
+    - name: Lint with pycodestyle
+      run: |
+        pycodestyle --max-line-length=80 --max-doc-length=80 src/*.py
+
+    - name: Test with unittest
+      run: |
+        python -m unittest discover -s tests
