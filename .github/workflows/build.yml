@@ -1,8 +1,8 @@
-name: CI p2e
+name: Build
 
 on: 
   pull_request:
-    branches: 
+    branches:
       - master
 
 jobs:
