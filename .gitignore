@@ -1,7 +1,7 @@
 others
 .vscode
 log
-polly_2_earlinet_convertor.egg-info
+*egg-info
 build
 dist
 nc

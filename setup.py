@@ -51,7 +51,7 @@ install(os.path.join(os.path.dirname(__file__), 'include',
         'iannis_b-lidar_molecular-de3d2ef2f36b'))
 
 # Run setup
-setup(name='polly_2_earlinet_convertor',
+setup(name='polly2EARLINET',
       packages=['src', 'config', 'include'],
       package_data={
         # If any package contains *.txt or *.rst files, include them:
@@ -59,7 +59,6 @@ setup(name='polly_2_earlinet_convertor',
         # And include any *.msg files found in the 'hello' package, too:
         'include': ['*'],
                     },
-
       version=find_version("src", "__init__.py"),
       description='Package for converting the polly profiles' +
                   ' from labview program to EARLINET format nc ' +

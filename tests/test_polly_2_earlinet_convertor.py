@@ -2,11 +2,12 @@ import sys
 import os
 import unittest
 import shutil
-from polly_2_earlinet_convertor import *
 
 projectDir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 tmpDir = os.path.join(projectDir, 'data', 'tmp')
 sys.path.append(os.path.join(projectDir, 'src'))
+
+from polly_2_earlinet_convertor import *
 
 
 class Test(unittest.TestCase):
