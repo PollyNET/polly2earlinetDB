@@ -77,7 +77,7 @@ class Test(unittest.TestCase):
         self.assertEqual(len(picassoFiles), 1)
         self.assertEqual(
             os.path.basename(picassoFiles[0]),
-            '2020_04_09_Thu_TROPOS_00_00_01_0000_0059_profiles.nc'
+            '2020_05_06_Wed_TROPOS_00_00_01_0000_0059_profiles.nc'
         )
 
     def test_convert_labview_file(self):
@@ -162,19 +162,19 @@ class Test(unittest.TestCase):
 
         self.assertTrue(os.path.exists(
             os.path.join(
-                tmpDir, '20200409_0029_0458_lei_pollyxt_tropos_b355.nc')))
+                tmpDir, '20200506_0029_0458_lei_pollyxt_tropos_b355.nc')))
         self.assertTrue(os.path.exists(
             os.path.join(
-                tmpDir, '20200409_0029_0458_lei_pollyxt_tropos_e355.nc')))
+                tmpDir, '20200506_0029_0458_lei_pollyxt_tropos_e355.nc')))
         self.assertTrue(os.path.exists(
             os.path.join(
-                tmpDir, '20200409_0029_0458_lei_pollyxt_tropos_b532.nc')))
+                tmpDir, '20200506_0029_0458_lei_pollyxt_tropos_b532.nc')))
         self.assertTrue(os.path.exists(
             os.path.join(
-                tmpDir, '20200409_0029_0458_lei_pollyxt_tropos_e532.nc')))
+                tmpDir, '20200506_0029_0458_lei_pollyxt_tropos_e532.nc')))
         self.assertTrue(os.path.exists(
             os.path.join(
-                tmpDir, '20200409_0029_0458_lei_pollyxt_tropos_b1064.nc')))
+                tmpDir, '20200506_0029_0458_lei_pollyxt_tropos_b1064.nc')))
 
     def test_list_avail_prodType(self):
         print('---> Test on list_avail_prodType')
