@@ -9,6 +9,7 @@ import numpy as np
 from datetime import datetime, timedelta, timezone
 from argparse import RawTextHelpFormatter
 from netCDF4 import Dataset
+from packaging import version
 from scipy.interpolate import interp1d
 from molecular.rayleigh_scattering import *
 
@@ -1098,6 +1099,14 @@ class polly_earlinet_convertor(object):
         # read picasso data
         fh = Dataset(filename, 'r')
         pData = fh.variables
+
+        # check the Picasso program version
+        # Only if version >= 2.0, the conversion can be applied
+        if (version.parse(fh.version) < version.parse('2.0')):
+            raise RuntimeError('The profile was processed by old versioned ' +
+                               'Picasso (< v2.0). Some mandatory variables ' +
+                               'required by EARLINET data format is ' +
+                               'therefore missing.')
 
         # search the campaign info file
         if (not os.path.exists(self.camp_info_file)) or \
