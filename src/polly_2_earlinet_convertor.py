@@ -2247,6 +2247,10 @@ def main():
                              'if they exists',
                         dest='force',
                         action='store_true')
+    parser.add_argument("--version",
+                        help='show version',
+                        dest='version',
+                        action='store_false')
 
     # sub argument
     helpMsg = "list supported campaign and instruments."
@@ -2285,6 +2289,8 @@ def main():
                   args.flagShowInstrument,
                   args.flagShowAll
                   )
+    elif args.version:
+        logger.info('Version {0}'.format(__version__))
     else:
         # run the command
         p2e_go(args.polly_type, args.location, args.file_type,
