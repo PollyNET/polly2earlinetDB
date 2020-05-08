@@ -1129,12 +1129,13 @@ class polly_earlinet_convertor(object):
                 return None, None, None
 
         # load the campaign info
-        with open(self.camp_info_file, 'r', encoding='utf-8') as fh:
-            camp_info = toml.loads(fh.read())
+        with open(self.camp_info_file, 'r', encoding='utf-8') as camp_fh:
+            camp_info = toml.loads(camp_fh.read())
 
         if not (camp_info['processor_name']):
             # set processor_name automatically if not set in the camp_info file
             camp_info['processor_name'] = 'Pollynet_Processing_Chain'
+            camp_info['processor_version'] = fh.version
 
         self.camp_info = camp_info
 
