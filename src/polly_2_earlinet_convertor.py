@@ -2172,12 +2172,12 @@ def p2e_go(polly_type, location, file_type, category, filename, output_dir,
     for task in fileLists:
         dims, data, global_attris = p2e_convertor.read_data_file(task)
 
-        availProdList = p2e_convertor.list_avail_prodType()
+        availProdList = p2e_convertor.list_avail_prodType(data)
 
         for prod in availProdList:
             p2e_convertor.write_to_earlinet_nc(
                 data, dims, global_attris,
-                range_lim=range_lim_b, prodType='b355')
+                range_lim=range_lim_b, prodType=prod)
 
 
 def main():

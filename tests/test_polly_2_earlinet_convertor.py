@@ -96,37 +96,35 @@ class Test(unittest.TestCase):
         for task in fileLists:
             dims, data, global_attris = p2eConvertor.read_data_file(task)
 
-            p2eConvertor.write_to_earlinet_nc(
-                data, dims, global_attris,
-                range_lim=[0, 15000], prodType='b355')
-            p2eConvertor.write_to_earlinet_nc(
-                data, dims, global_attris,
-                range_lim=[0, 15000], prodType='e355')
-            p2eConvertor.write_to_earlinet_nc(
-                data, dims, global_attris,
-                range_lim=[0, 15000], prodType='b532')
-            p2eConvertor.write_to_earlinet_nc(
-                data, dims, global_attris,
-                range_lim=[0, 15000], prodType='e532')
-            p2eConvertor.write_to_earlinet_nc(
-                data, dims, global_attris,
-                range_lim=[0, 15000], prodType='b1064')
+            b355 = p2eConvertor.write_to_earlinet_nc(
+                    data, dims, global_attris,
+                    range_lim=[0, 15000], prodType='b355')
+            self.assertTrue(os.path.exists(b355))
+            os.remove(b355)
 
-        self.assertTrue(os.path.exists(
-            os.path.join(
-                tmpDir, '20190723_2100_0366_lei_arielle_b355.nc')))
-        self.assertTrue(os.path.exists(
-            os.path.join(
-                tmpDir, '20190723_2100_0366_lei_arielle_e355.nc')))
-        self.assertTrue(os.path.exists(
-            os.path.join(
-                tmpDir, '20190723_2100_0366_lei_arielle_b532.nc')))
-        self.assertTrue(os.path.exists(
-            os.path.join(
-                tmpDir, '20190723_2100_0366_lei_arielle_e532.nc')))
-        self.assertTrue(os.path.exists(
-            os.path.join(
-                tmpDir, '20190723_2100_0366_lei_arielle_b1064.nc')))
+            e355 = p2eConvertor.write_to_earlinet_nc(
+                    data, dims, global_attris,
+                    range_lim=[0, 15000], prodType='e355')
+            self.assertTrue(os.path.exists(e355))
+            os.remove(e355)
+
+            b532 = p2eConvertor.write_to_earlinet_nc(
+                    data, dims, global_attris,
+                    range_lim=[0, 15000], prodType='b532')
+            self.assertTrue(os.path.exists(b532))
+            os.remove(b532)
+
+            e532 = p2eConvertor.write_to_earlinet_nc(
+                    data, dims, global_attris,
+                    range_lim=[0, 15000], prodType='e532')
+            self.assertTrue(os.path.exists(e532))
+            os.remove(e532)
+
+            b1064 = p2eConvertor.write_to_earlinet_nc(
+                    data, dims, global_attris,
+                    range_lim=[0, 15000], prodType='b1064')
+            self.assertTrue(os.path.exists(b1064))
+            os.remove(b1064)
 
     def test_convert_picasso_file(self):
         print('---> Test on convert picasso file')
@@ -144,37 +142,35 @@ class Test(unittest.TestCase):
         for task in fileLists:
             dims, data, global_attris = p2eConvertor.read_data_file(task)
 
-            p2eConvertor.write_to_earlinet_nc(
-                data, dims, global_attris,
-                range_lim=[0, 15000], prodType='b355')
-            p2eConvertor.write_to_earlinet_nc(
-                data, dims, global_attris,
-                range_lim=[0, 15000], prodType='e355')
-            p2eConvertor.write_to_earlinet_nc(
-                data, dims, global_attris,
-                range_lim=[0, 15000], prodType='b532')
-            p2eConvertor.write_to_earlinet_nc(
-                data, dims, global_attris,
-                range_lim=[0, 15000], prodType='e532')
-            p2eConvertor.write_to_earlinet_nc(
-                data, dims, global_attris,
-                range_lim=[0, 15000], prodType='b1064')
+            b355 = p2eConvertor.write_to_earlinet_nc(
+                    data, dims, global_attris,
+                    range_lim=[0, 15000], prodType='b355')
+            self.assertTrue(os.path.exists(b355))
+            os.remove(b355)
 
-        self.assertTrue(os.path.exists(
-            os.path.join(
-                tmpDir, '20200506_0029_0458_lei_pollyxt_tropos_b355.nc')))
-        self.assertTrue(os.path.exists(
-            os.path.join(
-                tmpDir, '20200506_0029_0458_lei_pollyxt_tropos_e355.nc')))
-        self.assertTrue(os.path.exists(
-            os.path.join(
-                tmpDir, '20200506_0029_0458_lei_pollyxt_tropos_b532.nc')))
-        self.assertTrue(os.path.exists(
-            os.path.join(
-                tmpDir, '20200506_0029_0458_lei_pollyxt_tropos_e532.nc')))
-        self.assertTrue(os.path.exists(
-            os.path.join(
-                tmpDir, '20200506_0029_0458_lei_pollyxt_tropos_b1064.nc')))
+            e355 = p2eConvertor.write_to_earlinet_nc(
+                    data, dims, global_attris,
+                    range_lim=[0, 15000], prodType='e355')
+            self.assertTrue(os.path.exists(e355))
+            os.remove(e355)
+
+            b532 = p2eConvertor.write_to_earlinet_nc(
+                    data, dims, global_attris,
+                    range_lim=[0, 15000], prodType='b532')
+            self.assertTrue(os.path.exists(b532))
+            os.remove(b532)
+
+            e532 = p2eConvertor.write_to_earlinet_nc(
+                    data, dims, global_attris,
+                    range_lim=[0, 15000], prodType='e532')
+            self.assertTrue(os.path.exists(e532))
+            os.remove(e532)
+
+            b1064 = p2eConvertor.write_to_earlinet_nc(
+                    data, dims, global_attris,
+                    range_lim=[0, 15000], prodType='b1064')
+            self.assertTrue(os.path.exists(b1064))
+            os.remove(b1064)
 
     def test_list_avail_prodType(self):
         print('---> Test on list_avail_prodType')
@@ -195,6 +191,33 @@ class Test(unittest.TestCase):
         self.assertListEqual(
             availProds,
             ['b355', 'e355', 'b532', 'e532', 'b1064'])
+
+    def test_p2e_go(self):
+        print('---> Test on p2e_go')
+
+        p2e_go(
+            'PollyXT_TROPOS', 'leipzig', 'picasso', 1,
+            os.path.join(
+                projectDir, 'data',
+                '2020_05_06_Wed_TROPOS_00_00_01_0000_0059_profiles.nc'),
+            tmpDir,
+            [0, 14000], [0, 15000], 'Leipzig_campaign_info_9.toml', True)
+
+        self.assertTrue(os.path.exists(
+            os.path.join(
+                tmpDir, '20200506_0029_0458_lei_pollyxt_tropos_b355.nc')))
+        self.assertTrue(os.path.exists(
+            os.path.join(
+                tmpDir, '20200506_0029_0458_lei_pollyxt_tropos_e355.nc')))
+        self.assertTrue(os.path.exists(
+            os.path.join(
+                tmpDir, '20200506_0029_0458_lei_pollyxt_tropos_b532.nc')))
+        self.assertTrue(os.path.exists(
+            os.path.join(
+                tmpDir, '20200506_0029_0458_lei_pollyxt_tropos_e532.nc')))
+        self.assertTrue(os.path.exists(
+            os.path.join(
+                tmpDir, '20200506_0029_0458_lei_pollyxt_tropos_b1064.nc')))
 
 
 def main():
