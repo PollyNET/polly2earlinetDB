@@ -6,6 +6,7 @@ import glob
 import re
 import argparse
 import numpy as np
+from pbr.version import VersionInfo
 from datetime import datetime, timedelta, timezone
 from argparse import RawTextHelpFormatter
 from netCDF4 import Dataset
@@ -2250,7 +2251,7 @@ def main():
     parser.add_argument("--version",
                         help='show version',
                         dest='version',
-                        action='store_false')
+                        action='store_true')
 
     # sub argument
     helpMsg = "list supported campaign and instruments."
@@ -2290,7 +2291,8 @@ def main():
                   args.flagShowAll
                   )
     elif args.version:
-        logger.info('Version {0}'.format(__version__))
+        _v = VersionInfo('polly2EARLINET').semantic_version()
+        logger.info('Version {0}'.format(_v.release_string()))
     else:
         # run the command
         p2e_go(args.polly_type, args.location, args.file_type,
