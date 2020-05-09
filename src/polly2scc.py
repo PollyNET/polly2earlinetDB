@@ -79,7 +79,7 @@ def find_in_string(dec, inStr):
     return val
 
 
-class polly_earlinet_convertor(object):
+class polly_2_earlinet_convertor(object):
     """
     Description
     -----------
@@ -323,6 +323,10 @@ class polly_earlinet_convertor(object):
         '''
 
         availProdList = []
+
+        if variable is None:
+            # when no campaign info file was found or data is lost
+            return
 
         # determine b355
         if ('pdr_355' in variable.keys()) and \
@@ -1201,7 +1205,7 @@ class polly_earlinet_convertor(object):
                 beta_pi_rayleigh(
                     355,
                     pressure=pData['pressure'][refMask355],
-                    temperature=pData['temperature'][refMask355]))
+                    temperature=pData['temperature'][refMask355] + 273.16))
             refBscRatio355 = refVal_355 / refBscMol355 + 1
 
             # 0: monte_carlo;
@@ -1266,7 +1270,7 @@ class polly_earlinet_convertor(object):
                 beta_pi_rayleigh(
                     532,
                     pressure=pData['pressure'][refMask532],
-                    temperature=pData['temperature'][refMask532]))
+                    temperature=pData['temperature'][refMask532] + 273.16))
             refBscRatio532 = refVal_532 / refBscMol532 + 1
 
             # 0: monte_carlo;
@@ -1331,7 +1335,7 @@ class polly_earlinet_convertor(object):
                 beta_pi_rayleigh(
                     1064,
                     pressure=pData['pressure'][refMask1064],
-                    temperature=pData['temperature'][refMask1064]))
+                    temperature=pData['temperature'][refMask1064] + 273.16))
             refBscRatio1064 = refVal_1064 / refBscMol1064 + 1
 
             # 0: monte_carlo;
@@ -2089,7 +2093,7 @@ def show_list(flagShowCampaign=False,
     '''
 
     # initialize the instance
-    p2eConvertor = polly_earlinet_convertor()
+    p2eConvertor = polly_2_earlinet_convertor()
     camp_dict = p2eConvertor.campaign_dict
 
     # print the full list
@@ -2120,8 +2124,9 @@ def show_list(flagShowCampaign=False,
                         format(indx=indx + 1, instrument=instrument))
 
 
-def p2e_go(polly_type, location, file_type, category, filename, output_dir,
-           range_lim_b, range_lim_e, camp_info, force):
+def polly2scc(
+    polly_type, location, file_type, category, filename, output_dir,
+        range_lim_b, range_lim_e, camp_info, force):
     """
     convert the polly files according to the input information
 
@@ -2157,12 +2162,13 @@ def p2e_go(polly_type, location, file_type, category, filename, output_dir,
         (default: false)
     """
 
-    p2e_convertor = polly_earlinet_convertor(polly_type, location,
-                                             fileType=file_type,
-                                             category=category,
-                                             output_dir=output_dir,
-                                             camp_info_file=camp_info,
-                                             force=force)
+    p2e_convertor = polly_2_earlinet_convertor(
+        polly_type, location,
+        category=category,
+        output_dir=output_dir,
+        camp_info_file=camp_info,
+        fileType=file_type,
+        force=force)
 
     # search files
     filePath = os.path.dirname(filename)
@@ -2185,10 +2191,12 @@ def main():
 
     # Define the command line arguments.
     description = 'convert the polly profiles to EARLINET data format'
-    parser = ArgumentParser(prog='p2e_go', description=description,
-                            formatter_class=RawTextHelpFormatter)
+    parser = ArgumentParser(
+        prog='polly2scc',
+        description=description,
+        formatter_class=RawTextHelpFormatter)
 
-    # Setup the arguments
+# Setup the arguments
     parser.add_argument("-p", "--polly_type",
                         help="specify the instrument type",
                         dest='polly_type',
@@ -2294,10 +2302,11 @@ def main():
         logger.info('Version {0}'.format(_v.release_string()))
     else:
         # run the command
-        p2e_go(args.polly_type, args.location, args.file_type,
-               args.category, args.filename, args.output_dir,
-               args.range_lim_b, args.range_lim_e,
-               args.camp_info, args.force)
+        polly2scc(
+            args.polly_type, args.location, args.file_type,
+            args.category, args.filename, args.output_dir,
+            args.range_lim_b, args.range_lim_e,
+            args.camp_info, args.force)
 
 
 # When running through terminal

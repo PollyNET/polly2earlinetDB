@@ -1,6 +1,6 @@
-# Introduction to polly_2_earlinet_convertor
+# Introduction to polly2scc
 
-`polly_2_earlinet_convertor` is a specified Python package to facilitate the conversion of Polly processed profiles to [EARLINET data format](EARLINET_new_data_format_specification.md).
+`polly2scc` is a specified Python package to facilitate the conversion of Polly processed profiles to [EARLINET data format](EARLINET_new_data_format_specification.md).
 
 ## Program structure
 
