@@ -1,5 +1,5 @@
-# EARLINET Data Format Convertor for PollyNET Products
-![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)![Build](https://github.com/PollyNET/polly_2_earlinet_convertor/workflows/Build/badge.svg?branch=master)
+# SCC Convertor for PollyNET Products
+![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)![Build](https://github.com/PollyNET/polly2scc/workflows/Build/badge.svg?branch=master)
 
 At June 24, 2019, the new EARLINET database was released and new data format for the netCDF files was applied. Therefore, in order to be compatible with this update, we (PollyNET group) need to change the output results from Picasso (PollyNET automatic processing program) to be adapted to this change.
 
@@ -36,15 +36,15 @@ conda install python=3.5
 **build the repository**
 
 ```bash
-pip install git+https://github.com/PollyNET/polly_2_earlinet_convertor.git
+pip install git+https://github.com/PollyNET/polly2scc.git
 ```
 
 ## Usage
 
-After the steps mentioned above, the command line tool **p2e_go** (polly_to_earlinet convertor) should be ready in your system **PATH**. You can see the instructions of the command with using `p2e_go -h`
+After the steps mentioned above, the command line tool **polly2scc** should be ready in your system **PATH**. You can see the instructions of the command with using `polly2scc -h`
 
 ```text
-usage: p2e_go [-h] [-p POLLY_TYPE] [-l LOCATION] [-t FILE_TYPE] [-c CATEGORY]
+usage: polly2scc [-h] [-p POLLY_TYPE] [-l LOCATION] [-t FILE_TYPE] [-c CATEGORY]
               [-f FILENAME] [-d OUTPUT_DIR]
               [--range_e RANGE_LIM_E RANGE_LIM_E]
               [--range_b RANGE_LIM_B RANGE_LIM_B] [--camp_info CAMP_INFO]
@@ -89,20 +89,20 @@ optional arguments:
 **Display the supported polly types**
 
 ```bash
-p2e_go list --instrument
+polly2scc list --instrument
 ```
 
 **Display the supported campaigns**
 
 ```bash
-p2e_go list --campaign
-p2e_go list --all   # show all campaigns together with the systems
+polly2scc list --campaign
+polly2scc list --all   # show all campaigns together with the systems
 ```
 
 **Convert one file**
 
 ```bash
-p2e_go -p pollyxt_lacros -l punta_arenas -t labview -c 2 -f /User/zhenping/desktop/file1.txt -d /Users/zhenping/Destkop/test --force
+polly2scc -p pollyxt_lacros -l punta_arenas -t labview -c 2 -f /User/zhenping/desktop/file1.txt -d /Users/zhenping/Destkop/test --force
 ```
 
 |output file namings|example|description|
@@ -116,7 +116,7 @@ p2e_go -p pollyxt_lacros -l punta_arenas -t labview -c 2 -f /User/zhenping/deskt
 **convert files with using wildcards**
 
 ```bash
-p2e_go -p pollyxt_lacros -l punta_arenas -t labview -c 2 -f /User/zhenping/desktop/file*.txt -d /Users/zhenping/Destkop/test --force
+polly2scc -p pollyxt_lacros -l punta_arenas -t labview -c 2 -f /User/zhenping/desktop/file*.txt -d /Users/zhenping/Destkop/test --force
 ```
 
 ## Q&A

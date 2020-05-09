@@ -7,14 +7,14 @@ projectDir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 tmpDir = os.path.join(projectDir, 'data', 'tmp')
 sys.path.append(os.path.join(projectDir, 'src'))
 
-from polly_2_earlinet_convertor import *
+from polly2scc import *
 
 
 class Test(unittest.TestCase):
 
     @classmethod
     def setUpClass(self):
-        print('Start to test polly_2_earlinet_convertor...')
+        print('Start to test polly2scc...')
         if not os.path.exists(tmpDir):
             os.mkdir(tmpDir)
 
@@ -23,7 +23,7 @@ class Test(unittest.TestCase):
         if os.path.exists(tmpDir):
             shutil.rmtree(tmpDir)
 
-        print('Finish testing polly_2_earlinet_convertor!')
+        print('Finish testing polly2scc!')
 
     def setUp(self):
         print("execute setUp")
@@ -50,7 +50,7 @@ class Test(unittest.TestCase):
     def test_show_list(self):
         print('---> Test show_list')
 
-        p2eConvertor = polly_earlinet_convertor()
+        p2eConvertor = polly_2_earlinet_convertor()
         camp_dict = p2eConvertor.campaign_dict
 
         self.assertGreater(len(camp_dict), 0)
@@ -58,7 +58,7 @@ class Test(unittest.TestCase):
     def test_search_data_files(self):
         print('---> Test on search_data_file')
 
-        p2eConvertor = polly_earlinet_convertor('arielle', 'leipzig')
+        p2eConvertor = polly_2_earlinet_convertor('arielle', 'leipzig')
         p2eConvertor.fileType = 'labview'
 
         # test search labview files
@@ -83,7 +83,7 @@ class Test(unittest.TestCase):
     def test_convert_labview_file(self):
         print('---> Test on convert labview file')
 
-        p2eConvertor = polly_earlinet_convertor(
+        p2eConvertor = polly_2_earlinet_convertor(
             'arielle', 'leipzig',
             fileType='labview', category=1,
             output_dir=os.path.join(projectDir, 'data', 'tmp'),
@@ -129,7 +129,7 @@ class Test(unittest.TestCase):
     def test_convert_picasso_file(self):
         print('---> Test on convert picasso file')
 
-        p2eConvertor = polly_earlinet_convertor(
+        p2eConvertor = polly_2_earlinet_convertor(
             'PollyXT_TROPOS', 'leipzig',
             fileType='picasso', category=1,
             output_dir=os.path.join(projectDir, 'data', 'tmp'),
@@ -175,7 +175,7 @@ class Test(unittest.TestCase):
     def test_list_avail_prodType(self):
         print('---> Test on list_avail_prodType')
 
-        p2eConvertor = polly_earlinet_convertor(
+        p2eConvertor = polly_2_earlinet_convertor(
             'PollyXT_TROPOS', 'leipzig',
             fileType='picasso', category=1,
             output_dir=os.path.join(projectDir, 'data', 'tmp'),
@@ -192,10 +192,10 @@ class Test(unittest.TestCase):
             availProds,
             ['b355', 'e355', 'b532', 'e532', 'b1064'])
 
-    def test_p2e_go(self):
+    def test_polly2scc(self):
         print('---> Test on p2e_go')
 
-        p2e_go(
+        polly2scc(
             'PollyXT_TROPOS', 'leipzig', 'picasso', 1,
             os.path.join(
                 projectDir, 'data',
