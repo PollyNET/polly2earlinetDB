@@ -1,18 +1,85 @@
-# CHANGELOG
+CHANGES
+=======
 
-## v1.1
+* Package managing with pbr
+* refactor: rm \_\_init\_\_.py
+* improvement(setup.py): manage python packaging with pbr
+* improvement: replace the deprecated usage of pip
+* style: remove unnecessary files
+* improvement: enable output version
+* fix: add missing input for list\_avail\_prodType
+* Write processor\_version to EARLINET nc file
+* improvement: write processor\_version
+* test: replace test data file
+* improvement: check picasso version before conversion
+* docs: update program diagram
+* docs(readme): update build badge
+* refactor(setup.py): rename the module
+* ci(build.yml): remove macOS and keep only py3.5
+* ci(build.yml): upgrade pip
+* docs(readme.md): update the badge
+* style(build.yml): test github action
+* Update github actions
+* docs(readme.md): add CI badge
+* ci(buiid.yml): add github actions
+* docs: add introduction doc
 
-### New features
+v1.1
+----
 
-- support for Picasso profiles (#1)
+* docs(polly\_2\_earlinet\_convertor.py): fix typo
+* feat: convert picasso profile to earlinet
+* build: add lidar\_molecular
+* refactor: fix merge conflicts
+* docs: implement dev\_log
+* docs: implement dev\_log
+* docs(changelog): update CHANGELOG
+* docs(readme.md): update readme
 
-### TODO
+1.0
+---
 
-- calculations for the vertical_resolution (#5)
-
-## v0.1
-
-### New features
-
-- enable the conversion of polly labivew files to EARLINET nc files
-- enable auto-search the configuration file for the labivew file
+* style: version 1.0
+* style: version 1.0
+* Update readme.md
+* Fix bug of timestamp conversion and height
+* Add readme badges
+* Improvement: turn on the compression
+* Improvements: replace the vertical\_resolution of the range bins with the effective resolution, which was expained in Sect. 4.2 in I. Mattis, et al, ATM, 2016
+* Update: update the readme.md
+* Bugfixes: enable the input range to start from 0
+* Update readme.md
+* Improvements: add the smoothing window to filenames to differenciate results from different smoothing settings
+* Improvements: individual settings for range limit of e file (e355, 3532) and b file (b355, b532, b1064)
+* Improvements: add -r to control the range limit of the variables
+* Bugfixes: update the readme.md with removing the typos
+* Update: add two non-EARLINET stations
+* Improvements: add error handles for argparse
+* Updates: implement new HOI IDs
+* Bugfixes: assign specified 'earlinet\_product\_type' to different nc files
+* Improvements: add the comments for the function of p2e\_go
+* Update: add the hoi\_ids for limassol
+* Improvemetns: tiny update for the readme.md
+* Improvements: throw warning if old labview results were input
+* Improvements: update the items in campaign info files
+* Bugfixes: replace the measurement\_time in the metadata with the start\_time and stop\_time of the averaged file
+* Bugfixes: 1. station\_ID to lower case: LEI -> lei
+* Improvements: add exemplified data files from old version labview program
+* revise the readme.md
+* Add TODO
+* Update the readme
+* Bugfixes: specify the encoding for loading the toml files
+* delete the log file
+* Beta version
+* test
+* Improvements: Add keyword to show the whole campaign list
+* Improvements: complete the configs
+* backup
+* test
+* backup
+* revise the readme
+* alpha version
+* Backup from local
+* Backup from local
+* Add MIT license
+* Auto backup

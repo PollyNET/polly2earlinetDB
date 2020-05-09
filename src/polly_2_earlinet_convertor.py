@@ -6,6 +6,7 @@ import glob
 import re
 import argparse
 import numpy as np
+from pbr.version import VersionInfo
 from datetime import datetime, timedelta, timezone
 from argparse import RawTextHelpFormatter
 from netCDF4 import Dataset
@@ -2247,6 +2248,10 @@ def main():
                              'if they exists',
                         dest='force',
                         action='store_true')
+    parser.add_argument("--version",
+                        help='show version',
+                        dest='version',
+                        action='store_true')
 
     # sub argument
     helpMsg = "list supported campaign and instruments."
@@ -2285,6 +2290,9 @@ def main():
                   args.flagShowInstrument,
                   args.flagShowAll
                   )
+    elif args.version:
+        _v = VersionInfo('polly2SCC').semantic_version()
+        logger.info('Version {0}'.format(_v.release_string()))
     else:
         # run the command
         p2e_go(args.polly_type, args.location, args.file_type,
