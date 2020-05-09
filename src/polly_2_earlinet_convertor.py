@@ -2184,8 +2184,7 @@ def p2e_go(polly_type, location, file_type, category, filename, output_dir,
 def main():
 
     # Define the command line arguments.
-    description = 'convert the polly profiles from labview program to ' + \
-                  'EARLINET format'
+    description = 'convert the polly profiles to EARLINET data format'
     parser = ArgumentParser(prog='p2e_go', description=description,
                             formatter_class=RawTextHelpFormatter)
 
