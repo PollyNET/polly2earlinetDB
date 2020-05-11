@@ -1201,7 +1201,7 @@ class polly_2_earlinet_convertor(object):
                 beta_pi_rayleigh(
                     355,
                     pressure=pData['pressure'][refMask355],
-                    temperature=pData['temperature'][refMask355]))
+                    temperature=pData['temperature'][refMask355] + 273.16))
             refBscRatio355 = refVal_355 / refBscMol355 + 1
 
             # 0: monte_carlo;

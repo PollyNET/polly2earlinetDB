@@ -225,7 +225,12 @@ def main():
     suite = unittest.TestSuite()
 
     tests = [
-        Test('test_find_in_string')
+        Test('test_find_in_string'),
+        Test('test_show_list'),
+        Test('test_list_avail_prodType'),
+        Test('test_search_data_files'),
+        Test('test_convert_labview_file'),
+        Test('test_convert_picasso_file')
         ]   # setup the test list
     suite.addTests(tests)
 
