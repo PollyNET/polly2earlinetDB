@@ -324,6 +324,10 @@ class polly_2_earlinet_convertor(object):
 
         availProdList = []
 
+        if variable is None:
+            # when no campaign info file was found or data is lost
+            return
+
         # determine b355
         if ('pdr_355' in variable.keys()) and \
            ('vdr_355' in variable.keys()) and \
@@ -1266,7 +1270,7 @@ class polly_2_earlinet_convertor(object):
                 beta_pi_rayleigh(
                     532,
                     pressure=pData['pressure'][refMask532],
-                    temperature=pData['temperature'][refMask532]))
+                    temperature=pData['temperature'][refMask532] + 273.16))
             refBscRatio532 = refVal_532 / refBscMol532 + 1
 
             # 0: monte_carlo;
@@ -1331,7 +1335,7 @@ class polly_2_earlinet_convertor(object):
                 beta_pi_rayleigh(
                     1064,
                     pressure=pData['pressure'][refMask1064],
-                    temperature=pData['temperature'][refMask1064]))
+                    temperature=pData['temperature'][refMask1064] + 273.16))
             refBscRatio1064 = refVal_1064 / refBscMol1064 + 1
 
             # 0: monte_carlo;

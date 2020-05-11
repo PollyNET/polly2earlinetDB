@@ -1,6 +1,7 @@
 CHANGES
 =======
 
+* fix: correct temperature with Kelvin
 * feat: rename the repo as polly2scc
 
 v1.2
