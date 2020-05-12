@@ -7,10 +7,10 @@ import re
 import argparse
 import numpy as np
 from pbr.version import VersionInfo
+from packaging import version
 from datetime import datetime, timedelta, timezone
 from argparse import RawTextHelpFormatter
 from netCDF4 import Dataset
-from packaging import version
 from scipy.interpolate import interp1d
 from molecular.rayleigh_scattering import *
 
@@ -22,9 +22,7 @@ METADATA_FILE = 'metadata.toml'
 CAMPAIGN_LIST_FILE = 'campaign_list.toml'
 NETCDF_FORMAT = "NETCDF4"
 NETCDF_COMPLEVEL = 5   # netCDF compression level
-PROJECTDIR = os.path.dirname(
-    os.path.dirname(os.path.realpath(__file__))
-)
+PROJECTDIR = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
 
 # initialize the logger
 logFile = os.path.join(PROJECTDIR, LOGFILE)
@@ -42,10 +40,10 @@ fh.setLevel(logModeDict[LOG_MODE])
 ch = logging.StreamHandler(sys.stdout)
 ch.setLevel(logModeDict[LOG_MODE])
 
-formatterFh = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - ' +
-                                '%(funcName)s - %(lineno)d - %(message)s')
-formatterCh = logging.Formatter(
-    '%(message)s')
+formatterFh = logging.Formatter(
+    '%(asctime)s - %(name)s - %(levelname)s - ' +
+    '%(funcName)s - %(lineno)d - %(message)s')
+formatterCh = logging.Formatter('%(message)s')
 fh.setFormatter(formatterFh)
 ch.setFormatter(formatterCh)
 
@@ -84,16 +82,16 @@ class polly_2_earlinet_convertor(object):
     Description
     -----------
     convert the polly data into EARLINET format
-    Exemplified file can be found under the folder of "data/".
 
     Method
     ------
-    read_data_file: read polly results into data container of 'variables',
-                    'dimensions' and 'global_attri'
-
-    search_data_files: search the polly data files through wildcards
-
-    write_to_earlinet_nc: write data container into EARLINET nc files
+    read_data_file:
+        read polly results into data container of 'variables', 'dimensions' and
+        'global_attri'
+    search_data_files:
+        search the polly data files through wildcards
+    write_to_earlinet_nc:
+        write data container into EARLINET nc files
 
     History
     -------
@@ -103,7 +101,7 @@ class polly_2_earlinet_convertor(object):
     def __init__(self, pollyType='', location='', fileType='labview',
                  category=2, output_dir='', *, camp_info_file='', force=False):
         '''
-        Initialize the class variables
+        initialize the instance
 
         parameters
         ----------
@@ -136,9 +134,8 @@ class polly_2_earlinet_convertor(object):
         self.force = force
 
         # setup the campaign config file
-        self.camp_info_file = os.path.join(self.projectDir,
-                                           'config',
-                                           camp_info_file)
+        self.camp_info_file = os.path.join(
+            self.projectDir, 'config', camp_info_file)
 
         # load conversion key
         self.conversion_key = self.load_convert_key_config()
@@ -177,8 +174,8 @@ class polly_2_earlinet_convertor(object):
         '''
 
         if (not os.path.exists(filename)) or (not os.path.isfile(filename)):
-            logger.error('metadata file does not exist!\n{file}'.
-                         format(filename))
+            logger.error(
+                'metadata file does not exist!\n{file}'.format(filename))
             raise FileNotFoundError
 
         with open(filename, 'r', encoding='utf-8') as fh:
@@ -202,8 +199,9 @@ class polly_2_earlinet_convertor(object):
         # check the campaign list file
         if (not os.path.exists(camp_list_file)) or \
            (not os.path.isfile(camp_list_file)):
-            logger.error('campaign list file does not exist!\n{file}'.format(
-                file=camp_list_file))
+            logger.error(
+                'campaign list file does not exist!\n{file}'.format(
+                    file=camp_list_file))
             raise FileNotFoundError
 
         with open(camp_list_file, 'r', encoding='utf-8') as fh:
@@ -238,8 +236,9 @@ class polly_2_earlinet_convertor(object):
 
         if (not os.path.exists(convert_key_filepath)) or \
            (not os.path.isfile(convert_key_filepath)):
-            logger.error('file does not exist!\n{file}'.format(
-                file=convert_key_filepath))
+            logger.error(
+                'file does not exist!\n{file}'.format(
+                    file=convert_key_filepath))
             raise FileNotFoundError
 
         # load conversion key
@@ -247,8 +246,9 @@ class polly_2_earlinet_convertor(object):
             with open(convert_key_filepath, 'r', encoding='utf-8') as fh:
                 conversion_key = toml.loads(fh.read())
         except Exception as e:
-            logger.error('Failure in reading {file}'.format(
-                file=convert_key_filepath))
+            logger.error(
+                'Failure in reading {file}'.format(
+                    file=convert_key_filepath))
             raise IOError
 
         return conversion_key
@@ -261,6 +261,7 @@ class polly_2_earlinet_convertor(object):
         ----------
         camp_info_file: str
             absolute path of campaign information file.
+
         Returns
         -------
         camp_info: dict
@@ -269,8 +270,9 @@ class polly_2_earlinet_convertor(object):
 
         if (not os.path.exists(camp_info_file)) or \
            (not os.path.isfile(camp_info_file)):
-            logger.error('campaign configuration file does not exist!\n{file}'.
-                         format(file=camp_info_file))
+            logger.error(
+                'campaign configuration file does not exist!\n{file}'
+                .format(file=camp_info_file))
             raise FileNotFoundError
 
         with open(camp_info_file, 'r', encoding='uft-8') as fh:
@@ -286,6 +288,7 @@ class polly_2_earlinet_convertor(object):
         ----------
         filename: str
             absolute path of the data file.
+
         Returns
         -------
         dims: dict
@@ -303,8 +306,9 @@ class polly_2_earlinet_convertor(object):
             dims, data, global_attri = \
                 self.__read_picasso_results(filename, **kwargs)
         else:
-            logger.error('Wrong input of fileType: {fileType}'.format(
-                fileType=self.fileType))
+            logger.error(
+                'Wrong input of fileType: {fileType}'.format(
+                    fileType=self.fileType))
 
         return dims, data, global_attri
 
@@ -316,6 +320,7 @@ class polly_2_earlinet_convertor(object):
         ----------
         variable: dict
             Data container.
+
         Returns
         -------
         availProdList: list
@@ -429,15 +434,17 @@ class polly_2_earlinet_convertor(object):
                                                        item + '.toml'))
 
         if len(campaign_file_list) > 1:
-            logger.error('Duplicated campaign info files were found.\n{file}'.
-                         format(file=campaign_file_list))
+            logger.error(
+                'Duplicated campaign info files were found.\n{file}'
+                .format(file=campaign_file_list))
 
         if not campaign_file_list:
             logger.warning('No campaign info file was found.')
             return ''
         else:
-            logger.info('{file} will be loaded for campaign configs.'.
-                        format(file=campaign_file_list[0]))
+            logger.info(
+                '{file} will be loaded for campaign configs.'
+                .format(file=campaign_file_list[0]))
 
         return campaign_file_list[0]
 
@@ -451,8 +458,8 @@ class polly_2_earlinet_convertor(object):
         '''
 
         if (not os.path.exists(filename)) or (not os.path.isfile(filename)):
-            logger.warning('{file} does not exist!\nFinish!'.
-                           format(file=filename))
+            logger.warning(
+                '{file} does not exist!\nFinish!'.format(file=filename))
             return None, None, None
 
         logger.info('Start reading {filename}'.format(filename=filename))
@@ -477,20 +484,22 @@ class polly_2_earlinet_convertor(object):
         # search the campaign info file
         if (not os.path.exists(self.camp_info_file)) or \
            (not os.path.isfile(self.camp_info_file)):
-            logger.warning('Campaign info file does not exist. Please check ' +
-                           'the {file}'.format(file=self.camp_info_file) +
-                           '.\nNow turn to auto-searching.')
+            logger.warning(
+                'Campaign info file does not exist. Please check the {file}'
+                .format(file=self.camp_info_file) +
+                '.\nNow turn to auto-searching.')
 
             # auto-search for campaign info file
             self.camp_info_file = self.search_camp_info_file(
-                                    self.pollyType,
-                                    self.location, labviewInfo['starttime'])
+                self.pollyType, self.location, labviewInfo['starttime'])
 
             if (not os.path.exists(self.camp_info_file)) or \
                (not os.path.isfile(self.camp_info_file)):
-                logger.warning('Failed in searching the campaign info file. ' +
-                               'Your instrument or campaign is not ' +
-                               'supported by the campaign list.')
+                logger.warning(
+                    'Failed in searching the campaign info file. ' +
+                    'Your instrument or campaign is not ' +
+                    'supported by the campaign list.')
+
                 return None, None, None
 
         # load the campaign info
@@ -502,9 +511,11 @@ class polly_2_earlinet_convertor(object):
             camp_info['processor_name'] = labviewInfo['software_version']
 
             if not (labviewInfo['software_version']):
-                logger.warn('No software_version in your info file.\n' +
-                            'Please check your labview version. Or set the ' +
-                            'process_name in the campaign info file.')
+                logger.warn(
+                    'No software_version in your info file.\n' +
+                    'Please check your labview version. Or set the ' +
+                    'process_name in the campaign info file.')
+
                 return None, None, None
 
         self.camp_info = camp_info
@@ -548,7 +559,7 @@ class polly_2_earlinet_convertor(object):
             'height_pdr_355': labviewDataCut[:, 33] * 1e3,
             'pdr_355': labviewDataCut[:, 34],
             'pdr_std_355': labviewDataCut[:, 35],
-            # the unit in labview file is wrong
+            # the unit of Rayleigh scatterinf coef. in labview file was wrong
             'bsc_mol_355': labviewDataCut[:, 66] * 1e-3,
             'bsc_mol_532': labviewDataCut[:, 67] * 1e-3,
             'bsc_mol_1064': labviewDataCut[:, 68] * 1e-3
@@ -752,16 +763,35 @@ class polly_2_earlinet_convertor(object):
 
     def __read_labview_data(self, filename):
         '''
-        read the labview retrieving data
+        read the labview retrieving data.
+
+        Parameters
+        ----------
+        filename: str
+            absolute path of the labview data file.
+
+        Returns
+        -------
+        dataMatrix: numpy matrix (height * column)
         '''
 
-        dataMatrix = np.loadtxt(filename, skiprows=1, dtype=float,
-                                encoding='cp1252')
+        dataMatrix = np.loadtxt(
+            filename, skiprows=1, dtype=float, encoding='cp1252')
         return dataMatrix
 
     def __read_labview_info(self, filename):
         '''
         read the labview info file, which contains the retrieving information.
+
+        Parameters
+        ----------
+        filename: str
+            absolute path of the labview info file.
+
+        Returns
+        -------
+        labviewInfo: dict
+            retrieving configurations of labview program.
         '''
 
         labviewInfo = self.labview_info_parser(filename)
@@ -862,7 +892,17 @@ class polly_2_earlinet_convertor(object):
 
     def labview_info_parser(self, filename):
         '''
-        parsing the information from the labview info file
+        parsing the information from the labview info file.
+
+        Parameters
+        ----------
+        filename: str
+            absolute path of labview info file.
+
+        Returns
+        -------
+        data: dict
+            retrieving configurations used in labview program.
         '''
 
         if (not os.path.exists(filename)) or (not os.path.isfile(filename)):
@@ -871,7 +911,7 @@ class polly_2_earlinet_convertor(object):
             return None
 
         # decoder structure
-        # key:  regex, conversion function fill value
+        # key: regex, conversion function fill value
         # Inspired by Martin Radenz
         decoders = {
             'starttime': (
@@ -879,11 +919,7 @@ class polly_2_earlinet_convertor(object):
                     str,
                     '000000 0000'
             ),
-            'endtime': (
-                r'(?<=bis \(UTC\): )\d+.\d+',
-                str,
-                '000000 0000'
-            ),
+            'endtime': (r'(?<=bis \(UTC\): )\d+.\d+', str, '000000 0000'),
             'reference_height_bottom_355': (
                 r'(?<=refheigt355\(m\) from : )\d+',
                 float,
@@ -929,56 +965,20 @@ class polly_2_earlinet_convertor(object):
                 float,
                 0
             ),
-            'smooth_ext_355': (
-                r'(?<=smoothingalpha355: )\d+',
-                int,
-                0
-            ),
-            'smooth_bsc_355': (
-                r'(?<=smootingbeta355: )\d+',
-                int,
-                0
-            ),
-            'smooth_ext_532': (
-                r'(?<=smoothingalpha532: )\d+',
-                int,
-                0
-            ),
-            'smooth_bsc_532': (
-                r'(?<=smootingbeta532: )\d+',
-                int,
-                0
-            ),
-            'smooth_ext_1064': (
-                r'(?<=smoothingalpha1064: )\d+',
-                int,
-                0
-            ),
-            'smooth_bsc_1064': (
-                r'(?<=smootingbeta1064: )\d+',
-                int,
-                0
-            ),
-            'dz':  (
-                r'(?<=dz: )\d+\.?\d+',
-                float,
-                0
-            ),
-            'retrieving_method': (
-                r'(?<=\nMethod:)\w+',
-                str,
-                'Raman'
-            ),
+            'smooth_ext_355': (r'(?<=smoothingalpha355: )\d+', int, 0),
+            'smooth_bsc_355': (r'(?<=smootingbeta355: )\d+', int, 0),
+            'smooth_ext_532': (r'(?<=smoothingalpha532: )\d+', int, 0),
+            'smooth_bsc_532': (r'(?<=smootingbeta532: )\d+', int, 0),
+            'smooth_ext_1064': (r'(?<=smoothingalpha1064: )\d+', int, 0),
+            'smooth_bsc_1064': (r'(?<=smootingbeta1064: )\d+', int, 0),
+            'dz':  (r'(?<=dz: )\d+\.?\d+', float, 0),
+            'retrieving_method': (r'(?<=\nMethod:)\w+', str, 'Raman'),
             'AE':  (
                 r'(?<=Angström for Raman Extinction: )\d+\.?\d+',
                 float,
                 0
             ),
-            'sounding_type': (
-                r'(?<=Sounding Type: )\d\.?\d+',
-                float,
-                0
-            ),
+            'sounding_type': (r'(?<=Sounding Type: )\d\.?\d+', float, 0),
             'flag_deadtime_correction': (
                 r'(?<=Death time correction: )\w+',
                 str,
@@ -994,11 +994,7 @@ class polly_2_earlinet_convertor(object):
                 float,
                 0
             ),
-            'software_version': (
-                r'(?<=Software version: )\w+\.?\w+',
-                str,
-                ''
-            ),
+            'software_version': (r'(?<=Software version: )\w+\.?\w+', str, ''),
         }
 
         # intialize the data
@@ -1015,11 +1011,12 @@ class polly_2_earlinet_convertor(object):
         # souding_type is still a float number, convert it to integer
         data['sounding_type'] = int(data['sounding_type'])
 
-        # determine the range_resolution (old version labview don't provide it)
+        # determine the range_resolution (old version labview did't provide it)
         if abs(data['range_resolution'] - 0) <= 1e-9:
-            logger.warn('range_resolution is 0 m. Check whether you used ' +
-                        'old version labview program. We will change the ' +
-                        'range_resolution to 30 m for the converison.')
+            logger.warn(
+                'range_resolution is 0 m. Check whether you used ' +
+                'old version labview program. We will change the ' +
+                'range_resolution to 30 m for the converison.')
             data['range_resolution'] = 30
 
         return data
@@ -1029,10 +1026,11 @@ class polly_2_earlinet_convertor(object):
         '''
         parse information from picasso variable attributes.
 
-        Params
-        ------
+        Parameters
+        ----------
         inStr: str
             input string.
+
         Keywords
         --------
         varname: str
@@ -1042,10 +1040,11 @@ class polly_2_earlinet_convertor(object):
             'angstroem_exponent'
             'reference_value'
             'meteor_source'
+
         Returns
         -------
         val:
-            value
+            varname value.
         '''
 
         decoders = {
@@ -1092,11 +1091,22 @@ class polly_2_earlinet_convertor(object):
         '''
         read picasso results into the data pool, which will then be exported
         to earlinet data format.
+
+        Parameters
+        ----------
+        filename: str
+            absolute path of the Picasso profiles.
+
+        Returns
+        -------
+        dimensions: dict
+        data: dict
+        global_attri: dict
         '''
 
         if (not os.path.exists(filename)) or (not os.path.isfile(filename)):
-            logger.warning('{file} does not exist!\nFinish!'.
-                           format(file=filename))
+            logger.warning(
+                '{file} does not exist!\nFinish!'.format(file=filename))
             return None, None, None
 
         logger.info('Start reading {filename}'.format(filename=filename))
@@ -1108,29 +1118,31 @@ class polly_2_earlinet_convertor(object):
         # check the Picasso program version
         # Only if version >= 2.0, the conversion can be applied
         if (version.parse(fh.version) < version.parse('2.0')):
-            raise RuntimeError('The profile was processed by old versioned ' +
-                               'Picasso (< v2.0). Some mandatory variables ' +
-                               'required by EARLINET data format is ' +
-                               'therefore missing.')
+            raise RuntimeError(
+                'The profile was processed by old versioned ' +
+                'Picasso (< v2.0). Some mandatory variables ' +
+                'required by EARLINET data format is ' +
+                'therefore missing.')
 
         # search the campaign info file
         if (not os.path.exists(self.camp_info_file)) or \
            (not os.path.isfile(self.camp_info_file)):
-            logger.warning('Campaign info file does not exist. Please check ' +
-                           'the {file}'.format(file=self.camp_info_file) +
-                           '.\nNow turn to auto-searching.')
+            logger.warning(
+                'Campaign info file does not exist. Please check the {file}'
+                .format(file=self.camp_info_file) +
+                '.\nNow turn to auto-searching.')
 
             # auto-search for campaign info file
             self.camp_info_file = self.search_camp_info_file(
-                self.pollyType,
-                self.location,
+                self.pollyType, self.location,
                 datetime.utcfromtimestamp(pData['start_time'][:]))
 
             if (not os.path.exists(self.camp_info_file)) or \
                (not os.path.isfile(self.camp_info_file)):
-                logger.warning('Failed in searching the campaign info file. ' +
-                               'Your instrument or campaign is not ' +
-                               'supported by the campaign list.')
+                logger.warning(
+                    'Failed in searching the campaign info file. ' +
+                    'Your instrument or campaign is not ' +
+                    'supported by the campaign list.')
                 return None, None, None
 
         # load the campaign info
@@ -1384,8 +1396,9 @@ class polly_2_earlinet_convertor(object):
             flagBinsBFile = np.ones(variables['altitude'].shape, dtype=bool)
 
         if np.sum(flagBinsBFile) == 0:
-            logger.warn('No bins were selected with your input range_lim.\n',
-                        'Jump over {file}.'.format(file=filename))
+            logger.warn(
+                'No bins were selected with your input range_lim.\n',
+                'Jump over {file}.'.format(file=filename))
         else:
             var_b355 = {
                 'altitude':
@@ -1470,8 +1483,9 @@ class polly_2_earlinet_convertor(object):
             flagBinsEFile = np.ones(variables['altitude'].shape, dtype=bool)
 
         if np.sum(flagBinsEFile) == 0:
-            logger.warn('No bins were selected with your input range_lim.\n',
-                        'Jump over {file}.'.format(file=filename))
+            logger.warn(
+                'No bins were selected with your input range_lim.\n',
+                'Jump over {file}.'.format(file=filename))
         else:
             var_e355 = {
                 'altitude':
@@ -1556,8 +1570,9 @@ class polly_2_earlinet_convertor(object):
             flagBinsBFile = np.ones(variables['altitude'].shape, dtype=bool)
 
         if np.sum(flagBinsBFile) == 0:
-            logger.warn('No bins were selected with your input range_lim.\n',
-                        'Jump over {file}.'.format(file=filename))
+            logger.warn(
+                'No bins were selected with your input range_lim.\n',
+                'Jump over {file}.'.format(file=filename))
         else:
             var_b532 = {
                 'altitude':
@@ -1642,8 +1657,9 @@ class polly_2_earlinet_convertor(object):
             flagBinsEFile = np.ones(variables['altitude'].shape, dtype=bool)
 
         if np.sum(flagBinsEFile) == 0:
-            logger.warn('No bins were selected with your input range_lim.\n',
-                        'Jump over {file}.'.format(file=filename))
+            logger.warn(
+                'No bins were selected with your input range_lim.\n',
+                'Jump over {file}.'.format(file=filename))
         else:
             var_e532 = {
                 'altitude':
@@ -1728,8 +1744,9 @@ class polly_2_earlinet_convertor(object):
             flagBinsBFile = np.ones(variables['altitude'].shape, dtype=bool)
 
         if np.sum(flagBinsBFile) == 0:
-            logger.warn('No bins were selected with your input range_lim.\n',
-                        'Jump over {file}.'.format(file=filename))
+            logger.warn(
+                'No bins were selected with your input range_lim.\n',
+                'Jump over {file}.'.format(file=filename))
         else:
             var_b1064 = {
                 'altitude':
@@ -1831,8 +1848,9 @@ class polly_2_earlinet_convertor(object):
 
         # determine whether the output directory exists or not
         if not os.path.exists(self.outputDir):
-            logger.warning('Output directory for saving the results does' +
-                           'not exist.\n{path}'.format(path=self.outputDir))
+            logger.warning(
+                'Output directory for saving the results does' +
+                'not exist.\n{path}'.format(path=self.outputDir))
             # prompt up the request for creating the output directory
             res = input("Create the folder forcefully? (yes|no): ")
             if res.lower() == 'yes':
@@ -1851,8 +1869,7 @@ class polly_2_earlinet_convertor(object):
                     polly=self.pollyType.lower()))
 
             self.__write_2_earlinet_b355(
-                filename, variables, dimensions,
-                global_attri, *args,
+                filename, variables, dimensions, global_attri, *args,
                 range_lim=range_lim, **kwargs)
 
         elif prodType == 'e355':
@@ -1868,8 +1885,7 @@ class polly_2_earlinet_convertor(object):
                     polly=self.pollyType.lower()))
 
             self.__write_2_earlinet_e355(
-                filename, variables, dimensions,
-                global_attri, *args,
+                filename, variables, dimensions, global_attri, *args,
                 range_lim=range_lim, **kwargs)
 
         elif prodType == 'b532':
@@ -1885,8 +1901,7 @@ class polly_2_earlinet_convertor(object):
                     polly=self.pollyType.lower()))
 
             self.__write_2_earlinet_b532(
-                filename, variables, dimensions,
-                global_attri, *args,
+                filename, variables, dimensions, global_attri, *args,
                 range_lim=range_lim, **kwargs)
 
         elif prodType == 'e532':
@@ -1901,8 +1916,7 @@ class polly_2_earlinet_convertor(object):
                     station_ID=self.camp_info['station_ID'].lower(),
                     polly=self.pollyType.lower()))
             self.__write_2_earlinet_e532(
-                filename, variables, dimensions,
-                global_attri, *args,
+                filename, variables, dimensions, global_attri, *args,
                 range_lim=range_lim, **kwargs)
 
         elif prodType == 'b1064':
@@ -1918,8 +1932,7 @@ class polly_2_earlinet_convertor(object):
                     station_ID=self.camp_info['station_ID'].lower(),
                     polly=self.pollyType.lower()))
             self.__write_2_earlinet_b1064(
-                filename, variables, dimensions,
-                global_attri, *args,
+                filename, variables, dimensions, global_attri, *args,
                 range_lim=range_lim, **kwargs)
 
         else:
@@ -1953,17 +1966,16 @@ class polly_2_earlinet_convertor(object):
 
         elif (os.path.exists(filename)) and \
              (os.path.isfile(filename)) and self.force:
-            logger.warning('{file} exists. Overwrite it!'.
-                           format(file=filename))
+            logger.warning(
+                '{file} exists. Overwrite it!'.format(file=filename))
 
         if not variables:
             # no available data
             return
 
-        dataset = Dataset(filename, 'w',
-                          format=NETCDF_FORMAT,
-                          zlib=True,
-                          complevel=NETCDF_COMPLEVEL)
+        dataset = Dataset(
+            filename, 'w', format=NETCDF_FORMAT, zlib=True,
+            complevel=NETCDF_COMPLEVEL)
 
         # create dimensions
         for dim_key in self.metadata['dimensions']:
@@ -1986,8 +1998,7 @@ class polly_2_earlinet_convertor(object):
                     tuple(self.metadata[var_key]['dims']),
                     fill_value=self.metadata[var_key]['_FillValue'],
                     zlib=True,
-                    complevel=NETCDF_COMPLEVEL
-                )
+                    complevel=NETCDF_COMPLEVEL)
             else:
                 # without fill_values
                 dataset.createVariable(
@@ -1995,8 +2006,7 @@ class polly_2_earlinet_convertor(object):
                     npTypeDict[self.metadata[var_key]['dtype']],
                     tuple(self.metadata[var_key]['dims']),
                     zlib=True,
-                    complevel=NETCDF_COMPLEVEL
-                    )
+                    complevel=NETCDF_COMPLEVEL)
 
             # write variables
             dataset.variables[var_key][:] = variables[var_key]
@@ -2009,8 +2019,7 @@ class polly_2_earlinet_convertor(object):
                     setattr(
                         dataset.variables[var_key],
                         var_attr,
-                        self.metadata[var_key][var_attr]
-                        )
+                        self.metadata[var_key][var_attr])
 
         # create global attributes
         for attr_key in self.camp_info.keys():
@@ -2021,17 +2030,15 @@ class polly_2_earlinet_convertor(object):
         camp_info_file_base = os.path.basename(self.camp_info_file)
         camp_info_filename = os.path.splitext(camp_info_file_base)[0]
         system_label = self.campaign_dict[camp_info_filename]['system']
-        starttime = datetime.utcfromtimestamp(
-                        variables['time_bounds'][0]
-                    )
-        endtime = datetime.utcfromtimestamp(
-                        variables['time_bounds'][1]
-                    )
+        starttime = datetime.utcfromtimestamp(variables['time_bounds'][0])
+        endtime = datetime.utcfromtimestamp(variables['time_bounds'][1])
         setattr(dataset, 'system', system_label)
-        setattr(dataset, 'measurement_start_datetime',
-                starttime.strftime('%Y-%m-%dT%H:%M:%SZ'))
-        setattr(dataset, 'measurement_stop_datetime',
-                endtime.strftime('%Y-%m-%dT%H:%M:%SZ'))
+        setattr(
+            dataset, 'measurement_start_datetime',
+            starttime.strftime('%Y-%m-%dT%H:%M:%SZ'))
+        setattr(
+            dataset, 'measurement_stop_datetime',
+            endtime.strftime('%Y-%m-%dT%H:%M:%SZ'))
 
         # write location to global attributes
         city = system_label = \
@@ -2044,8 +2051,7 @@ class polly_2_earlinet_convertor(object):
         # write history to global attributes
         historyStr = "{process_time}: {program_name}".format(
                      process_time=starttime.strftime('%Y-%m-%dT%H:%M:%SZ'),
-                     program_name=self.camp_info['processor_name']
-                  )
+                     program_name=self.camp_info['processor_name'])
         setattr(dataset, 'history', historyStr)
 
         dataset.close()
@@ -2108,25 +2114,24 @@ def show_list(flagShowCampaign=False,
                     endtime=camp_dict[camp_info_key]['endtime'].
                     strftime('%Y-%m-%d'),
                     location=camp_dict[camp_info_key]['location'],
-                    instrument=camp_dict[camp_info_key]['system']
-                        ))
+                    instrument=camp_dict[camp_info_key]['system']))
 
     # print the campaign list
     if flagShowCampaign:
         for indx, location in enumerate(p2eConvertor.location_list):
-            logger.info('{indx}: {location}'.
-                        format(indx=indx + 1, location=location))
+            logger.info(
+                '{indx}: {location}'.format(indx=indx + 1, location=location))
 
     # print the instrument list
     if flagShowInstrument:
         for indx, instrument in enumerate(p2eConvertor.instrument_list):
-            logger.info('{indx}: {instrument}'.
-                        format(indx=indx + 1, instrument=instrument))
+            logger.info(
+                '{indx}: {instrument}'.format(
+                    indx=indx + 1, instrument=instrument))
 
 
-def polly2scc(
-    polly_type, location, file_type, category, filename, output_dir,
-        range_lim_b, range_lim_e, camp_info, force):
+def polly2scc(polly_type, location, file_type, category, filename, output_dir,
+              range_lim_b, range_lim_e, camp_info, force):
     """
     convert the polly files according to the input information
 
@@ -2196,69 +2201,55 @@ def main():
         description=description,
         formatter_class=RawTextHelpFormatter)
 
-# Setup the arguments
-    parser.add_argument("-p", "--polly_type",
-                        help="specify the instrument type",
-                        dest='polly_type',
-                        default='pollyxt_tjk')
-    parser.add_argument("-l", "--location",
-                        help="setup the campaign location",
-                        dest='location',
-                        default='dushanbe')
+    # Setup the arguments
+    parser.add_argument(
+        "-p", "--polly_type",
+        help="specify the instrument type", dest='polly_type',
+        default='pollyxt_tjk')
+    parser.add_argument(
+        "-l", "--location",
+        help="setup the campaign location", dest='location',
+        default='dushanbe')
     helpMsg = "setup the type of the profile (labview | picasso)"
-    parser.add_argument("-t", "--file_type",
-                        help=helpMsg,
-                        dest='file_type',
-                        default='labview')
+    parser.add_argument(
+        "-t", "--file_type",
+        help=helpMsg, dest='file_type', default='labview')
     helpMsg = "setup the category of the profile (user_defined_category)\n" + \
               "flag_masks: 1, 2, 4, 8, 16, 32, 64, 128, 256, 512\n" + \
               "flag_meanings: cirrus climatol dicycles etna forfires \n" + \
               "photosmog rurban sahadust stratos satellite_overpasses"
-    parser.add_argument("-c", "--category",
-                        help=helpMsg,
-                        dest='category',
-                        default='2',
-                        type=int)
-    parser.add_argument("-f", "--filename",
-                        help='setup the filename of the polly profile',
-                        dest='filename',
-                        default='')
-    parser.add_argument("-d", "--output_dir",
-                        help='setup the directory for the converted files',
-                        dest='output_dir',
-                        default='')
-    parser.add_argument("--range_e",
-                        help='setup the height range for the ' +
-                             'converted e-files. \n' +
-                             '(e.g., --range_e 200 16000)',
-                        dest='range_lim_e',
-                        type=int,
-                        nargs=2,
-                        default=[None, None])
-    parser.add_argument("--range_b",
-                        help='setup the height range for the ' +
-                             'converted b-files. \n' +
-                             '(e.g., --range_b 200 16000)',
-                        dest='range_lim_b',
-                        type=int,
-                        nargs=2,
-                        default=[None, None])
+    parser.add_argument(
+        "-c", "--category", help=helpMsg, dest='category', default='2',
+        type=int)
+    parser.add_argument(
+        "-f", "--filename",
+        help='setup the filename of the polly profile',
+        dest='filename', default='')
+    parser.add_argument(
+        "-d", "--output_dir",
+        help='setup the directory for the converted files',
+        dest='output_dir', default='')
+    parser.add_argument(
+        "--range_e",
+        help='setup the height range for the converted e-files. \n' +
+             '(e.g., --range_e 200 16000)',
+        dest='range_lim_e', type=int, nargs=2, default=[None, None])
+    parser.add_argument(
+        "--range_b",
+        help='setup the height range for the converted b-files. \n' +
+             '(e.g., --range_b 200 16000)',
+        dest='range_lim_b', type=int, nargs=2, default=[None, None])
     helpMsg = 'setup the campaign info file [*.toml].\n' + \
               'If not set, the program will search the config folder for ' + \
               'a suitable one.'
-    parser.add_argument("--camp_info",
-                        help=helpMsg,
-                        dest='camp_info',
-                        default='')
-    parser.add_argument("--force",
-                        help='whether to overwrite the nc files ' +
-                             'if they exists',
-                        dest='force',
-                        action='store_true')
-    parser.add_argument("--version",
-                        help='show version',
-                        dest='version',
-                        action='store_true')
+    parser.add_argument(
+        "--camp_info", help=helpMsg, dest='camp_info', default='')
+    parser.add_argument(
+        "--force",
+        help='whether to overwrite the nc files if they exists',
+        dest='force', action='store_true')
+    parser.add_argument(
+        "--version", help='show version', dest='version', action='store_true')
 
     # sub argument
     helpMsg = "list supported campaign and instruments."
@@ -2266,18 +2257,22 @@ def main():
 
     list_parser = subparsers.add_parser("list", help=helpMsg)
 
-    list_parser.add_argument("--campaign",
-                             help="show the supported campaign list",
-                             dest='flagShowCampaign',
-                             action='store_true')
-    list_parser.add_argument("--instrument",
-                             help="show the supported instrument list",
-                             dest='flagShowInstrument',
-                             action='store_true')
-    list_parser.add_argument("--all",
-                             help="show the full campaign list",
-                             dest='flagShowAll',
-                             action='store_true')
+    list_parser.add_argument(
+        "--campaign",
+        help="show the supported campaign list",
+        dest='flagShowCampaign',
+        action='store_true')
+    list_parser.add_argument(
+        "--instrument",
+        help="show the supported instrument list",
+        dest='flagShowInstrument',
+        action='store_true')
+    list_parser.add_argument(
+        "--all",
+        help="show the full campaign list",
+        dest='flagShowAll',
+        action='store_true')
+
     # if no input arguments
     if len(sys.argv) == 1:
         parser.print_help(sys.stderr)
@@ -2287,26 +2282,25 @@ def main():
         args = parser.parse_args()
     except argparse.ArgumentError as e:
         # error info can be obtained by using e.argument_name and e.message
-        logger.error('Error in parsing the input arguments. Please check ' +
-                     'your inputs.\n{message}'.format(message=e.message))
+        logger.error(
+            'Error in parsing the input arguments. Please check ' +
+            'your inputs.\n{message}'.format(message=e.message))
         raise ValueError
 
     if args.list:
         show_list(
                   args.flagShowCampaign,
                   args.flagShowInstrument,
-                  args.flagShowAll
-                  )
+                  args.flagShowAll)
     elif args.version:
-        _v = VersionInfo('polly2SCC').semantic_version()
+        _v = VersionInfo('polly2scc').semantic_version()
         logger.info('Version {0}'.format(_v.release_string()))
     else:
         # run the command
         polly2scc(
             args.polly_type, args.location, args.file_type,
             args.category, args.filename, args.output_dir,
-            args.range_lim_b, args.range_lim_e,
-            args.camp_info, args.force)
+            args.range_lim_b, args.range_lim_e, args.camp_info, args.force)
 
 
 # When running through terminal
