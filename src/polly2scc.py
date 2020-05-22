@@ -498,7 +498,7 @@ class polly_2_earlinet_convertor(object):
                 logger.warning(
                     'Failed in searching the campaign info file. ' +
                     'Your instrument or campaign is not ' +
-                    'supported by the campaign list.')
+                    'supported by the campaign list. (see isse #4)')
 
                 return None, None, None
 
