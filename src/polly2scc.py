@@ -498,7 +498,7 @@ class polly_2_earlinet_convertor(object):
                 logger.warning(
                     'Failed in searching the campaign info file. ' +
                     'Your instrument or campaign is not ' +
-                    'supported by the campaign list.')
+                    'supported by the campaign list. (see isse #4)')
 
                 return None, None, None
 
@@ -2187,9 +2187,20 @@ def polly2scc(polly_type, location, file_type, category, filename, output_dir,
         availProdList = p2e_convertor.list_avail_prodType(data)
 
         for prod in availProdList:
-            p2e_convertor.write_to_earlinet_nc(
-                data, dims, global_attris,
-                range_lim=range_lim_b, prodType=prod)
+            if prod in ['b355', 'b532', 'b1064']:
+                # using range window for backscatter
+                p2e_convertor.write_to_earlinet_nc(
+                    data, dims, global_attris,
+                    range_lim=range_lim_b, prodType=prod)
+
+            elif prod in ['e355', 'e532']:
+                # using range window for extinction
+                p2e_convertor.write_to_earlinet_nc(
+                    data, dims, global_attris,
+                    range_lim=range_lim_e, prodType=prod)
+
+            else:
+                raise RuntimeError('Unknown product {0}'.format(prod))
 
 
 def main():
