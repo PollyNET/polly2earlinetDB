@@ -1,9 +1,19 @@
 CHANGES
 =======
 
+* docs: update license
+* style: add help msg for error
+* fix(polly2scc.py): crop ext range
+* docs: update the introduction doc
+* docs: update program\_diagram
+* docs(changelog): update chagnelog
+* docs: fix merge conflicts
+
 v1.3
 ----
 
+* feat: rename the repo as polly2scc
+* fix: correct temperature with Kelvin
 * feat: rename the repo as polly2scc
 
 v1.2

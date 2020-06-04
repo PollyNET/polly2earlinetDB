@@ -1,5 +1,5 @@
 # SCC Convertor for PollyNET Products
-![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)![Build](https://github.com/PollyNET/polly2scc/workflows/Build/badge.svg?branch=master)
+![License: CC-BY-NC-SA](https://img.shields.io/badge/license-CC--BY--NC--SA-blue)![Build](https://github.com/PollyNET/polly2scc/workflows/Build/badge.svg?branch=master)
 
 At June 24, 2019, the new EARLINET database was released and new data format for the netCDF files was applied. Therefore, in order to be compatible with this update, we (PollyNET group) need to change the output results from Picasso (PollyNET automatic processing program) to be adapted to this change.
 
