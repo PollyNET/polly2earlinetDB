@@ -1,6 +1,8 @@
 CHANGES
 =======
 
+* convert Picasso output p2e\_go to earlinet data format using cloud\_info.nc
+* docs: change LICENSE
 * docs: update license
 * style: add help msg for error
 * fix(polly2scc.py): crop ext range

@@ -1,8 +1,15 @@
-others
-.vscode
-log
-*egg-info
-build
-dist
+# intermediate files
 nc
+log
+
+# intermediate folders
+others
+*egg-info
+dist
 __pycache__
+.eggs
+build
+polly2scc.egg-info
+
+# editor configurations
+.vscode
