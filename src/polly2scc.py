@@ -18,7 +18,8 @@ LOG_MODE = 'DEBUG'
 LOGFILE = 'log'
 LABVIEW_KEY_FILE = 'labview_key_2_earlinet_key_spec.toml'
 PICASSO_KEY_FILE = 'picasso_key_2_earlinet_key_spec.toml'
-METADATA_FILE = 'metadata.toml'
+# METADATA_FILE = 'metadata.toml'
+# METADATA_FILE = 'metadata_klett.toml'
 CAMPAIGN_LIST_FILE = 'campaign_list.toml'
 NETCDF_FORMAT = "NETCDF4"
 NETCDF_COMPLEVEL = 5   # netCDF compression level
@@ -99,7 +100,7 @@ class polly_2_earlinet_convertor(object):
     """
 
     def __init__(self, pollyType='', location='', fileType='labview',
-                 category=2, output_dir='', *, camp_info_file='', force=False):
+                 category=2, method='raman', output_dir='', *, camp_info_file='', force=False):
         '''
         initialize the instance
 
@@ -113,6 +114,8 @@ class polly_2_earlinet_convertor(object):
             polly file type. (labview | picasso)
         category: int
             category of the results.
+        method: str
+            Klett or Raman method for calculating backscatter values (klett | raman)
         output_dir: str
             directory for saving the converted files
 
@@ -129,6 +132,7 @@ class polly_2_earlinet_convertor(object):
         self.location = location
         self.fileType = fileType
         self.category = category
+        self.method = method
         self.projectDir = PROJECTDIR
         self.outputDir = output_dir
         self.force = force
@@ -144,6 +148,10 @@ class polly_2_earlinet_convertor(object):
         self.campaign_dict = self.load_campaign_list()
 
         # load metadata for the nc variables
+        if self.method.lower()=='raman':
+            METADATA_FILE = 'metadata_raman.toml'
+        elif self.method.lower()=='klett':
+            METADATA_FILE = 'metadata_klett.toml'
         metadataFile = os.path.join(self.projectDir, 'config', METADATA_FILE)
         self.metadata = self.load_metadata(metadataFile)
 
@@ -1037,7 +1045,8 @@ class polly_2_earlinet_convertor(object):
             'reference_search_bottom'
             'reference_search_top'
             'smoothing_window':
-            'angstroem_exponent'
+            'angstroem_exponent' for Raman method
+            'fixed lidar ratio' for Klett method
             'reference_value'
             'meteor_source'
 
@@ -1046,39 +1055,74 @@ class polly_2_earlinet_convertor(object):
         val:
             varname value.
         '''
-
-        decoders = {
-            'reference_search_top': (
-                r'(?<=Reference search range:......... - )\d+.\d+',
-                float,
-                0
-            ),
-            'reference_search_bottom': (
-                r'(?<=Reference search range: )\d+.\d+',
-                float,
-                0,
-            ),
-            'smoothing_window': (
-                r'(?<=Smoothing window: )\d+\.+\d+[eE][+-]\d+',
-                float,
-                0
-            ),
-            'angstroem_exponent': (
-                r'(?<=Angstroem exponent: )\d+.\d+',
-                float,
-                0
-            ),
-            'reference_value': (
-                r'(?<=Reference value: )\d+\.\d+[eE]-?\d+',
-                float,
-                0
-            ),
-            'meteor_source': (
-                r'(?<=Meteorological Source: )\w+',
-                str,
-                'standard_atmosphere'
-            )
-        }
+        
+        if self.method.lower()=='raman':
+            decoders = {
+                'reference_search_top': (
+                    r'(?<=Reference search range:......... - )\d+.\d+',
+                    float,
+                    0
+                ),
+                'reference_search_bottom': (
+                    r'(?<=Reference search range: )\d+.\d+',
+                    float,
+                    0,
+                ),
+                'smoothing_window': (
+                    r'(?<=Smoothing window: )\d+\.+\d+[eE][+-]\d+',
+                    float,
+                    0
+                ),
+                'angstroem_exponent': (
+                    r'(?<=Angstroem exponent: )\d+.\d+',
+                    float,
+                    0
+                ),
+                'reference_value': (
+                    r'(?<=Reference value: )\d+\.\d+[eE]-?\d+',
+                    float,
+                    0
+                ),
+                'meteor_source': (
+                    r'(?<=Meteorological Source: )\w+',
+                    str,
+                    'standard_atmosphere'
+                )
+            }
+        elif self.method.lower()=='klett':
+            decoders = {
+                'reference_search_top': (
+                    r'(?<=Reference search range:......... - )\d+.\d+',
+                    float,
+                    0
+                ),
+                'reference_search_bottom': (
+                    r'(?<=Reference search range: )\d+.\d+',
+                    float,
+                    0,
+                ),
+                'smoothing_window': (
+                    r'(?<=Smoothing window: )\d+\.+\d+[eE][+-]\d+',
+                    float,
+                    0
+                ),
+                'fixed_lidar_ratio': (
+                    r'(?<=Fixed lidar ratio:  )\d+.\d+',
+                    float,
+                    0
+                ),
+                'reference_value': (
+                    r'(?<=Reference value: )\d+\.\d+[eE]-?\d+',
+                    float,
+                    0
+                ),
+                'meteor_source': (
+                    r'(?<=Meteorological Source: )\w+',
+                    str,
+                    'standard_atmosphere'
+                )
+            }
+        
 
         if varname in decoders.keys():
             val = find_in_string(decoders[varname], inStr)
@@ -1193,189 +1237,321 @@ class polly_2_earlinet_convertor(object):
         }
 
         # capsule data into 355 data container
-        if 'aerBsc_raman_355' in pData.keys():
-            smoothWin_355 = self.picasso_attri_parser(
-                pData['aerBsc_raman_355'].retrieving_info,
-                varname='smoothing_window')
-            refH_bottom_355 = self.picasso_attri_parser(
-                pData['aerBsc_raman_355'].retrieving_info,
-                varname='reference_search_bottom')
-            refH_top_355 = self.picasso_attri_parser(
-                pData['aerBsc_raman_355'].retrieving_info,
-                varname='reference_search_top')
-            angstr_355 = self.picasso_attri_parser(
-                pData['aerBsc_raman_355'].retrieving_info,
-                varname='angstroem_exponent')
-            refVal_355 = self.picasso_attri_parser(
-                pData['aerBsc_raman_355'].retrieving_info,
-                varname='reference_value')
-
-            # calculate the backscatter-ratio at the reference height
-            refMask355 = (pData['height'][:] >= refH_bottom_355) & \
-                         (pData['height'][:] <= refH_top_355)
-            refBscMol355 = np.nanmean(
-                beta_pi_rayleigh(
-                    355,
-                    pressure=pData['pressure'][refMask355],
-                    temperature=pData['temperature'][refMask355] + 273.16))
-            refBscRatio355 = refVal_355 / refBscMol355 + 1
-
-            # 0: monte_carlo;
-            # 1: error_propagation
-            data['error_retrieval_method_355'] = 1
-
-            # 0: Ansmann;
-            # 1: via_backscatter_ratio
-            data['extinction_evaluation_algorithm_355'] = 0
-
-            # 0: Raman
-            # 1: elastic_backscatter
-            data['backscatter_evaluation_method_355'] = 0
-
-            # 0: Ansmann
-            # 1: via_backscatter_ratio
-            data['raman_backscatter_algorithm_355'] = 0
-
-            data['vertical_resolution_355'] = smoothWin_355 * \
-                np.ones(pData['height'][:].shape, dtype=np.double)
-            data['extinction_assumed_wavelength_dependence_355'] = angstr_355
-            data['backscatter_calibration_range_355'] = \
-                pData['reference_height_355'][:]
-            data['backscatter_calibration_value_355'] = refBscRatio355
-            data['backscatter_calibration_search_range_355'] = \
-                [refH_bottom_355, refH_top_355]
-            data['bsc_355'] = pData['aerBsc_raman_355'][:]
-            data['bsc_std_355'] = 0.1 * pData['aerBsc_raman_355'][:]
-
-        if 'aerExt_raman_355' in pData.keys():
-            data['ext_355'] = pData['aerExt_raman_355'][:]
-            data['ext_std_355'] = 0.1 * pData['aerExt_raman_355'][:]
-
-        if 'volDepol_raman_355' in pData.keys():
-            data['pdr_355'] = pData['parDepol_raman_355'][:]
-            data['pdr_std_355'] = 0.1 * pData['parDepol_raman_355'][:]
-            data['vdr_355'] = pData['volDepol_raman_355'][:]
-            data['vdr_std_355'] = 0.1 * pData['volDepol_raman_355'][:]
+        if self.method.lower() == 'raman':
+            if 'aerBsc_raman_355' in pData.keys():
+                smoothWin_355 = self.picasso_attri_parser(
+                    pData['aerBsc_raman_355'].retrieving_info,
+                    varname='smoothing_window')
+                refH_bottom_355 = self.picasso_attri_parser(
+                    pData['aerBsc_raman_355'].retrieving_info,
+                    varname='reference_search_bottom')
+                refH_top_355 = self.picasso_attri_parser(
+                    pData['aerBsc_raman_355'].retrieving_info,
+                    varname='reference_search_top')
+                angstr_355 = self.picasso_attri_parser(
+                    pData['aerBsc_raman_355'].retrieving_info,
+                    varname='angstroem_exponent')
+                refVal_355 = self.picasso_attri_parser(
+                    pData['aerBsc_raman_355'].retrieving_info,
+                    varname='reference_value')
+    
+                # calculate the backscatter-ratio at the reference height
+                refMask355 = (pData['height'][:] >= refH_bottom_355) & \
+                             (pData['height'][:] <= refH_top_355)
+                refBscMol355 = np.nanmean(
+                    beta_pi_rayleigh(
+                        355,
+                        pressure=pData['pressure'][refMask355],
+                        temperature=pData['temperature'][refMask355] + 273.16))
+                refBscRatio355 = refVal_355 / refBscMol355 + 1
+    
+                # 0: monte_carlo;
+                # 1: error_propagation
+                data['error_retrieval_method_355'] = 1
+    
+                # 0: Ansmann;
+                # 1: via_backscatter_ratio
+                data['extinction_evaluation_algorithm_355'] = 0
+    
+                # 0: Raman
+                # 1: elastic_backscatter
+                data['backscatter_evaluation_method_355'] = 0
+    
+                # 0: Ansmann
+                # 1: via_backscatter_ratio
+                data['raman_backscatter_algorithm_355'] = 0
+    
+                data['vertical_resolution_355'] = smoothWin_355 * \
+                    np.ones(pData['height'][:].shape, dtype=np.double)
+                data['extinction_assumed_wavelength_dependence_355'] = angstr_355
+                data['backscatter_calibration_range_355'] = \
+                    pData['reference_height_355'][:]
+                data['backscatter_calibration_value_355'] = refBscRatio355
+                data['backscatter_calibration_search_range_355'] = \
+                    [refH_bottom_355, refH_top_355]
+                data['bsc_355'] = pData['aerBsc_raman_355'][:]
+                data['bsc_std_355'] = 0.1 * pData['aerBsc_raman_355'][:]
+    
+            if 'aerExt_raman_355' in pData.keys():
+                data['ext_355'] = pData['aerExt_raman_355'][:]
+                data['ext_std_355'] = 0.1 * pData['aerExt_raman_355'][:]
+    
+            if 'volDepol_raman_355' in pData.keys():
+                data['pdr_355'] = pData['parDepol_raman_355'][:]
+                data['pdr_std_355'] = 0.1 * pData['parDepol_raman_355'][:]
+                data['vdr_355'] = pData['volDepol_raman_355'][:]
+                data['vdr_std_355'] = 0.1 * pData['volDepol_raman_355'][:]
 
         # capsule data into 532 data container
-        if 'aerBsc_raman_532' in pData.keys():
-            smoothWin_532 = self.picasso_attri_parser(
-                pData['aerBsc_raman_532'].retrieving_info,
-                varname='smoothing_window')
-            refH_bottom_532 = self.picasso_attri_parser(
-                pData['aerBsc_raman_532'].retrieving_info,
-                varname='reference_search_bottom')
-            refH_top_532 = self.picasso_attri_parser(
-                pData['aerBsc_raman_532'].retrieving_info,
-                varname='reference_search_top')
-            angstr_532 = self.picasso_attri_parser(
-                pData['aerBsc_raman_532'].retrieving_info,
-                varname='angstroem_exponent')
-            refVal_532 = self.picasso_attri_parser(
-                pData['aerBsc_raman_532'].retrieving_info,
-                varname='reference_value')
-
-            # calculate the backscatter-ratio at the reference height
-            refMask532 = (pData['height'][:] >= refH_bottom_532) & \
-                         (pData['height'][:] <= refH_top_532)
-            refBscMol532 = np.nanmean(
-                beta_pi_rayleigh(
-                    532,
-                    pressure=pData['pressure'][refMask532],
-                    temperature=pData['temperature'][refMask532] + 273.16))
-            refBscRatio532 = refVal_532 / refBscMol532 + 1
-
-            # 0: monte_carlo;
-            # 1: error_propagation
-            data['error_retrieval_method_532'] = 1
-
-            # 0: Ansmann;
-            # 1: via_backscatter_ratio
-            data['extinction_evaluation_algorithm_532'] = 0
-
-            # 0: Raman
-            # 1: elastic_backscatter
-            data['backscatter_evaluation_method_532'] = 0
-
-            # 0: Ansmann
-            # 1: via_backscatter_ratio
-            data['raman_backscatter_algorithm_532'] = 0
-
-            data['vertical_resolution_532'] = smoothWin_532 * \
-                np.ones(pData['height'][:].shape, dtype=np.double)
-            data['extinction_assumed_wavelength_dependence_532'] = angstr_532
-            data['backscatter_calibration_range_532'] = \
-                pData['reference_height_532'][:]
-            data['backscatter_calibration_value_532'] = refBscRatio532
-            data['backscatter_calibration_search_range_532'] = \
-                [refH_bottom_532, refH_top_532]
-            data['bsc_532'] = pData['aerBsc_raman_532'][:]
-            data['bsc_std_532'] = 0.1 * pData['aerBsc_raman_532'][:]
-
-        if 'aerExt_raman_532' in pData.keys():
-            data['ext_532'] = pData['aerExt_raman_532'][:]
-            data['ext_std_532'] = 0.1 * pData['aerExt_raman_532'][:]
-
-        if 'volDepol_raman_532' in pData.keys():
-            data['pdr_532'] = pData['parDepol_raman_532'][:]
-            data['pdr_std_532'] = 0.1 * pData['parDepol_raman_532'][:]
-            data['vdr_532'] = pData['volDepol_raman_532'][:]
-            data['vdr_std_532'] = 0.1 * pData['volDepol_raman_532'][:]
+        if self.method.lower() == 'raman':
+            if 'aerBsc_raman_532' in pData.keys():
+                smoothWin_532 = self.picasso_attri_parser(
+                    pData['aerBsc_raman_532'].retrieving_info,
+                    varname='smoothing_window')
+                refH_bottom_532 = self.picasso_attri_parser(
+                    pData['aerBsc_raman_532'].retrieving_info,
+                    varname='reference_search_bottom')
+                refH_top_532 = self.picasso_attri_parser(
+                    pData['aerBsc_raman_532'].retrieving_info,
+                    varname='reference_search_top')
+                angstr_532 = self.picasso_attri_parser(
+                    pData['aerBsc_raman_532'].retrieving_info,
+                    varname='angstroem_exponent')
+                refVal_532 = self.picasso_attri_parser(
+                    pData['aerBsc_raman_532'].retrieving_info,
+                    varname='reference_value')
+    
+                # calculate the backscatter-ratio at the reference height
+                refMask532 = (pData['height'][:] >= refH_bottom_532) & \
+                             (pData['height'][:] <= refH_top_532)
+                refBscMol532 = np.nanmean(
+                    beta_pi_rayleigh(
+                        532,
+                        pressure=pData['pressure'][refMask532],
+                        temperature=pData['temperature'][refMask532] + 273.16))
+                refBscRatio532 = refVal_532 / refBscMol532 + 1
+    
+                # 0: monte_carlo;
+                # 1: error_propagation
+                data['error_retrieval_method_532'] = 1
+    
+                # 0: Ansmann;
+                # 1: via_backscatter_ratio
+                data['extinction_evaluation_algorithm_532'] = 0
+    
+                # 0: Raman
+                # 1: elastic_backscatter
+                data['backscatter_evaluation_method_532'] = 0
+    
+                # 0: Ansmann
+                # 1: via_backscatter_ratio
+                data['raman_backscatter_algorithm_532'] = 0
+    
+                data['vertical_resolution_532'] = smoothWin_532 * \
+                    np.ones(pData['height'][:].shape, dtype=np.double)
+                data['extinction_assumed_wavelength_dependence_532'] = angstr_532
+                data['backscatter_calibration_range_532'] = \
+                    pData['reference_height_532'][:]
+                data['backscatter_calibration_value_532'] = refBscRatio532
+                data['backscatter_calibration_search_range_532'] = \
+                    [refH_bottom_532, refH_top_532]
+                data['bsc_532'] = pData['aerBsc_raman_532'][:]
+                data['bsc_std_532'] = 0.1 * pData['aerBsc_raman_532'][:]
+    
+            if 'aerExt_raman_532' in pData.keys():
+                data['ext_532'] = pData['aerExt_raman_532'][:]
+                data['ext_std_532'] = 0.1 * pData['aerExt_raman_532'][:]
+    
+            if 'volDepol_raman_532' in pData.keys():
+                data['pdr_532'] = pData['parDepol_raman_532'][:]
+                data['pdr_std_532'] = 0.1 * pData['parDepol_raman_532'][:]
+                data['vdr_532'] = pData['volDepol_raman_532'][:]
+                data['vdr_std_532'] = 0.1 * pData['volDepol_raman_532'][:]
+                
+        # elif self.method.lower() == 'klett':
+        #     if 'aerBsc_klett_532' in pData.keys():
+        #         smoothWin_532 = self.picasso_attri_parser(
+        #             pData['aerBsc_klett_532'].retrieving_info,
+        #             varname='smoothing_window')
+        #         refH_bottom_532 = self.picasso_attri_parser(
+        #             pData['aerBsc_klett_532'].retrieving_info,
+        #             varname='reference_search_bottom')
+        #         refH_top_532 = self.picasso_attri_parser(
+        #             pData['aerBsc_klett_532'].retrieving_info,
+        #             varname='reference_search_top')
+        #         angstr_532 = self.picasso_attri_parser(
+        #             pData['aerBsc_raman_532'].retrieving_info,
+        #             varname='angstroem_exponent')
+        #         fixed_lidar_ratio_532 = self.picasso_attri_parser(
+        #             pData['aerBsc_klett_532'].retrieving_info,
+        #             varname='fixed_lidar_ratio')
+        #         refVal_532 = self.picasso_attri_parser(
+        #             pData['aerBsc_klett_532'].retrieving_info,
+        #             varname='reference_value')
+    
+        #         # calculate the backscatter-ratio at the reference height
+        #         refMask532 = (pData['height'][:] >= refH_bottom_532) & \
+        #                      (pData['height'][:] <= refH_top_532)
+        #         refBscMol532 = np.nanmean(
+        #             beta_pi_rayleigh(
+        #                 532,
+        #                 pressure=pData['pressure'][refMask532],
+        #                 temperature=pData['temperature'][refMask532] + 273.16))
+        #         refBscRatio532 = refVal_532 / refBscMol532 + 1
+    
+        #         # 0: monte_carlo;
+        #         # 1: error_propagation
+        #         data['error_retrieval_method_532'] = 1
+    
+        #         # 0: Ansmann;
+        #         # 1: via_backscatter_ratio
+        #         data['extinction_evaluation_algorithm_532'] = 0
+    
+        #         # 0: Raman
+        #         # 1: elastic_backscatter
+        #         data['backscatter_evaluation_method_532'] = 0
+    
+        #         # 0: Ansmann
+        #         # 1: via_backscatter_ratio
+        #         data['raman_backscatter_algorithm_532'] = 0
+    
+        #         data['vertical_resolution_532'] = smoothWin_532 * \
+        #             np.ones(pData['height'][:].shape, dtype=np.double)
+        #         data['extinction_assumed_wavelength_dependence_532'] = angstr_532
+        #         data['assumed_particle_lidar_ratio'] = fixed_lidar_ratio_532
+        #         data['backscatter_calibration_range_532'] = \
+        #             pData['reference_height_532'][:]
+        #         data['backscatter_calibration_value_532'] = refBscRatio532
+        #         data['backscatter_calibration_search_range_532'] = \
+        #             [refH_bottom_532, refH_top_532]
+        #         data['bsc_532'] = pData['aerBsc_klett_532'][:]
+        #         data['bsc_std_532'] = 0.1 * pData['aerBsc_klett_532'][:]
+    
+        #     if 'aerExt_raman_532' in pData.keys():
+        #         data['ext_532'] = pData['aerExt_raman_532'][:]
+        #         data['ext_std_532'] = 0.1 * pData['aerExt_raman_532'][:]
+    
+        #     if 'volDepol_raman_532' in pData.keys():
+        #         data['pdr_532'] = pData['parDepol_raman_532'][:]
+        #         data['pdr_std_532'] = 0.1 * pData['parDepol_raman_532'][:]
+        #         data['vdr_532'] = pData['volDepol_raman_532'][:]
+        #         data['vdr_std_532'] = 0.1 * pData['volDepol_raman_532'][:]
 
         # capsule data into 1064 data container
-        if 'aerBsc_raman_1064' in pData.keys():
-            smoothWin_1064 = self.picasso_attri_parser(
-                pData['aerBsc_raman_1064'].retrieving_info,
-                varname='smoothing_window')
-            refH_bottom_1064 = self.picasso_attri_parser(
-                pData['aerBsc_raman_1064'].retrieving_info,
-                varname='reference_search_bottom')
-            refH_top_1064 = self.picasso_attri_parser(
-                pData['aerBsc_raman_1064'].retrieving_info,
-                varname='reference_search_top')
-            angstr_1064 = self.picasso_attri_parser(
-                pData['aerBsc_raman_1064'].retrieving_info,
-                varname='angstroem_exponent')
-            refVal_1064 = self.picasso_attri_parser(
-                pData['aerBsc_raman_1064'].retrieving_info,
-                varname='reference_value')
-
-            # calculate the backscatter-ratio at the reference height
-            refMask1064 = (pData['height'][:] >= refH_bottom_1064) & \
-                          (pData['height'][:] <= refH_top_1064)
-            refBscMol1064 = np.nanmean(
-                beta_pi_rayleigh(
-                    1064,
-                    pressure=pData['pressure'][refMask1064],
-                    temperature=pData['temperature'][refMask1064] + 273.16))
-            refBscRatio1064 = refVal_1064 / refBscMol1064 + 1
-
-            # 0: monte_carlo;
-            # 1: error_propagation
-            data['error_retrieval_method_1064'] = 1
-
-            # 0: Ansmann;
-            # 1: via_backscatter_ratio
-            data['extinction_evaluation_algorithm_1064'] = 0
-
-            # 0: Raman
-            # 1: elastic_backscatter
-            data['backscatter_evaluation_method_1064'] = 0
-
-            # 0: Ansmann
-            # 1: via_backscatter_ratio
-            data['raman_backscatter_algorithm_1064'] = 0
-
-            data['vertical_resolution_1064'] = smoothWin_1064 * \
-                np.ones(pData['height'][:].shape, dtype=np.double)
-            data['extinction_assumed_wavelength_dependence_1064'] = angstr_1064
-            data['backscatter_calibration_range_1064'] = \
-                pData['reference_height_1064'][:]
-            data['backscatter_calibration_value_1064'] = refBscRatio1064
-            data['backscatter_calibration_search_range_1064'] = \
-                [refH_bottom_1064, refH_top_1064]
-            data['bsc_1064'] = pData['aerBsc_raman_1064'][:]
-            data['bsc_std_1064'] = 0.1 * pData['aerBsc_raman_1064'][:]
+        if self.method.lower() == 'raman':
+            if 'aerBsc_raman_1064' in pData.keys():
+                smoothWin_1064 = self.picasso_attri_parser(
+                    pData['aerBsc_raman_1064'].retrieving_info,
+                    varname='smoothing_window')
+                refH_bottom_1064 = self.picasso_attri_parser(
+                    pData['aerBsc_raman_1064'].retrieving_info,
+                    varname='reference_search_bottom')
+                refH_top_1064 = self.picasso_attri_parser(
+                    pData['aerBsc_raman_1064'].retrieving_info,
+                    varname='reference_search_top')
+                angstr_1064 = self.picasso_attri_parser(
+                    pData['aerBsc_raman_1064'].retrieving_info,
+                    varname='angstroem_exponent')
+                refVal_1064 = self.picasso_attri_parser(
+                    pData['aerBsc_raman_1064'].retrieving_info,
+                    varname='reference_value')
+    
+                # calculate the backscatter-ratio at the reference height
+                refMask1064 = (pData['height'][:] >= refH_bottom_1064) & \
+                              (pData['height'][:] <= refH_top_1064)
+                refBscMol1064 = np.nanmean(
+                    beta_pi_rayleigh(
+                        1064,
+                        pressure=pData['pressure'][refMask1064],
+                        temperature=pData['temperature'][refMask1064] + 273.16))
+                refBscRatio1064 = refVal_1064 / refBscMol1064 + 1
+    
+                # 0: monte_carlo;
+                # 1: error_propagation
+                data['error_retrieval_method_1064'] = 1
+    
+                # 0: Ansmann;
+                # 1: via_backscatter_ratio
+                data['extinction_evaluation_algorithm_1064'] = 0
+    
+                # 0: Raman
+                # 1: elastic_backscatter
+                data['backscatter_evaluation_method_1064'] = 0
+    
+                # 0: Ansmann
+                # 1: via_backscatter_ratio
+                data['raman_backscatter_algorithm_1064'] = 0
+    
+                data['vertical_resolution_1064'] = smoothWin_1064 * \
+                    np.ones(pData['height'][:].shape, dtype=np.double)
+                data['extinction_assumed_wavelength_dependence_1064'] = angstr_1064
+                data['backscatter_calibration_range_1064'] = \
+                    pData['reference_height_1064'][:]
+                data['backscatter_calibration_value_1064'] = refBscRatio1064
+                data['backscatter_calibration_search_range_1064'] = \
+                    [refH_bottom_1064, refH_top_1064]
+                data['bsc_1064'] = pData['aerBsc_raman_1064'][:]
+                data['bsc_std_1064'] = 0.1 * pData['aerBsc_raman_1064'][:]
+            
+        elif self.method.lower() == 'klett':
+            if 'aerBsc_klett_1064' in pData.keys():
+                smoothWin_1064 = self.picasso_attri_parser(
+                    pData['aerBsc_klett_1064'].retrieving_info,
+                    varname='smoothing_window')
+                refH_bottom_1064 = self.picasso_attri_parser(
+                    pData['aerBsc_klett_1064'].retrieving_info,
+                    varname='reference_search_bottom')
+                refH_top_1064 = self.picasso_attri_parser(
+                    pData['aerBsc_klett_1064'].retrieving_info,
+                    varname='reference_search_top')
+                # angstr_1064 = self.picasso_attri_parser(
+                #     pData['aerBsc_raman_1064'].retrieving_info,
+                #     varname='angstroem_exponent')
+                fixed_lidar_ratio_1064 = self.picasso_attri_parser(
+                    pData['aerBsc_klett_1064'].retrieving_info,
+                    varname='fixed_lidar_ratio')
+                refVal_1064 = self.picasso_attri_parser(
+                    pData['aerBsc_klett_1064'].retrieving_info,
+                    varname='reference_value')
+    
+                # calculate the backscatter-ratio at the reference height
+                refMask1064 = (pData['height'][:] >= refH_bottom_1064) & \
+                              (pData['height'][:] <= refH_top_1064)
+                refBscMol1064 = np.nanmean(
+                    beta_pi_rayleigh(
+                        1064,
+                        pressure=pData['pressure'][refMask1064],
+                        temperature=pData['temperature'][refMask1064] + 273.16))
+                refBscRatio1064 = refVal_1064 / refBscMol1064 + 1
+                
+                # 0: monte_carlo;
+                # 1: error_propagation
+                data['error_retrieval_method_1064'] = 1
+    
+                # 0: Ansmann;
+                # 1: via_backscatter_ratio
+                data['extinction_evaluation_algorithm_1064'] = 0
+    
+                # 0: Raman
+                # 1: elastic_backscatter
+                data['backscatter_evaluation_method_1064'] = 0
+    
+                # 0: Ansmann
+                # 1: via_backscatter_ratio
+                data['raman_backscatter_algorithm_1064'] = 0
+    
+                data['vertical_resolution_1064'] = smoothWin_1064 * \
+                    np.ones(pData['height'][:].shape, dtype=np.double)
+                # data['extinction_assumed_wavelength_dependence_1064'] = angstr_1064
+               # data['extinction_assumed_wavelength_dependence_1064'] = "50" # = fixed lidar ratio
+                data['assumed_particle_lidar_ratio'] = fixed_lidar_ratio_1064
+                data['backscatter_calibration_range_1064'] = \
+                    pData['reference_height_1064'][:]
+                data['backscatter_calibration_value_1064'] = refBscRatio1064
+                data['backscatter_calibration_search_range_1064'] = \
+                    [refH_bottom_1064, refH_top_1064]
+                data['bsc_1064'] = pData['aerBsc_klett_1064'][:]
+                data['bsc_std_1064'] = 0.1 * pData['aerBsc_klett_1064'][:]
 
         # setup global attributes
         global_attris = camp_info
@@ -1574,68 +1750,134 @@ class polly_2_earlinet_convertor(object):
                 'No bins were selected with your input range_lim.\n',
                 'Jump over {file}.'.format(file=filename))
         else:
-            var_b532 = {
-                'altitude':
-                    variables['altitude'][flagBinsBFile],
-                'atmospheric_molecular_calculation_source':
-                    variables['atmospheric_molecular_calculation_source'],
-                'backscatter':
-                    variables['bsc_532'][flagBinsBFile],
-                'backscatter_calibration_range':
-                    variables['backscatter_calibration_range_532'],
-                'backscatter_calibration_range_search_algorithm':
-                    0,
-                'backscatter_calibration_search_range':
-                    variables['backscatter_calibration_search_range_532'],
-                'backscatter_calibration_value':
-                    variables['backscatter_calibration_value_532'],
-                'backscatter_evaluation_method':
-                    variables['backscatter_evaluation_method_532'],
-                'cirrus_contamination':
-                    variables['cirrus_contamination'],
-                'cirrus_contamination_source':
-                    variables['cirrus_contamination_source'],
-                'cloud_mask':
-                    variables['cloud_mask'][flagBinsBFile],
-                'earlinet_product_type':
-                    6,
-                'elastic_backscatter_algorithm':
-                    1,
-                'error_backscatter':
-                    variables['bsc_std_532'][flagBinsBFile],
-                'error_particledepolarization':
-                    variables['pdr_std_532'][flagBinsBFile],
-                'error_retrieval_method':
-                    variables['error_retrieval_method_532'],
-                'error_volumedepolarization':
-                    variables['vdr_std_532'][flagBinsBFile],
-                'latitude':
-                    variables['latitude'],
-                'longitude':
-                    variables['longitude'],
-                'particledepolarization':
-                    variables['pdr_532'][flagBinsBFile],
-                'raman_backscatter_algorithm':
-                    variables['raman_backscatter_algorithm_532'],
-                'shots':
-                    variables['shots'],
-                'station_altitude':
-                    variables['station_altitude'],
-                'time':
-                    variables['time'],
-                'time_bounds':
-                    variables['time_bounds'],
-                'user_defined_category':
-                    variables['user_defined_category'],
-                'vertical_resolution':
-                    variables['vertical_resolution_532'][flagBinsBFile],
-                'volumedepolarization':
-                    variables['vdr_532'][flagBinsBFile],
-                'wavelength':
-                    532,
-                'zenith_angle':
-                    variables['zenith_angle']
-            }
+            if self.method.lower()=='raman':
+                var_b532 = {
+                    'altitude':
+                        variables['altitude'][flagBinsBFile],
+                    'atmospheric_molecular_calculation_source':
+                        variables['atmospheric_molecular_calculation_source'],
+                    'backscatter':
+                        variables['bsc_532'][flagBinsBFile],
+                    'backscatter_calibration_range':
+                        variables['backscatter_calibration_range_532'],
+                    'backscatter_calibration_range_search_algorithm':
+                        0,
+                    'backscatter_calibration_search_range':
+                        variables['backscatter_calibration_search_range_532'],
+                    'backscatter_calibration_value':
+                        variables['backscatter_calibration_value_532'],
+                    'backscatter_evaluation_method':
+                        variables['backscatter_evaluation_method_532'],
+                    'cirrus_contamination':
+                        variables['cirrus_contamination'],
+                    'cirrus_contamination_source':
+                        variables['cirrus_contamination_source'],
+                    'cloud_mask':
+                        variables['cloud_mask'][flagBinsBFile],
+                    'earlinet_product_type':
+                        6,
+                    'elastic_backscatter_algorithm':
+                        1,
+                    'error_backscatter':
+                        variables['bsc_std_532'][flagBinsBFile],
+                    'error_particledepolarization':
+                        variables['pdr_std_532'][flagBinsBFile],
+                    'error_retrieval_method':
+                        variables['error_retrieval_method_532'],
+                    'error_volumedepolarization':
+                        variables['vdr_std_532'][flagBinsBFile],
+                    'latitude':
+                        variables['latitude'],
+                    'longitude':
+                        variables['longitude'],
+                    'particledepolarization':
+                        variables['pdr_532'][flagBinsBFile],
+                    'raman_backscatter_algorithm':
+                        variables['raman_backscatter_algorithm_532'],
+                    'shots':
+                        variables['shots'],
+                    'station_altitude':
+                        variables['station_altitude'],
+                    'time':
+                        variables['time'],
+                    'time_bounds':
+                        variables['time_bounds'],
+                    'user_defined_category':
+                        variables['user_defined_category'],
+                    'vertical_resolution':
+                        variables['vertical_resolution_532'][flagBinsBFile],
+                    'volumedepolarization':
+                        variables['vdr_532'][flagBinsBFile],
+                    'wavelength':
+                        532,
+                    'zenith_angle':
+                        variables['zenith_angle']
+                }
+            # elif self.method.lower()=='klett':
+            #     var_b532 = {
+            #         'altitude':
+            #             variables['altitude'][flagBinsBFile],
+            #         'assumed_particle_lidar_ratio':
+            #             variables['assumed_particle_lidar_ratio'],
+            #         'atmospheric_molecular_calculation_source':
+            #             variables['atmospheric_molecular_calculation_source'],
+            #         'backscatter':
+            #             variables['bsc_532'][flagBinsBFile],
+            #         'backscatter_calibration_range':
+            #             variables['backscatter_calibration_range_532'],
+            #         'backscatter_calibration_range_search_algorithm':
+            #             0,
+            #         'backscatter_calibration_search_range':
+            #             variables['backscatter_calibration_search_range_532'],
+            #         'backscatter_calibration_value':
+            #             variables['backscatter_calibration_value_532'],
+            #         'backscatter_evaluation_method':
+            #             variables['backscatter_evaluation_method_532'],
+            #         'cirrus_contamination':
+            #             variables['cirrus_contamination'],
+            #         'cirrus_contamination_source':
+            #             variables['cirrus_contamination_source'],
+            #         'cloud_mask':
+            #             variables['cloud_mask'][flagBinsBFile],
+            #         'earlinet_product_type':
+            #             6,
+            #         'elastic_backscatter_algorithm':
+            #             1,
+            #         'error_backscatter':
+            #             variables['bsc_std_532'][flagBinsBFile],
+            #         'error_particledepolarization':
+            #             variables['pdr_std_532'][flagBinsBFile],
+            #         'error_retrieval_method':
+            #             variables['error_retrieval_method_532'],
+            #         'error_volumedepolarization':
+            #             variables['vdr_std_532'][flagBinsBFile],
+            #         'latitude':
+            #             variables['latitude'],
+            #         'longitude':
+            #             variables['longitude'],
+            #         'particledepolarization':
+            #             variables['pdr_532'][flagBinsBFile],
+            #         'raman_backscatter_algorithm':
+            #             variables['raman_backscatter_algorithm_532'],
+            #         'shots':
+            #             variables['shots'],
+            #         'station_altitude':
+            #             variables['station_altitude'],
+            #         'time':
+            #             variables['time'],
+            #         'time_bounds':
+            #             variables['time_bounds'],
+            #         'user_defined_category':
+            #             variables['user_defined_category'],
+            #         'vertical_resolution':
+            #             variables['vertical_resolution_532'][flagBinsBFile],
+            #         'volumedepolarization':
+            #             variables['vdr_532'][flagBinsBFile],
+            #         'wavelength':
+            #             532,
+            #         'zenith_angle':
+            #             variables['zenith_angle']
+            #     }
             dim_b532 = dimensions
             dim_b532['altitude'] = np.sum(flagBinsBFile)
             global_attri_b532 = global_attri
@@ -1748,59 +1990,117 @@ class polly_2_earlinet_convertor(object):
                 'No bins were selected with your input range_lim.\n',
                 'Jump over {file}.'.format(file=filename))
         else:
-            var_b1064 = {
-                'altitude':
-                    variables['altitude'][flagBinsBFile],
-                'atmospheric_molecular_calculation_source':
-                    variables['atmospheric_molecular_calculation_source'],
-                'backscatter':
-                    variables['bsc_1064'][flagBinsBFile],
-                'backscatter_calibration_range':
-                    variables['backscatter_calibration_range_1064'],
-                'backscatter_calibration_range_search_algorithm':
-                    0,
-                'backscatter_calibration_search_range':
-                    variables['backscatter_calibration_search_range_1064'],
-                'backscatter_calibration_value':
-                    variables['backscatter_calibration_value_1064'],
-                'backscatter_evaluation_method':
-                    variables['backscatter_evaluation_method_1064'],
-                'cirrus_contamination':
-                    variables['cirrus_contamination'],
-                'cirrus_contamination_source':
-                    variables['cirrus_contamination_source'],
-                'cloud_mask':
-                    variables['cloud_mask'][flagBinsBFile],
-                'earlinet_product_type':
-                    8,
-                'elastic_backscatter_algorithm':
-                    1,
-                'error_backscatter':
-                    variables['bsc_std_1064'][flagBinsBFile],
-                'error_retrieval_method':
-                    variables['error_retrieval_method_1064'],
-                'latitude':
-                    variables['latitude'],
-                'longitude':
-                    variables['longitude'],
-                'raman_backscatter_algorithm':
-                    variables['raman_backscatter_algorithm_1064'],
-                'shots':
-                    variables['shots'],
-                'station_altitude':
-                    variables['station_altitude'],
-                'time':
-                    variables['time'],
-                'time_bounds':
-                    variables['time_bounds'],
-                'user_defined_category':
-                    variables['user_defined_category'],
-                'vertical_resolution':
-                    variables['vertical_resolution_1064'][flagBinsBFile],
-                'wavelength':
-                    1064,
-                'zenith_angle':
-                    variables['zenith_angle']
+            if self.method.lower()=='raman':
+                var_b1064 = {
+                    'altitude':
+                        variables['altitude'][flagBinsBFile],
+                    'atmospheric_molecular_calculation_source':
+                        variables['atmospheric_molecular_calculation_source'],
+                    'backscatter':
+                        variables['bsc_1064'][flagBinsBFile],
+                    'backscatter_calibration_range':
+                        variables['backscatter_calibration_range_1064'],
+                    'backscatter_calibration_range_search_algorithm':
+                        0,
+                    'backscatter_calibration_search_range':
+                        variables['backscatter_calibration_search_range_1064'],
+                    'backscatter_calibration_value':
+                        variables['backscatter_calibration_value_1064'],
+                    'backscatter_evaluation_method':
+                        variables['backscatter_evaluation_method_1064'],
+                    'cirrus_contamination':
+                        variables['cirrus_contamination'],
+                    'cirrus_contamination_source':
+                        variables['cirrus_contamination_source'],
+                    'cloud_mask':
+                        variables['cloud_mask'][flagBinsBFile],
+                    'earlinet_product_type':
+                        8,
+                    'elastic_backscatter_algorithm':
+                        1,
+                    'error_backscatter':
+                        variables['bsc_std_1064'][flagBinsBFile],
+                    'error_retrieval_method':
+                        variables['error_retrieval_method_1064'],
+                    'latitude':
+                        variables['latitude'],
+                    'longitude':
+                        variables['longitude'],
+                    'raman_backscatter_algorithm':
+                        variables['raman_backscatter_algorithm_1064'],
+                    'shots':
+                        variables['shots'],
+                    'station_altitude':
+                        variables['station_altitude'],
+                    'time':
+                        variables['time'],
+                    'time_bounds':
+                        variables['time_bounds'],
+                    'user_defined_category':
+                        variables['user_defined_category'],
+                    'vertical_resolution':
+                        variables['vertical_resolution_1064'][flagBinsBFile],
+                    'wavelength':
+                        1064,
+                    'zenith_angle':
+                        variables['zenith_angle']
+            }
+            elif self.method.lower()=='klett':
+                var_b1064 = {
+                    'altitude':
+                        variables['altitude'][flagBinsBFile],
+                    'assumed_particle_lidar_ratio':
+                        variables['assumed_particle_lidar_ratio'],
+                    'atmospheric_molecular_calculation_source':
+                        variables['atmospheric_molecular_calculation_source'],
+                    'backscatter':
+                        variables['bsc_1064'][flagBinsBFile],
+                    'backscatter_calibration_range':
+                        variables['backscatter_calibration_range_1064'],
+                    'backscatter_calibration_range_search_algorithm':
+                        0,
+                    'backscatter_calibration_search_range':
+                        variables['backscatter_calibration_search_range_1064'],
+                    'backscatter_calibration_value':
+                        variables['backscatter_calibration_value_1064'],
+                    'backscatter_evaluation_method':
+                        variables['backscatter_evaluation_method_1064'],
+                    'cirrus_contamination':
+                        variables['cirrus_contamination'],
+                    'cirrus_contamination_source':
+                        variables['cirrus_contamination_source'],
+                    'cloud_mask':
+                        variables['cloud_mask'][flagBinsBFile],
+                    'earlinet_product_type':
+                        8,
+                    'elastic_backscatter_algorithm':
+                        1,
+                    'error_backscatter':
+                        variables['bsc_std_1064'][flagBinsBFile],
+                    'error_retrieval_method':
+                        variables['error_retrieval_method_1064'],
+                    'latitude':
+                        variables['latitude'],
+                    'longitude':
+                        variables['longitude'],
+                    'raman_backscatter_algorithm':
+                        variables['raman_backscatter_algorithm_1064'],
+                    'shots':
+                        variables['shots'],
+                    'station_altitude':
+                        variables['station_altitude'],
+                    'time':
+                        variables['time'],
+                    'time_bounds':
+                        variables['time_bounds'],
+                    'user_defined_category':
+                        variables['user_defined_category'],
+                    'vertical_resolution':
+                        variables['vertical_resolution_1064'][flagBinsBFile],
+                    'wavelength':
+                        1064,
+                    'zenith_angle':
+                        variables['zenith_angle']
             }
             dim_b1064 = dimensions
             dim_b1064['altitude'] = np.sum(flagBinsBFile)
@@ -2130,7 +2430,7 @@ def show_list(flagShowCampaign=False,
                     indx=indx + 1, instrument=instrument))
 
 
-def polly2scc(polly_type, location, file_type, category, filename, output_dir,
+def polly2scc(polly_type, location, file_type, category, method, filename, output_dir,
               range_lim_b, range_lim_e, camp_info, force):
     """
     convert the polly files according to the input information
@@ -2170,6 +2470,7 @@ def polly2scc(polly_type, location, file_type, category, filename, output_dir,
     p2e_convertor = polly_2_earlinet_convertor(
         polly_type, location,
         category=category,
+        method=method,
         output_dir=output_dir,
         camp_info_file=camp_info,
         fileType=file_type,
@@ -2232,6 +2533,9 @@ def main():
     parser.add_argument(
         "-c", "--category", help=helpMsg, dest='category', default='2',
         type=int)
+    parser.add_argument(
+        "-m", "--method", help='choose Klett or Raman method for backscatter values', dest='method', default='raman',
+        type=str)
     parser.add_argument(
         "-f", "--filename",
         help='setup the filename of the polly profile',
@@ -2310,7 +2614,7 @@ def main():
         # run the command
         polly2scc(
             args.polly_type, args.location, args.file_type,
-            args.category, args.filename, args.output_dir,
+            args.category, args.method, args.filename, args.output_dir,
             args.range_lim_b, args.range_lim_e, args.camp_info, args.force)
 
 

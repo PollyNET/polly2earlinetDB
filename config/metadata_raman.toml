@@ -1,0 +1,278 @@
+# This file contains the configurations for the metadata 
+# detailed information please refer to the exemplified files in the folder of 'include'
+#
+# History
+#   2019-09-10. First edition by Zhenping
+
+dimensions = ['altitude', 'time', 'wavelength', 'nv']
+
+[altitude]
+long_name = "height above sea level"
+units = "m"
+axis = "Z"
+positive = "up"
+standard_name = "altitude"
+dims = ['altitude']
+dtype = 'double'
+    
+[time]
+long_name = "time"
+units = "seconds since 1970-01-01T00:00:00Z"
+axis = "T"
+standard_name = "time"
+bounds = "time_bounds"
+calendar = "gregorian"
+dims = ['time']
+dtype = 'double'
+    
+[time_bounds]
+long_name = 'averaged period'
+units = "seconds since 1970-01-01T00:00:00Z"
+calendar = 'gregorian'
+dims = ['time', 'nv']
+dtype = 'double'
+
+[vertical_resolution]
+_FillValue = 9.969209968386869E36
+long_name = "effective vertical resolution according to Pappalardo et al., appl. opt. 2004"
+units = "m"
+dims = ['wavelength', 'time', 'altitude']
+dtype = 'double'
+    
+[cloud_mask]
+_FillValue = -127
+long_name = "cloud mask"
+units = "1"
+flag_masks = [1, 2, 4]
+flag_meanings = "unknown_cloud cirrus_cloud water_cloud"
+valid_range = [0, 7]
+dims = ['time', 'altitude']
+dtype = 'byte'
+
+[cirrus_contamination]
+_FillValue = -127
+long_name = "do the profiles contain cirrus layers?"
+flag_values = [0, 1, 2]
+flag_meanings = "not_available no_cirrus cirrus_detected"
+dims = []
+dtype = 'byte'
+    
+[error_retrieval_method]
+_FillValue = -127
+long_name = "method used for the retrieval of uncertainties"
+flag_values = [0, 1]
+flag_meanings = "monte_carlo error_propagation"
+dims = ['wavelength']
+dtype = 'byte'
+
+[extinction_evaluation_algorithm]
+_FillValue = -127
+long_name = "algorithm used for the extinction retrieval"
+flag_values = [0, 1]
+flag_meanings = "weighted_linear_fit non-weighted_linear_fit"
+dims = ['wavelength']
+dtype = 'byte'
+
+[extinction]
+_FillValue = 9.969209968386869E36
+long_name = "aerosol extinction coefficient"
+ancillary_variables = "error_extinction vertical_resolution"
+coordinates = "longitude latitude"
+units = "1/m"
+dims = ['wavelength', 'time', 'altitude']
+dtype = 'double'
+
+[error_extinction]
+_FillValue = 9.969209968386869E36
+long_name = "absolute statistical uncertainty of extinction"
+units = "1/m"
+coordinates = "longitude latitude"
+dims = ['wavelength', 'time', 'altitude']
+dtype = 'double'
+
+[user_defined_category]
+_FillValue = -2147483647
+long_name = "user defined category of the measurement"
+comment = "Those flags might have not been set in a homogeneous way. Before using them, contact the originator to obtain more detailed information on how these flags have been set."
+flag_masks = [1, 2, 4, 8, 16, 32, 64, 128, 256, 512]
+flag_meanings = "cirrus climatol dicycles etna forfires photosmog rurban sahadust stratos satellite_overpasses"
+valid_range = [0, 1023]
+dims = []
+dtype = 'int'
+
+[cirrus_contamination_source]
+_FillValue = -127
+long_name = "how was cirrus_contamination obtained?"
+flag_values = [0, 1, 2]
+flag_meanings = "not_available user_provided automatic_calculated"
+dims = []
+dtype = 'byte'
+
+[atmospheric_molecular_calculation_source]
+_FillValue = -127
+long_name = "data source of the atmospheric molecular calculations"
+flag_values = [0, 1, 2, 3, 4]
+flag_meanings = "US_standard_atmosphere radiosounding ecmwf icon-iglo-12-23 gdas"
+dims = []
+dtype = 'byte'
+
+[latitude]
+standard_name = "latitude"
+long_name = "latitude of station"
+units = "degrees_north"
+dims = []
+dtype = 'float'
+
+[longitude]
+long_name = "longitude of station"
+units = "degrees_east"
+standard_name = "longitude"
+dims = []
+dtype = 'float'
+
+[station_altitude]
+_FillValue = 9.969209968386869E36
+long_name = "station altitude above sea level"
+units = "m"
+dims = []
+dtype = 'float'
+
+[extinction_assumed_wavelength_dependence]
+_FillValue = 9.969209968386869E36
+long_name = "assumed wavelength dependence for extinction retrieval"
+units = "1"
+dims = ['wavelength']
+dtype = 'float'
+
+[wavelength]
+long_name = "wavelength of the transmitted laser pulse"
+units = "nm"
+dims = ['wavelength']
+dtype = 'float'
+
+[zenith_angle]
+_FillValue = 9.969209968386869E36
+long_name = "laser pointing angle with respect to the zenith"
+units = "degrees"
+dims = []
+dtype = 'float'
+
+[shots]
+_FillValue = -2147483647
+long_name = "accumulated laser shots"
+units = "1"
+dims = []
+dtype = 'int'
+
+[earlinet_product_type]
+_FillValue = -2147483647
+long_name = "Earlinet product type"
+flag_values = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14]
+flag_meanings = "e0355 b0355 e0351 b0351 e0532 b0532 e1064 b1064 b0253 b0313 b0335 b0510 b0694 b0817"
+valid_range = [1, 14]
+dims = []
+dtype = 'int'
+
+[elastic_backscatter_algorithm]
+FillValue = -127
+long_name = "algorithm used for the retrieval of the backscatter profile"
+flag_values = [0, 1]
+flag_meanings = "Klett-Fernald iterative"
+dims = ['wavelength']
+dtype = 'byte'
+
+[backscatter]
+_FillValue = 9.969209968386869E36
+long_name = "aerosol backscatter coefficient"
+units = "1/(m*sr)"
+ancillary_variables = "error_backscatter vertical_resolution"
+coordinates = "longitude latitude"
+dims = ['wavelength', 'time', 'altitude']
+dtype = 'double'
+
+[error_backscatter]
+_FillValue = 9.969209968386869E36
+long_name = "absolute statistical uncertainty of backscatter"
+units = "1/(m*sr)"
+coordinates = "longitude latitude"
+dims = ['wavelength', 'time', 'altitude']
+dtype = 'double'
+
+[backscatter_calibration_range_search_algorithm]
+_FillValue = -127
+long_name = "algorithm used for the search of the calibration_range"
+flag_values = [0, 1]
+flag_meanings = "minimum_of_signal_ratio minimum_of_elastic_signal"
+dims = ['wavelength']
+dtype = 'byte'
+
+[backscatter_calibration_range]
+_FillValue = 9.969209968386869E36
+long_name = "height range where calibration was calculated"
+units = "m"
+dims = ['wavelength', 'nv']
+dtype = 'float'
+
+[backscatter_evaluation_method]
+_FillValue = -127
+long_name = "method used for the backscatter retrieval"
+flag_values = [0, 1]
+flag_meanings = "Raman elastic_backscatter"
+dims = ['wavelength']
+dtype = 'byte'
+
+[raman_backscatter_algorithm]
+_FillValue = -127
+long_name = "algorithm used for the retrieval of the Raman backscatter profile"
+flag_values = [0, 1]
+flag_meanings = "Ansmann via_backscatter_ratio"
+dims = ['wavelength']
+dtype = 'byte'
+
+[backscatter_calibration_value]
+_FillValue = 9.969209968386869E36
+long_name = "assumed backscatter-ratio value (unitless) in calibration range"
+units = "1"
+dims = ['wavelength']
+dtype = 'float'
+
+[backscatter_calibration_search_range]
+_FillValue = 9.969209968386869E36
+long_name = "height range wherein calibration range is searched"
+units = "m"
+dims = ['wavelength', 'nv']
+dtype = 'float'
+
+[error_particledepolarization]
+_FillValue = 9.969209968386869E36
+long_name = "absolute statistical uncertainty of particledepolarization"
+units = "1"
+coordinates = "longitude latitude"
+dims = ['wavelength', 'time', 'altitude']
+dtype = 'double'
+
+[error_volumedepolarization]
+_FillValue = 9.969209968386869E36
+long_name = "absolute statistical uncertainty of volumedepolarization"
+units = "1"
+coordinates = "longitude latitude"
+dims = ['wavelength', 'time', 'altitude']
+dtype = 'double'
+
+[particledepolarization]
+_FillValue = 9.969209968386869E36
+long_name = "particle linear depolarization ratio"
+units = "1"
+ancillary_variables = "error_particledepolarization vertical_resolution"
+coordinates = "longitude latitude"
+dims = ['wavelength', 'time', 'altitude']
+dtype = 'double'
+
+[volumedepolarization]
+_FillValue = 9.969209968386869E36
+long_name = "volume linear depolarization ratio"
+units = "1"
+ancillary_variables = "error_volumedepolarization vertical_resolution"
+coordinates = "longitude latitude"
+dims = ['wavelength', 'time', 'altitude']
+dtype = 'double'
