@@ -2171,6 +2171,9 @@ class polly_2_earlinet_convertor(object):
                         variables['altitude'][flagBinsBFile],
                     'assumed_particle_lidar_ratio':
                         variables['assumed_particle_lidar_ratio'],
+                    'assumed_particle_lidar_ratio_error':
+                        0,
+                        # variables['assumed_particle_lidar_ratio']*0.1,
                     'atmospheric_molecular_calculation_source':
                         variables['atmospheric_molecular_calculation_source'],
                     'backscatter':
