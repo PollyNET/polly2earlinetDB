@@ -2194,6 +2194,8 @@ class polly_2_earlinet_convertor(object):
                         variables['cirrus_contamination_source'],
                     'cloud_mask':
                         variables['cloud_mask'][flagBinsBFile],
+                    'cloud_mask_type':
+                        0,
                     'earlinet_product_type':
                         8,
                     'elastic_backscatter_algorithm':
@@ -2206,8 +2208,14 @@ class polly_2_earlinet_convertor(object):
                         variables['latitude'],
                     'longitude':
                         variables['longitude'],
+                    'molecular_calculation_source':
+                        0,
+                    'particledepolarization':
+                        'nan',
                     'raman_backscatter_algorithm':
                         variables['raman_backscatter_algorithm_1064'],
+                    'scc_product_type':
+                        1,
                     'shots':
                         variables['shots'],
                     'station_altitude':
@@ -2220,6 +2228,8 @@ class polly_2_earlinet_convertor(object):
                         variables['user_defined_category'],
                     'vertical_resolution':
                         variables['vertical_resolution_1064'][flagBinsBFile],
+                    'volumedepolarization':
+                        'nan',
                     'wavelength':
                         1064,
                     'zenith_angle':
@@ -2262,7 +2272,8 @@ class polly_2_earlinet_convertor(object):
             absolute path of the exported file.
         '''
 
-        if not (len(range_lim) is 2):
+#        if not (len(range_lim) is 2):
+        if len(range_lim) != 2:
             logger.error('range_lim must be 2-element list')
             raise ValueError
 
