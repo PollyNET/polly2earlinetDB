@@ -100,7 +100,8 @@ class polly_2_earlinet_convertor(object):
     """
 
     def __init__(self, pollyType='', location='', fileType='labview',
-                 category=2, method='raman', output_dir='', *, camp_info_file='', force=False):
+                 category=2, method='raman', output_dir='', *,
+                 camp_info_file='', force=False):
         '''
         initialize the instance
 
@@ -115,7 +116,8 @@ class polly_2_earlinet_convertor(object):
         category: int
             category of the results.
         method: str
-            Klett or Raman method for calculating backscatter values (klett | raman)
+            Klett or Raman method for calculating backscatter values (klett |
+            raman)
         output_dir: str
             directory for saving the converted files
 
@@ -1055,8 +1057,8 @@ class polly_2_earlinet_convertor(object):
         val:
             varname value.
         '''
-        
-        if self.method.lower()=='raman':
+
+        if self.method.lower() == 'raman':
             decoders = {
                 'reference_search_top': (
                     r'(?<=Reference search range:......... - )\d+.\d+',
@@ -1089,7 +1091,7 @@ class polly_2_earlinet_convertor(object):
                     'standard_atmosphere'
                 )
             }
-        elif self.method.lower()=='klett':
+        elif self.method.lower() == 'klett':
             decoders = {
                 'reference_search_top': (
                     r'(?<=Reference search range:......... - )\d+.\d+',
@@ -1127,7 +1129,6 @@ class polly_2_earlinet_convertor(object):
                     'standard_atmosphere'
                 )
             }
-        
 
         if varname in decoders.keys():
             val = find_in_string(decoders[varname], inStr)
@@ -1259,7 +1260,7 @@ class polly_2_earlinet_convertor(object):
                 refVal_355 = self.picasso_attri_parser(
                     pData['aerBsc_raman_355'].retrieving_info,
                     varname='reference_value')
-    
+
                 # calculate the backscatter-ratio at the reference height
                 refMask355 = (pData['height'][:] >= refH_bottom_355) & \
                              (pData['height'][:] <= refH_top_355)
@@ -1269,26 +1270,27 @@ class polly_2_earlinet_convertor(object):
                         pressure=pData['pressure'][refMask355],
                         temperature=pData['temperature'][refMask355] + 273.16))
                 refBscRatio355 = refVal_355 / refBscMol355 + 1
-    
+
                 # 0: monte_carlo;
                 # 1: error_propagation
                 data['error_retrieval_method_355'] = 1
-    
+
                 # 0: Ansmann;
                 # 1: via_backscatter_ratio
                 data['extinction_evaluation_algorithm_355'] = 0
-    
+
                 # 0: Raman
                 # 1: elastic_backscatter
                 data['backscatter_evaluation_method_355'] = 0
-    
+
                 # 0: Ansmann
                 # 1: via_backscatter_ratio
                 data['raman_backscatter_algorithm_355'] = 0
-    
+
                 data['vertical_resolution_355'] = smoothWin_355 * \
                     np.ones(pData['height'][:].shape, dtype=np.double)
-                data['extinction_assumed_wavelength_dependence_355'] = angstr_355
+                data['extinction_assumed_wavelength_dependence_355'] =\
+                    angstr_355
                 data['backscatter_calibration_range_355'] = \
                     pData['reference_height_355'][:]
                 data['backscatter_calibration_value_355'] = refBscRatio355
@@ -1296,7 +1298,7 @@ class polly_2_earlinet_convertor(object):
                     [refH_bottom_355, refH_top_355]
                 data['bsc_355'] = pData['aerBsc_raman_355'][:]
                 data['bsc_std_355'] = 0.1 * pData['aerBsc_raman_355'][:]
-                
+
         elif self.method.lower() == 'klett':
             if 'aerBsc_klett_355' in pData.keys():
                 smoothWin_355 = self.picasso_attri_parser(
@@ -1317,7 +1319,7 @@ class polly_2_earlinet_convertor(object):
                 refVal_355 = self.picasso_attri_parser(
                     pData['aerBsc_klett_355'].retrieving_info,
                     varname='reference_value')
-    
+
                 # calculate the backscatter-ratio at the reference height
                 refMask355 = (pData['height'][:] >= refH_bottom_355) & \
                              (pData['height'][:] <= refH_top_355)
@@ -1327,26 +1329,27 @@ class polly_2_earlinet_convertor(object):
                         pressure=pData['pressure'][refMask355],
                         temperature=pData['temperature'][refMask355] + 273.16))
                 refBscRatio355 = refVal_355 / refBscMol355 + 1
-    
+
                 # 0: monte_carlo;
                 # 1: error_propagation
                 data['error_retrieval_method_355'] = 1
-    
+
                 # 0: Ansmann;
                 # 1: via_backscatter_ratio
                 data['extinction_evaluation_algorithm_355'] = 0
-    
+
                 # 0: Raman
                 # 1: elastic_backscatter
                 data['backscatter_evaluation_method_355'] = 0
-    
+
                 # 0: Ansmann
                 # 1: via_backscatter_ratio
                 data['raman_backscatter_algorithm_355'] = 0
-    
+
                 data['vertical_resolution_355'] = smoothWin_355 * \
                     np.ones(pData['height'][:].shape, dtype=np.double)
-                data['extinction_assumed_wavelength_dependence_355'] = angstr_355
+                data['extinction_assumed_wavelength_dependence_355'] =\
+                    angstr_355
                 data['assumed_particle_lidar_ratio'] = fixed_lidar_ratio_355
                 data['backscatter_calibration_range_355'] = \
                     pData['reference_height_355'][:]
@@ -1384,7 +1387,7 @@ class polly_2_earlinet_convertor(object):
                 refVal_532 = self.picasso_attri_parser(
                     pData['aerBsc_raman_532'].retrieving_info,
                     varname='reference_value')
-    
+
                 # calculate the backscatter-ratio at the reference height
                 refMask532 = (pData['height'][:] >= refH_bottom_532) & \
                              (pData['height'][:] <= refH_top_532)
@@ -1394,26 +1397,27 @@ class polly_2_earlinet_convertor(object):
                         pressure=pData['pressure'][refMask532],
                         temperature=pData['temperature'][refMask532] + 273.16))
                 refBscRatio532 = refVal_532 / refBscMol532 + 1
-    
+
                 # 0: monte_carlo;
                 # 1: error_propagation
                 data['error_retrieval_method_532'] = 1
-    
+
                 # 0: Ansmann;
                 # 1: via_backscatter_ratio
                 data['extinction_evaluation_algorithm_532'] = 0
-    
+
                 # 0: Raman
                 # 1: elastic_backscatter
                 data['backscatter_evaluation_method_532'] = 0
-    
+
                 # 0: Ansmann
                 # 1: via_backscatter_ratio
                 data['raman_backscatter_algorithm_532'] = 0
-    
+
                 data['vertical_resolution_532'] = smoothWin_532 * \
                     np.ones(pData['height'][:].shape, dtype=np.double)
-                data['extinction_assumed_wavelength_dependence_532'] = angstr_532
+                data['extinction_assumed_wavelength_dependence_532'] =\
+                    angstr_532
                 data['backscatter_calibration_range_532'] = \
                     pData['reference_height_532'][:]
                 data['backscatter_calibration_value_532'] = refBscRatio532
@@ -1421,7 +1425,7 @@ class polly_2_earlinet_convertor(object):
                     [refH_bottom_532, refH_top_532]
                 data['bsc_532'] = pData['aerBsc_raman_532'][:]
                 data['bsc_std_532'] = 0.1 * pData['aerBsc_raman_532'][:]
-                
+
         elif self.method.lower() == 'klett':
             if 'aerBsc_klett_532' in pData.keys():
                 smoothWin_532 = self.picasso_attri_parser(
@@ -1442,36 +1446,37 @@ class polly_2_earlinet_convertor(object):
                 refVal_532 = self.picasso_attri_parser(
                     pData['aerBsc_klett_532'].retrieving_info,
                     varname='reference_value')
-    
+
                 # calculate the backscatter-ratio at the reference height
                 refMask532 = (pData['height'][:] >= refH_bottom_532) & \
-                              (pData['height'][:] <= refH_top_532)
+                             (pData['height'][:] <= refH_top_532)
                 refBscMol532 = np.nanmean(
                     beta_pi_rayleigh(
                         532,
                         pressure=pData['pressure'][refMask532],
                         temperature=pData['temperature'][refMask532] + 273.16))
                 refBscRatio532 = refVal_532 / refBscMol532 + 1
-    
+
                 # 0: monte_carlo;
                 # 1: error_propagation
                 data['error_retrieval_method_532'] = 1
-    
+
                 # 0: Ansmann;
                 # 1: via_backscatter_ratio
                 data['extinction_evaluation_algorithm_532'] = 0
-    
+
                 # 0: Raman
                 # 1: elastic_backscatter
                 data['backscatter_evaluation_method_532'] = 0
-    
+
                 # 0: Ansmann
                 # 1: via_backscatter_ratio
                 data['raman_backscatter_algorithm_532'] = 0
-    
+
                 data['vertical_resolution_532'] = smoothWin_532 * \
                     np.ones(pData['height'][:].shape, dtype=np.double)
-                data['extinction_assumed_wavelength_dependence_532'] = angstr_532
+                data['extinction_assumed_wavelength_dependence_532'] = \
+                    angstr_532
                 data['assumed_particle_lidar_ratio'] = fixed_lidar_ratio_532
                 data['backscatter_calibration_range_532'] = \
                     pData['reference_height_532'][:]
@@ -1509,7 +1514,7 @@ class polly_2_earlinet_convertor(object):
                 refVal_1064 = self.picasso_attri_parser(
                     pData['aerBsc_raman_1064'].retrieving_info,
                     varname='reference_value')
-    
+
                 # calculate the backscatter-ratio at the reference height
                 refMask1064 = (pData['height'][:] >= refH_bottom_1064) & \
                               (pData['height'][:] <= refH_top_1064)
@@ -1517,28 +1522,30 @@ class polly_2_earlinet_convertor(object):
                     beta_pi_rayleigh(
                         1064,
                         pressure=pData['pressure'][refMask1064],
-                        temperature=pData['temperature'][refMask1064] + 273.16))
+                        temperature=pData['temperature'][refMask1064] +
+                        273.16))
                 refBscRatio1064 = refVal_1064 / refBscMol1064 + 1
-    
+
                 # 0: monte_carlo;
                 # 1: error_propagation
                 data['error_retrieval_method_1064'] = 1
-    
+
                 # 0: Ansmann;
                 # 1: via_backscatter_ratio
                 data['extinction_evaluation_algorithm_1064'] = 0
-    
+
                 # 0: Raman
                 # 1: elastic_backscatter
                 data['backscatter_evaluation_method_1064'] = 0
-    
+
                 # 0: Ansmann
                 # 1: via_backscatter_ratio
                 data['raman_backscatter_algorithm_1064'] = 0
-    
+
                 data['vertical_resolution_1064'] = smoothWin_1064 * \
                     np.ones(pData['height'][:].shape, dtype=np.double)
-                data['extinction_assumed_wavelength_dependence_1064'] = angstr_1064
+                data['extinction_assumed_wavelength_dependence_1064'] = \
+                    angstr_1064
                 data['backscatter_calibration_range_1064'] = \
                     pData['reference_height_1064'][:]
                 data['backscatter_calibration_value_1064'] = refBscRatio1064
@@ -1546,7 +1553,7 @@ class polly_2_earlinet_convertor(object):
                     [refH_bottom_1064, refH_top_1064]
                 data['bsc_1064'] = pData['aerBsc_raman_1064'][:]
                 data['bsc_std_1064'] = 0.1 * pData['aerBsc_raman_1064'][:]
-            
+
         elif self.method.lower() == 'klett':
             if 'aerBsc_klett_1064' in pData.keys():
                 smoothWin_1064 = self.picasso_attri_parser(
@@ -1567,7 +1574,7 @@ class polly_2_earlinet_convertor(object):
                 refVal_1064 = self.picasso_attri_parser(
                     pData['aerBsc_klett_1064'].retrieving_info,
                     varname='reference_value')
-    
+
                 # calculate the backscatter-ratio at the reference height
                 refMask1064 = (pData['height'][:] >= refH_bottom_1064) & \
                               (pData['height'][:] <= refH_top_1064)
@@ -1575,29 +1582,28 @@ class polly_2_earlinet_convertor(object):
                     beta_pi_rayleigh(
                         1064,
                         pressure=pData['pressure'][refMask1064],
-                        temperature=pData['temperature'][refMask1064] + 273.16))
+                        temperature=pData['temperature'][refMask1064] +
+                        273.16))
                 refBscRatio1064 = refVal_1064 / refBscMol1064 + 1
-                
+
                 # 0: monte_carlo;
                 # 1: error_propagation
                 data['error_retrieval_method_1064'] = 1
-    
+
                 # 0: Ansmann;
                 # 1: via_backscatter_ratio
                 data['extinction_evaluation_algorithm_1064'] = 0
-    
+
                 # 0: Raman
                 # 1: elastic_backscatter
                 data['backscatter_evaluation_method_1064'] = 0
-    
+
                 # 0: Ansmann
                 # 1: via_backscatter_ratio
                 data['raman_backscatter_algorithm_1064'] = 0
-    
+
                 data['vertical_resolution_1064'] = smoothWin_1064 * \
                     np.ones(pData['height'][:].shape, dtype=np.double)
-                # data['extinction_assumed_wavelength_dependence_1064'] = angstr_1064
-               # data['extinction_assumed_wavelength_dependence_1064'] = "50" # = fixed lidar ratio
                 data['assumed_particle_lidar_ratio'] = fixed_lidar_ratio_1064
                 data['backscatter_calibration_range_1064'] = \
                     pData['reference_height_1064'][:]
@@ -1606,7 +1612,6 @@ class polly_2_earlinet_convertor(object):
                     [refH_bottom_1064, refH_top_1064]
                 data['bsc_1064'] = pData['aerBsc_klett_1064'][:]
                 data['bsc_std_1064'] = 0.1 * pData['aerBsc_klett_1064'][:]
-
 
         # setup global attributes
         global_attris = camp_info
@@ -1631,7 +1636,7 @@ class polly_2_earlinet_convertor(object):
                 'No bins were selected with your input range_lim.\n',
                 'Jump over {file}.'.format(file=filename))
         else:
-            if self.method.lower()=='raman':
+            if self.method.lower() == 'raman':
                 var_b355 = {
                     'altitude':
                         variables['altitude'][flagBinsBFile],
@@ -1694,8 +1699,8 @@ class polly_2_earlinet_convertor(object):
                     'zenith_angle':
                         variables['zenith_angle']
                 }
-            elif self.method.lower()=='klett':
-                 var_b355 = {
+            elif self.method.lower() == 'klett':
+                var_b355 = {
                     'altitude':
                         variables['altitude'][flagBinsBFile],
                     'assumed_particle_lidar_ratio':
@@ -1759,6 +1764,7 @@ class polly_2_earlinet_convertor(object):
                     'zenith_angle':
                         variables['zenith_angle']
                 }
+
             dim_b355 = dimensions
             dim_b355['altitude'] = np.sum(flagBinsBFile)
             global_attri_b355 = global_attri
@@ -1871,7 +1877,7 @@ class polly_2_earlinet_convertor(object):
                 'No bins were selected with your input range_lim.\n',
                 'Jump over {file}.'.format(file=filename))
         else:
-            if self.method.lower()=='raman':
+            if self.method.lower() == 'raman':
                 var_b532 = {
                     'altitude':
                         variables['altitude'][flagBinsBFile],
@@ -1934,7 +1940,7 @@ class polly_2_earlinet_convertor(object):
                     'zenith_angle':
                         variables['zenith_angle']
                 }
-            elif self.method.lower()=='klett':
+            elif self.method.lower() == 'klett':
                 var_b532 = {
                     'altitude':
                         variables['altitude'][flagBinsBFile],
@@ -2111,7 +2117,7 @@ class polly_2_earlinet_convertor(object):
                 'No bins were selected with your input range_lim.\n',
                 'Jump over {file}.'.format(file=filename))
         else:
-            if self.method.lower()=='raman':
+            if self.method.lower() == 'raman':
                 var_b1064 = {
                     'altitude':
                         variables['altitude'][flagBinsBFile],
@@ -2165,8 +2171,8 @@ class polly_2_earlinet_convertor(object):
                         1064,
                     'zenith_angle':
                         variables['zenith_angle']
-            }
-            elif self.method.lower()=='klett':
+                }
+            elif self.method.lower() == 'klett':
                 var_b1064 = {
                     'altitude':
                         variables['altitude'][flagBinsBFile],
@@ -2235,7 +2241,8 @@ class polly_2_earlinet_convertor(object):
                         1064,
                     'zenith_angle':
                         variables['zenith_angle']
-            }
+                }
+
             dim_b1064 = dimensions
             dim_b1064['altitude'] = np.sum(flagBinsBFile)
             global_attri_b1064 = global_attri
@@ -2371,7 +2378,7 @@ class polly_2_earlinet_convertor(object):
                 range_lim=range_lim, **kwargs)
 
         else:
-            logger.error('Unknown prodType: {0}'.format(prodType))
+            logger.error('Unknown prodType: {0}'.format(fileType))
             raise ValueError
 
         return filename
@@ -2565,8 +2572,8 @@ def show_list(flagShowCampaign=False,
                     indx=indx + 1, instrument=instrument))
 
 
-def polly2scc(polly_type, location, file_type, category, method, filename, output_dir,
-              range_lim_b, range_lim_e, camp_info, force):
+def polly2scc(polly_type, location, file_type, category, method, filename,
+              output_dir, range_lim_b, range_lim_e, camp_info, force):
     """
     convert the polly files according to the input information
 
@@ -2669,7 +2676,9 @@ def main():
         "-c", "--category", help=helpMsg, dest='category', default='2',
         type=int)
     parser.add_argument(
-        "-m", "--method", help='choose Klett or Raman method for backscatter values', dest='method', default='raman',
+        "-m", "--method",
+        help='choose Klett or Raman method for backscatter values',
+        dest='method', default='raman',
         type=str)
     parser.add_argument(
         "-f", "--filename",
