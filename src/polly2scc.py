@@ -1355,7 +1355,7 @@ class polly_2_earlinet_convertor(object):
                     [refH_bottom_355, refH_top_355]
                 data['bsc_355'] = pData['aerBsc_raman_355'][:]
                 data['bsc_std_355'] = 0.1 * pData['aerBsc_raman_355'][:]
-    
+
         if 'aerExt_raman_355' in pData.keys():
             data['ext_355'] = pData['aerExt_raman_355'][:]
             data['ext_std_355'] = 0.1 * pData['aerExt_raman_355'][:]
@@ -1480,7 +1480,7 @@ class polly_2_earlinet_convertor(object):
                     [refH_bottom_532, refH_top_532]
                 data['bsc_532'] = pData['aerBsc_klett_532'][:]
                 data['bsc_std_532'] = 0.1 * pData['aerBsc_klett_532'][:]
-    
+
         if 'aerExt_raman_532' in pData.keys():
             data['ext_532'] = pData['aerExt_raman_532'][:]
             data['ext_std_532'] = 0.1 * pData['aerExt_raman_532'][:]
@@ -1606,6 +1606,7 @@ class polly_2_earlinet_convertor(object):
                     [refH_bottom_1064, refH_top_1064]
                 data['bsc_1064'] = pData['aerBsc_klett_1064'][:]
                 data['bsc_std_1064'] = 0.1 * pData['aerBsc_klett_1064'][:]
+
 
         # setup global attributes
         global_attris = camp_info
@@ -2370,7 +2371,7 @@ class polly_2_earlinet_convertor(object):
                 range_lim=range_lim, **kwargs)
 
         else:
-            logger.error('Unknown prodType: {0}'.format(fileType))
+            logger.error('Unknown prodType: {0}'.format(prodType))
             raise ValueError
 
         return filename
