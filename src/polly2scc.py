@@ -1216,8 +1216,9 @@ class polly_2_earlinet_convertor(object):
             refBscMol355 = np.nanmean(
                 beta_pi_rayleigh(
                     355,
-                    pressure=pData['pressure'][refMask355],
-                    temperature=pData['temperature'][refMask355] + 273.16))
+                    pressure=np.float64(pData['pressure'][refMask355]),
+                    temperature=np.float64(pData['temperature'][refMask355] +
+                                           273.16)))
             refBscRatio355 = refVal_355 / refBscMol355 + 1
 
             # 0: monte_carlo;
@@ -1281,8 +1282,9 @@ class polly_2_earlinet_convertor(object):
             refBscMol532 = np.nanmean(
                 beta_pi_rayleigh(
                     532,
-                    pressure=pData['pressure'][refMask532],
-                    temperature=pData['temperature'][refMask532] + 273.16))
+                    pressure=np.float64(pData['pressure'][refMask532]),
+                    temperature=np.float64(pData['temperature'][refMask532] +
+                                           273.16)))
             refBscRatio532 = refVal_532 / refBscMol532 + 1
 
             # 0: monte_carlo;
@@ -1346,8 +1348,9 @@ class polly_2_earlinet_convertor(object):
             refBscMol1064 = np.nanmean(
                 beta_pi_rayleigh(
                     1064,
-                    pressure=pData['pressure'][refMask1064],
-                    temperature=pData['temperature'][refMask1064] + 273.16))
+                    pressure=np.float64(pData['pressure'][refMask1064]),
+                    temperature=np.float64(pData['temperature'][refMask1064] +
+                                           273.16)))
             refBscRatio1064 = refVal_1064 / refBscMol1064 + 1
 
             # 0: monte_carlo;
@@ -1936,7 +1939,7 @@ class polly_2_earlinet_convertor(object):
                 range_lim=range_lim, **kwargs)
 
         else:
-            logger.error('Unknown prodType: {0}'.format(fileType))
+            logger.error('Unknown prodType: {0}'.format(prodType))
             raise ValueError
 
         return filename
