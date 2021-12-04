@@ -2593,6 +2593,9 @@ def polly2scc(polly_type, location, file_type, category, method, filename,
         1: cirrus; 2:climatol; 4:dicycles; 8:etna; 16:forfires;
         32:photosmog; 64:rurban; 128:sahadust; 256:stratos;
         512:satellite_overpasses
+    method: str
+        Klett or Raman method for calculating backscatter values.
+        (klett | raman)
     filename: str
         the path of your results. (wildcards are supported.)
     output_dir: str
