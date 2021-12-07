@@ -196,7 +196,7 @@ class Test(unittest.TestCase):
         print('---> Test on p2e_go')
 
         polly2scc(
-            'PollyXT_TROPOS', 'leipzig', 'picasso', 1, 'raman',
+            'PollyXT_TROPOS', 'leipzig', 'picasso', 1,
             os.path.join(
                 projectDir, 'data',
                 '2020_05_06_Wed_TROPOS_00_00_01_0000_0059_profiles.nc'),
