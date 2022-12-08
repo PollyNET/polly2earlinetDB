@@ -1,4 +1,4 @@
-certifi==2018.8.24
+certifi==2022.12.7
 cftime==1.0.3.4
 DateTime==4.3
 netCDF4==1.5.2
